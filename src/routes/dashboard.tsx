@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { rwf } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
+import { IncomingApplications, MyApplications, TeamInvites } from "@/features/dashboard/panels";
 import { Card, OpportunityCard, PageHeader, Pill, Stat } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/dashboard")({
@@ -12,17 +13,22 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Page() {
-  const { user, applications, allOpps, milestones, advanceMilestone } = useApp();
+  const { user, applications, allOpps, milestones, advanceMilestone, authReady } = useApp();
+  if (!authReady) return <div className="container-page py-20 text-center text-muted-foreground">Loading…</div>;
   if (!user) return <div className="container-page py-20 text-center"><p>Please sign in to see your dashboard.</p><Button className="mt-4" asChild><Link to="/login">Sign in</Link></Button></div>;
+  if (!user.onboarded) return <div className="container-page py-20 text-center"><p>Finish setting up your profile to use your dashboard.</p><Button className="mt-4" asChild><Link to="/register">Complete profile</Link></Button></div>;
   const paid = milestones.filter((m) => m.status === "Paid").reduce((s, m) => s + m.amount, 0);
   return (
     <div className="container-page py-10">
-      <PageHeader eyebrow={`${user.role} dashboard`} title={`Muraho, ${user.name.split(" ")[0]}`} />
+      <PageHeader eyebrow={`${user.roles.map((r) => r.replace("_", " ")).join(" · ")} dashboard`} title={`Muraho, ${user.name.split(" ")[0]}`} />
       <div className="grid gap-4 md:grid-cols-3">
         <Stat icon={Briefcase} label="Applications" value={String(applications.length)} />
         <Stat icon={CheckCircle2} label="Milestones done" value={`${milestones.filter((m) => m.status === "Paid").length}/${milestones.length}`} />
         <Stat icon={Wallet} label="Received (demo)" value={rwf(paid)} hint="Paid via licensed partner (future)" />
       </div>
+      <TeamInvites />
+      <IncomingApplications />
+      <MyApplications />
       <Card className="mt-6">
         <h2 className="font-bold">Project: 4-unit housing block (demo)</h2>
         <ul className="mt-3 divide-y">{milestones.map((m) => (

@@ -1,0 +1,87 @@
+import { Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useCatalog } from "@/features/data/catalog";
+import { useApp } from "@/features/store/app-store";
+import { Card, Pill } from "@/features/ui/kit";
+
+type Status = "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" | "withdrawn";
+
+export function MyApplications() {
+  const { applications, allOpps, session, reloadUser } = useApp();
+  const title = (id: string) => allOpps.find((o) => o.id === id)?.title ?? "Opportunity";
+  return (
+    <Card className="mt-6">
+      <h2 className="font-bold">My applications</h2>
+      {!applications.length ? <p className="mt-2 text-sm text-muted-foreground">No applications yet. <Link to="/opportunities" className="text-primary">Browse opportunities</Link></p> :
+        <ul className="mt-3 divide-y">{applications.map((a) => (
+          <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+            <Link to="/opportunities/$id" params={{ id: a.oppId }} className="font-medium hover:text-primary">{title(a.oppId)}</Link>
+            <span className="flex items-center gap-2"><Pill>{a.kind}</Pill><Pill tone={a.status === "Accepted" ? "success" : a.status === "Shortlisted" ? "primary" : "muted"}>{a.status}</Pill>
+              {session && !["Withdrawn", "Accepted", "Rejected"].includes(a.status) && <Button size="sm" variant="ghost" onClick={async () => {
+                const { error } = await supabase.from("applications").update({ status: "withdrawn" }).eq("id", a.id);
+                if (error) toast.error(error.message); else { toast("Application withdrawn"); await reloadUser(); }
+              }}>Withdraw</Button>}</span>
+          </li>))}</ul>}
+    </Card>
+  );
+}
+
+export function IncomingApplications() {
+  const { user } = useApp();
+  const qc = useQueryClient();
+  const ids = user?.businessIds ?? [];
+  const q = useQuery({
+    queryKey: ["incoming", ids], enabled: ids.length > 0,
+    queryFn: async () => {
+      const { data: opps } = await supabase.from("opportunities").select("id,title,status").in("business_id", ids);
+      const oppIds = (opps ?? []).map((o) => o.id);
+      if (!oppIds.length) return { opps: opps ?? [], apps: [] };
+      const { data: apps } = await supabase.from("applications").select("*").in("opportunity_id", oppIds).order("created_at", { ascending: false });
+      return { opps: opps ?? [], apps: apps ?? [] };
+    },
+  });
+  if (!ids.length) return null;
+  const setStatus = async (id: string, status: Status) => {
+    const { error } = await supabase.from("applications").update({ status }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success(`Marked ${status}`); void qc.invalidateQueries({ queryKey: ["incoming"] }); }
+  };
+  return (
+    <Card className="mt-6">
+      <div className="flex items-center justify-between"><h2 className="font-bold">Applicants to your opportunities</h2><Button size="sm" asChild><Link to="/opportunities/new">Post new</Link></Button></div>
+      {q.isLoading ? <p className="mt-2 text-sm text-muted-foreground">Loading…</p> : !q.data?.apps.length ? <p className="mt-2 text-sm text-muted-foreground">No applicants yet. You have {q.data?.opps.length ?? 0} posted opportunities.</p> :
+        <ul className="mt-3 divide-y">{q.data.apps.map((a) => (
+          <li key={a.id} className="py-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-medium">{q.data.opps.find((o) => o.id === a.opportunity_id)?.title}</span>
+              <span className="flex flex-wrap items-center gap-2"><Pill>{a.kind}</Pill><Pill tone="primary">{a.status}</Pill>
+                {a.status !== "withdrawn" && (["viewed", "shortlisted", "accepted", "rejected"] as Status[]).filter((s) => s !== a.status).map((s) => <Button key={s} size="sm" variant="outline" onClick={() => setStatus(a.id, s)}>{s}</Button>)}</span>
+            </div>
+            {a.note && <p className="mt-1 text-sm text-muted-foreground">“{a.note}”</p>}
+          </li>))}</ul>}
+    </Card>
+  );
+}
+
+export function TeamInvites() {
+  const { user, reloadUser } = useApp();
+  const { getTeam, refresh } = useCatalog();
+  const qc = useQueryClient();
+  const wid = user?.workerId;
+  const q = useQuery({ queryKey: ["invites", wid], enabled: !!wid, queryFn: async () => (await supabase.from("team_members").select("*").eq("worker_id", wid!).eq("status", "invited")).data ?? [] });
+  if (!q.data?.length) return null;
+  const respond = async (teamId: string, accept: boolean) => {
+    const r = accept ? await supabase.from("team_members").update({ status: "active" }).eq("team_id", teamId).eq("worker_id", wid!)
+      : await supabase.from("team_members").delete().eq("team_id", teamId).eq("worker_id", wid!);
+    if (r.error) toast.error(r.error.message); else { toast.success(accept ? "Joined team" : "Invite declined"); void qc.invalidateQueries({ queryKey: ["invites"] }); void refresh(); void reloadUser(); }
+  };
+  return (
+    <Card className="mt-6"><h2 className="font-bold">Team invitations</h2>
+      <ul className="mt-3 divide-y">{q.data.map((m) => (
+        <li key={m.team_id} className="flex flex-wrap items-center justify-between gap-2 py-3"><span>{getTeam(m.team_id)?.name ?? "A team"}</span>
+          <span className="flex gap-2"><Button size="sm" onClick={() => respond(m.team_id, true)}>Accept</Button><Button size="sm" variant="outline" onClick={() => respond(m.team_id, false)}>Decline</Button></span></li>))}</ul>
+    </Card>
+  );
+}
