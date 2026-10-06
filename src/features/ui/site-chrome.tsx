@@ -24,7 +24,7 @@ export function Logo() {
 }
 
 export function SiteHeader() {
-  const { user, notifications, setUser } = useApp();
+  const { user, notifications, signOut } = useApp();
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const unread = notifications.filter((n) => !n.read).length;
@@ -40,8 +40,9 @@ export function SiteHeader() {
             <>
               <Link to="/messages" aria-label="Messages" className="rounded-full p-2 hover:bg-muted"><MessageSquare className="size-5" /></Link>
               <Link to="/notifications" aria-label="Notifications" className="relative rounded-full p-2 hover:bg-muted"><Bell className="size-5" />{unread > 0 && <span className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">{unread}</span>}</Link>
+              <Link to="/network" className="hidden rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground md:inline-flex">Network</Link>
               <Button size="sm" asChild className="hidden sm:inline-flex"><Link to="/dashboard">Dashboard</Link></Button>
-              <Button size="sm" variant="ghost" className="hidden sm:inline-flex" onClick={() => { setUser(null); nav({ to: "/", replace: true }); }}>Sign out</Button>
+              <Button size="sm" variant="ghost" className="hidden sm:inline-flex" onClick={() => { void signOut(); nav({ to: "/", replace: true }); }}>Sign out</Button>
             </>
           ) : (
             <>
@@ -55,7 +56,8 @@ export function SiteHeader() {
       {open && (
         <nav className="border-t lg:hidden"><div className="container-page grid gap-1 py-3">
           {[...NAV, { to: "/how-it-works", label: "How it works" }, { to: "/insights", label: "Insights" }].map((n) => <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 hover:bg-muted">{n.label}</Link>)}
-          {user && <button className="rounded-xl px-3 py-2.5 text-left hover:bg-muted" onClick={() => { setUser(null); setOpen(false); nav({ to: "/", replace: true }); }}>Sign out</button>}
+          {user && <Link to="/network" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 hover:bg-muted">Network</Link>}
+          {user && <button className="rounded-xl px-3 py-2.5 text-left hover:bg-muted" onClick={() => { void signOut(); setOpen(false); nav({ to: "/", replace: true }); }}>Sign out</button>}
         </div></nav>
       )}
     </header>

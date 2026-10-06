@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { DISTRICTS, SECTORS, WORKERS } from "@/features/data/demo";
+import { DISTRICTS, SECTORS } from "@/features/data/demo";
+import { useCatalog } from "@/features/data/catalog";
 import { DemoNotice, PageHeader, WorkerCard } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/workers/")({
@@ -11,7 +12,8 @@ const sel = "h-10 rounded-full border bg-card px-3 text-sm";
 
 function Page() {
   const [q, setQ] = useState(""); const [d, setD] = useState(""); const [s, setS] = useState(""); const [v, setV] = useState(false); const [a, setA] = useState(false);
-  const list = WORKERS.filter((w) => (!q || `${w.name} ${w.title} ${w.skills.map((x) => x.name).join(" ")}`.toLowerCase().includes(q.toLowerCase())) && (!d || w.district === d) && (!s || w.sector === s) && (!v || w.verified) && (!a || w.available));
+  const { workers } = useCatalog();
+  const list = workers.filter((w) => (!q || `${w.name} ${w.title} ${w.skills.map((x) => x.name).join(" ")}`.toLowerCase().includes(q.toLowerCase())) && (!d || w.district === d) && (!s || w.sector === s) && (!v || w.verified) && (!a || w.available));
   return (
     <div className="container-page py-10">
       <PageHeader eyebrow="Discover" title="Workers" desc="People with verified skills and real track records." />
