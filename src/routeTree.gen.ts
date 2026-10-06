@@ -10,13 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BusinessesRouteImport } from './routes/businesses'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as OpportunitiesNewRouteImport } from './routes/opportunities.new'
+import { Route as TeamsIndexRouteImport } from './routes/teams.index'
+import { Route as TeamsIdRouteImport } from './routes/teams.$id'
+import { Route as WorkersIndexRouteImport } from './routes/workers.index'
+import { Route as WorkersIdRouteImport } from './routes/workers.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessesRoute = BusinessesRouteImport.update({
+  id: '/businesses',
+  path: '/businesses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OpportunitiesIndexRoute = OpportunitiesIndexRouteImport.update({
@@ -34,45 +44,107 @@ const OpportunitiesNewRoute = OpportunitiesNewRouteImport.update({
   path: '/opportunities/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamsIndexRoute = TeamsIndexRouteImport.update({
+  id: '/teams/',
+  path: '/teams/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamsIdRoute = TeamsIdRouteImport.update({
+  id: '/teams/$id',
+  path: '/teams/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkersIndexRoute = WorkersIndexRouteImport.update({
+  id: '/workers/',
+  path: '/workers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkersIdRoute = WorkersIdRouteImport.update({
+  id: '/workers/$id',
+  path: '/workers/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/businesses': typeof BusinessesRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
+  '/teams/$id': typeof TeamsIdRoute
+  '/workers/$id': typeof WorkersIdRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
+  '/teams/': typeof TeamsIndexRoute
+  '/workers/': typeof WorkersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/businesses': typeof BusinessesRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
+  '/teams/$id': typeof TeamsIdRoute
+  '/workers/$id': typeof WorkersIdRoute
   '/opportunities': typeof OpportunitiesIndexRoute
+  '/teams': typeof TeamsIndexRoute
+  '/workers': typeof WorkersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/businesses': typeof BusinessesRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
+  '/teams/$id': typeof TeamsIdRoute
+  '/workers/$id': typeof WorkersIdRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
+  '/teams/': typeof TeamsIndexRoute
+  '/workers/': typeof WorkersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/opportunities/$id' | '/opportunities/new' | '/opportunities/'
+    | '/'
+    | '/businesses'
+    | '/opportunities/$id'
+    | '/opportunities/new'
+    | '/teams/$id'
+    | '/workers/$id'
+    | '/opportunities/'
+    | '/teams/'
+    | '/workers/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/opportunities/$id' | '/opportunities/new' | '/opportunities'
+  to:
+    | '/'
+    | '/businesses'
+    | '/opportunities/$id'
+    | '/opportunities/new'
+    | '/teams/$id'
+    | '/workers/$id'
+    | '/opportunities'
+    | '/teams'
+    | '/workers'
   id:
     | '__root__'
     | '/'
+    | '/businesses'
     | '/opportunities/$id'
     | '/opportunities/new'
+    | '/teams/$id'
+    | '/workers/$id'
     | '/opportunities/'
+    | '/teams/'
+    | '/workers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BusinessesRoute: typeof BusinessesRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   OpportunitiesNewRoute: typeof OpportunitiesNewRoute
+  TeamsIdRoute: typeof TeamsIdRoute
+  WorkersIdRoute: typeof WorkersIdRoute
   OpportunitiesIndexRoute: typeof OpportunitiesIndexRoute
+  TeamsIndexRoute: typeof TeamsIndexRoute
+  WorkersIndexRoute: typeof WorkersIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/businesses': {
+      id: '/businesses'
+      path: '/businesses'
+      fullPath: '/businesses'
+      preLoaderRoute: typeof BusinessesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/opportunities/': {
@@ -105,14 +184,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpportunitiesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/teams/': {
+      id: '/teams/'
+      path: '/teams'
+      fullPath: '/teams/'
+      preLoaderRoute: typeof TeamsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teams/$id': {
+      id: '/teams/$id'
+      path: '/teams/$id'
+      fullPath: '/teams/$id'
+      preLoaderRoute: typeof TeamsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workers/': {
+      id: '/workers/'
+      path: '/workers'
+      fullPath: '/workers/'
+      preLoaderRoute: typeof WorkersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workers/$id': {
+      id: '/workers/$id'
+      path: '/workers/$id'
+      fullPath: '/workers/$id'
+      preLoaderRoute: typeof WorkersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BusinessesRoute: BusinessesRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
   OpportunitiesNewRoute: OpportunitiesNewRoute,
+  TeamsIdRoute: TeamsIdRoute,
+  WorkersIdRoute: WorkersIdRoute,
   OpportunitiesIndexRoute: OpportunitiesIndexRoute,
+  TeamsIndexRoute: TeamsIndexRoute,
+  WorkersIndexRoute: WorkersIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
