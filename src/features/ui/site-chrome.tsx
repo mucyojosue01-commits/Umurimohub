@@ -6,6 +6,7 @@ import { useApp } from "@/features/store/app-store";
 
 const NAV = [
   { to: "/opportunities", label: "Opportunities" },
+  { to: "/match", label: "AI match" },
   { to: "/workers", label: "Workers" },
   { to: "/teams", label: "Teams" },
   { to: "/agriculture", label: "Agriculture" },
