@@ -18,6 +18,7 @@ import { Route as HelpRouteImport } from './routes/help'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MatchRouteImport } from './routes/match'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -75,6 +76,11 @@ const InsightsRoute = InsightsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatchRoute = MatchRouteImport.update({
+  id: '/match',
+  path: '/match',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MessagesRoute = MessagesRouteImport.update({
@@ -153,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/match': typeof MatchRoute
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/match': typeof MatchRoute
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
@@ -202,6 +210,7 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/match': typeof MatchRoute
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
@@ -228,6 +237,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/insights'
     | '/login'
+    | '/match'
     | '/messages'
     | '/notifications'
     | '/pricing'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/insights'
     | '/login'
+    | '/match'
     | '/messages'
     | '/notifications'
     | '/pricing'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/insights'
     | '/login'
+    | '/match'
     | '/messages'
     | '/notifications'
     | '/pricing'
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
+  MatchRoute: typeof MatchRoute
   MessagesRoute: typeof MessagesRoute
   NotificationsRoute: typeof NotificationsRoute
   PricingRoute: typeof PricingRoute
@@ -379,6 +392,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/match': {
+      id: '/match'
+      path: '/match'
+      fullPath: '/match'
+      preLoaderRoute: typeof MatchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/messages': {
@@ -485,6 +505,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
+  MatchRoute: MatchRoute,
   MessagesRoute: MessagesRoute,
   NotificationsRoute: NotificationsRoute,
   PricingRoute: PricingRoute,
