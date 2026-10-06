@@ -2,11 +2,12 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Star, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { TEAMS, getWorker } from "@/features/data/demo";
+import { catalogQuery, useCatalog } from "@/features/data/catalog";
+import { TeamInvite } from "@/features/network/team-invite";
 import { Card, DemoNotice, Pill, WorkerCard } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/teams/$id")({
-  loader: ({ params }) => { const t = TEAMS.find((x) => x.id === params.id); if (!t) throw notFound(); return { t }; },
+  loader: async ({ params, context }) => { const c = await context.queryClient.ensureQueryData(catalogQuery); const t = c.teams.find((x) => x.id === params.id); if (!t) throw notFound(); return { t }; },
   head: ({ loaderData }) => {
     const title = loaderData ? `${loaderData.t.name} — Team | UmurimoHub` : "Team — UmurimoHub";
     return { meta: [{ title }, { name: "description", content: loaderData?.t.summary ?? "Team profile" }, { property: "og:title", content: title }, { property: "og:description", content: loaderData?.t.summary ?? "Team profile" }] };
@@ -17,7 +18,9 @@ export const Route = createFileRoute("/teams/$id")({
 });
 
 function Page() {
-  const { t } = Route.useLoaderData();
+  const { t: loaded } = Route.useLoaderData();
+  const { getWorker, getTeam } = useCatalog();
+  const t = getTeam(loaded.id) ?? loaded;
   const lead = getWorker(t.leadId);
   return (
     <div className="container-page py-10">
@@ -34,6 +37,7 @@ function Page() {
       </div>
       <h2 className="mt-10 text-xl font-bold">Members</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{t.memberIds.map((id) => { const w = getWorker(id); return w && <WorkerCard key={id} w={w} />; })}</div>
+      <TeamInvite teamId={t.id} memberIds={t.memberIds} />
       <DemoNotice className="mt-6" />
     </div>
   );

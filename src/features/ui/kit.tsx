@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { BadgeCheck, Bookmark, Clock, MapPin, Star, Users, Building2, ShieldCheck, Info, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { getBusiness, getWorker, rwf, trustScore, type Business, type Opportunity, type Team, type Worker } from "@/features/data/demo";
+import { rwf, trustScore, type Business, type Opportunity, type Team, type Worker } from "@/features/data/demo";
+import { useCatalog } from "@/features/data/catalog";
 import { useApp } from "@/features/store/app-store";
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
@@ -35,6 +36,7 @@ export function Avatar({ initials, size = "md" }: { initials: string; size?: "sm
 }
 
 export function AvatarGroup({ ids }: { ids: string[] }) {
+  const { getWorker } = useCatalog();
   return <div className="flex -space-x-2">{ids.map((id) => { const w = getWorker(id); return w ? <Avatar key={id} initials={w.initials} size="sm" /> : null; })}</div>;
 }
 
@@ -94,6 +96,7 @@ export function TrustMeter({ w }: { w: Worker }) {
 }
 
 export function OpportunityCard({ o }: { o: Opportunity }) {
+  const { getBusiness } = useCatalog();
   const b = getBusiness(o.businessId);
   const { saved, toggleSave } = useApp();
   const isSaved = saved.includes(o.id);

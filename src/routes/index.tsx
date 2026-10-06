@@ -3,7 +3,8 @@ import { ArrowRight, GraduationCap, Handshake, MapPin, Search, Sprout, Store, Us
 import { useState } from "react";
 import hero from "@/assets/hero.jpg";
 import { Button } from "@/components/ui/button";
-import { OPPORTUNITIES, TEAMS, WORKERS, DISTRICTS } from "@/features/data/demo";
+import { DISTRICTS } from "@/features/data/demo";
+import { useCatalog } from "@/features/data/catalog";
 import { Card, DemoNotice, OpportunityCard, TeamCard, WorkerCard } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/")({
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/")({
 const LOOP = ["Demand", "Opportunity", "Trusted teams", "Work", "Payment", "Verified experience", "Reputation", "Growth"];
 
 function Index() {
+  const { opportunities, workers, teams } = useCatalog();
   const nav = useNavigate();
   const [q, setQ] = useState("");
   const [d, setD] = useState("");
@@ -64,7 +66,7 @@ function Index() {
       <section className="container-page mt-20">
         <div className="flex items-end justify-between"><h2 className="text-2xl font-extrabold md:text-3xl">Opportunities near you</h2><Link to="/opportunities" className="text-sm font-semibold text-primary">View all</Link></div>
         <DemoNotice className="mt-3" />
-        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{OPPORTUNITIES.slice(0, 3).map((o) => <OpportunityCard key={o.id} o={o} />)}</div>
+        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{opportunities.slice(0, 3).map((o) => <OpportunityCard key={o.id} o={o} />)}</div>
       </section>
 
       <section className="container-page mt-20 grid gap-10 lg:grid-cols-[1fr_2fr]">
@@ -74,7 +76,7 @@ function Index() {
           <p className="mt-3 text-muted-foreground">See who has worked together, who recommends whom, and who is verified — with privacy controls on every connection.</p>
           <ul className="mt-6 space-y-3 text-sm">{["Worked together on verified projects", "Recommended by people you trust", "Skills verified by assessment or employer"].map((x) => <li key={x} className="flex gap-2"><ShieldCheck className="size-4 text-primary" />{x}</li>)}</ul>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">{WORKERS.filter((w) => w.knownBy).slice(0, 2).map((w) => <WorkerCard key={w.id} w={w} />)}{TEAMS.slice(0, 2).map((t) => <TeamCard key={t.id} t={t} />)}</div>
+        <div className="grid gap-4 sm:grid-cols-2">{workers.slice(0, 2).map((w) => <WorkerCard key={w.id} w={w} />)}{teams.slice(0, 2).map((t) => <TeamCard key={t.id} t={t} />)}</div>
       </section>
 
       <section className="container-page mt-20">

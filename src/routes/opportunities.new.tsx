@@ -1,11 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { DISTRICTS, SECTORS, type Opportunity } from "@/features/data/demo";
-import { useApp } from "@/features/store/app-store";
+import { useApp, type NewOpportunity } from "@/features/store/app-store";
 import { Card, PageHeader } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/opportunities/new")({
@@ -27,15 +27,23 @@ type F = z.infer<typeof schema>;
 const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
 
 function Page() {
-  const { createOpp } = useApp();
+  const { createOpp, user, authReady } = useApp();
   const nav = useNavigate();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<F>({ resolver: zodResolver(schema), defaultValues: { type: "Project", payUnit: "project", mode: "On-site", teamAllowed: true, sector: "Construction", district: "" } });
-  const onSubmit = (f: F) => {
-    const id = `u${Date.now()}`;
+  const onSubmit = async (f: F) => {
+    if (f.deadline < new Date().toISOString().slice(0, 10)) { toast.error("Deadline must be in the future"); return; }
     const { teamSize, ...rest } = f;
-    const o: Opportunity = { ...rest, ...(f.teamAllowed && teamSize ? { teamSize } : {}), id, businessId: "b1", sector: f.sector as Opportunity["sector"], skills: f.skills.split(",").map((s) => s.trim()).filter(Boolean), responsibilities: ["As described"], requirements: ["See description"], posted: "now" };
-    createOpp(o); toast.success("Opportunity published"); nav({ to: "/opportunities/$id", params: { id } });
+    const o: NewOpportunity = { ...rest, ...(f.teamAllowed && teamSize ? { teamSize } : {}), sector: f.sector as Opportunity["sector"], skills: f.skills.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 15), responsibilities: ["As described"], requirements: ["See description"] };
+    const r = await createOpp(o);
+    if (!r.id) { toast.error(r.error ?? "Couldn't publish"); return; }
+    toast.success("Opportunity published"); nav({ to: "/opportunities/$id", params: { id: r.id } });
   };
+  if (authReady && !user?.businessIds.length) return (
+    <div className="container-page max-w-xl py-16 text-center">
+      <PageHeader eyebrow="Business" title="Post an opportunity" desc="Publishing needs a business account so applicants know who is hiring." />
+      <Button asChild size="lg"><Link to={user ? "/register" : "/login"}>{user ? "Add a business profile" : "Sign in to post"}</Link></Button>
+    </div>
+  );
   const Err = ({ k }: { k: keyof F }) => errors[k] ? <span className="mt-1 block text-xs text-destructive">{String(errors[k]?.message)}</span> : null;
   return (
     <div className="container-page max-w-3xl py-10">

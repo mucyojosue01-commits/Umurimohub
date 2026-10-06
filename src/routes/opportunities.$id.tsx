@@ -4,24 +4,32 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { OPPORTUNITIES, TEAMS, getBusiness, rwf } from "@/features/data/demo";
+import { rwf } from "@/features/data/demo";
+import { catalogQuery, useCatalog } from "@/features/data/catalog";
 import { useApp, type Application } from "@/features/store/app-store";
 import { Card, DemoNotice, Pill } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/opportunities/$id")({
-  head: ({ params }) => {
-    const o = OPPORTUNITIES.find((x) => x.id === params.id);
+  loader: async ({ params, context }) => { const c = await context.queryClient.ensureQueryData(catalogQuery); const o = c.opportunities.find((x) => x.id === params.id); return { o: o ?? null }; },
+  head: ({ loaderData }) => {
+    const o = loaderData?.o;
     const t = o ? `${o.title} — UmurimoHub` : "Opportunity — UmurimoHub";
     return { meta: [{ title: t }, { name: "description", content: o?.summary ?? "Opportunity details" }, { property: "og:title", content: t }, { property: "og:description", content: o?.summary ?? "Opportunity details" }] };
   },
   component: Page,
+  errorComponent: () => <div className="container-page py-20 text-center">Couldn't load this opportunity.</div>,
   notFoundComponent: () => <div className="container-page py-20 text-center">Opportunity not found. <Link to="/opportunities" className="text-primary">Browse all</Link></div>,
 });
 
 function Page() {
   const { id } = Route.useParams();
-  const { allOpps, apply, applications, user } = useApp();
+  const { allOpps, apply, refer, applications, user } = useApp();
+  const { getBusiness, teams, workers, workerUserIds } = useCatalog();
   const o = allOpps.find((x) => x.id === id);
+  const [teamId, setTeamId] = useState("");
+  const [refWorker, setRefWorker] = useState("");
+  const [busy, setBusy] = useState(false);
+  const myTeams = user ? teams.filter((t) => user.leadTeamIds.includes(t.id)) : teams;
   const [kind, setKind] = useState<Application["kind"] | null>(null);
   const [note, setNote] = useState("");
   if (!o) throw notFound();
@@ -54,21 +62,30 @@ function Page() {
                 <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply</Button>
                 {o.teamAllowed && <Button className="w-full" variant="accent" size="lg" onClick={() => setKind("Team")}><Users />Apply as team</Button>}
                 <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>Refer someone you trust</Button>
-                {!user && <p className="pt-1 text-center text-xs text-muted-foreground"><Link to="/login" className="text-primary">Sign in</Link> to save your application history.</p>}
+                {!user && <p className="pt-1 text-center text-xs text-muted-foreground"><Link to="/login" className="text-primary">Sign in</Link> to apply for real — without an account, applications are demo-only.</p>}
               </div>
             )}
           </Card>
-          <Card><h3 className="text-sm font-semibold">Your network here</h3><p className="mt-2 text-sm text-muted-foreground">2 people you know have worked with {b?.name}. Jean Bosco H. completed a verified project with them.</p></Card>
+          <Card><h3 className="text-sm font-semibold">Your network here</h3><p className="mt-2 text-sm text-muted-foreground">Refer someone you've worked with — referrals are recorded in your trusted network. <Link to="/network" className="text-primary">View network</Link></p></Card>
         </aside>
       </div>
 
       <Dialog open={!!kind} onOpenChange={(v) => !v && setKind(null)}>
         <DialogContent className="rounded-3xl">
           <DialogHeader><DialogTitle>{kind === "Team" ? "Apply as a team" : kind === "Referral" ? "Refer a trusted person" : "Apply"}</DialogTitle></DialogHeader>
-          {kind === "Team" && <label className="text-sm">Team<select className="mt-1 h-10 w-full rounded-xl border bg-card px-3">{TEAMS.map((t) => <option key={t.id}>{t.name}</option>)}</select></label>}
+          {kind === "Team" && (user && !myTeams.length ? <p className="text-sm text-muted-foreground">Only team leaders can apply as a team. <Link to="/register" className="text-primary">Create a team</Link></p> :
+            <label className="text-sm">Team<select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="mt-1 h-10 w-full rounded-xl border bg-card px-3"><option value="">Choose team…</option>{myTeams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>)}
+          {kind === "Referral" && (user ? <label className="text-sm">Person you trust<select value={refWorker} onChange={(e) => setRefWorker(e.target.value)} className="mt-1 h-10 w-full rounded-xl border bg-card px-3"><option value="">Choose a registered worker…</option>{workers.filter((w) => workerUserIds[w.id] && w.id !== user.workerId).map((w) => <option key={w.id} value={w.id}>{w.name} — {w.district}</option>)}</select></label>
+            : <p className="text-sm text-muted-foreground"><Link to="/login" className="text-primary">Sign in</Link> to refer someone from your network.</p>)}
           <label className="text-sm">{kind === "Referral" ? "Who and why?" : "Short note to the employer"}
             <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} className="mt-1 w-full rounded-xl border bg-card p-3" placeholder={kind === "Referral" ? "Name, phone, and how you've worked together" : "Your relevant experience and availability"} /></label>
-          <Button onClick={() => { apply({ oppId: o.id, kind: kind!, note }); toast.success("Application sent"); setKind(null); setNote(""); }}>Submit</Button>
+          <Button disabled={busy || (kind === "Referral" && (!user || !refWorker)) || (kind === "Team" && !teamId)} onClick={async () => {
+            setBusy(true);
+            const r = kind === "Referral" ? await refer(o.id, refWorker, note) : await apply({ oppId: o.id, kind: kind!, note, teamId: kind === "Team" && user ? teamId : null });
+            setBusy(false);
+            if (!r.ok) { toast.error(r.error ?? "Couldn't submit"); return; }
+            toast.success(kind === "Referral" ? "Referral sent" : user ? "Application sent" : "Demo application saved on this device"); setKind(null); setNote(""); setRefWorker(""); setTeamId("");
+          }}>{busy ? "Sending…" : "Submit"}</Button>
         </DialogContent>
       </Dialog>
     </div>

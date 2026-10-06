@@ -2,12 +2,14 @@ import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-ro
 import { BadgeCheck, MapPin, MessageSquare, Star, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { WORKERS, getTeam, rwf } from "@/features/data/demo";
+import { rwf } from "@/features/data/demo";
+import { catalogQuery, useCatalog } from "@/features/data/catalog";
+import { ConnectButton } from "@/features/network/connect-button";
 import { useApp } from "@/features/store/app-store";
 import { Avatar, Card, DemoNotice, Pill, TrustMeter } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/workers/$id")({
-  loader: ({ params }) => { const w = WORKERS.find((x) => x.id === params.id); if (!w) throw notFound(); return { w }; },
+  loader: async ({ params, context }) => { const c = await context.queryClient.ensureQueryData(catalogQuery); const w = c.workers.find((x) => x.id === params.id); if (!w) throw notFound(); return { w }; },
   head: ({ loaderData }) => {
     const t = loaderData ? `${loaderData.w.name} — ${loaderData.w.title} | UmurimoHub` : "Worker — UmurimoHub";
     return { meta: [{ title: t }, { name: "description", content: loaderData?.w.bio ?? "Worker profile" }, { property: "og:title", content: t }, { property: "og:description", content: loaderData?.w.bio ?? "Worker profile" }] };
@@ -20,7 +22,9 @@ export const Route = createFileRoute("/workers/$id")({
 const vTone = { "Self-declared": "muted", Certificate: "primary", Assessment: "primary", Employer: "success", Platform: "success" } as const;
 
 function Page() {
-  const { w } = Route.useLoaderData();
+  const { w: loaded } = Route.useLoaderData();
+  const { getTeam, getWorker, workerUserIds } = useCatalog();
+  const w = getWorker(loaded.id) ?? loaded;
   const { send } = useApp();
   const nav = useNavigate();
   return (
@@ -35,6 +39,7 @@ function Page() {
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button variant="outline" onClick={() => { send(w.name, `Hello ${w.name.split(" ")[0]}, I'd like to discuss work.`); nav({ to: "/messages" }); }}><MessageSquare />Message</Button>
+            <ConnectButton userId={workerUserIds[w.id] ?? null} name={w.name} />
             <Button onClick={() => toast.success(`Invitation sent to ${w.name}`)}>Invite to opportunity</Button>
           </div>
         </div>
