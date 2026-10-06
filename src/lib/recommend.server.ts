@@ -10,7 +10,7 @@ export type RecInput = {
 export type Rec = { id: string; score: number; fit: string; gaps: string };
 
 export async function recommend(input: RecInput): Promise<Rec[]> {
-  const apiKey = process.env.LOVABLE_API_KEY;
+  const apiKey = process.env['LOVABLE_API_KEY'];
   if (!apiKey) throw new Error("AI is not configured.");
   const provider = createOpenAI({
     baseURL: "https://ai.gateway.lovable.dev/v1",
