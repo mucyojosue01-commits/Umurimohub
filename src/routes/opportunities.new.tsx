@@ -32,7 +32,8 @@ function Page() {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<F>({ resolver: zodResolver(schema), defaultValues: { type: "Project", payUnit: "project", mode: "On-site", teamAllowed: true, sector: "Construction", district: "" } });
   const onSubmit = (f: F) => {
     const id = `u${Date.now()}`;
-    const o: Opportunity = { ...f, id, businessId: "b1", sector: f.sector as Opportunity["sector"], skills: f.skills.split(",").map((s) => s.trim()).filter(Boolean), responsibilities: ["As described"], requirements: ["See description"], posted: "now" };
+    const { teamSize, ...rest } = f;
+    const o: Opportunity = { ...rest, ...(f.teamAllowed && teamSize ? { teamSize } : {}), id, businessId: "b1", sector: f.sector as Opportunity["sector"], skills: f.skills.split(",").map((s) => s.trim()).filter(Boolean), responsibilities: ["As described"], requirements: ["See description"], posted: "now" };
     createOpp(o); toast.success("Opportunity published"); nav({ to: "/opportunities/$id", params: { id } });
   };
   const Err = ({ k }: { k: keyof F }) => errors[k] ? <span className="mt-1 block text-xs text-destructive">{String(errors[k]?.message)}</span> : null;

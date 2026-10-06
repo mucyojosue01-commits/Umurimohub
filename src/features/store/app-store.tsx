@@ -69,7 +69,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     markAllRead: () => setS((p) => ({ ...p, notifications: p.notifications.map((n) => ({ ...n, read: true })) })),
     createOpp: (o) => setS((p) => ({ ...p, created: [o, ...p.created], notifications: [notify(`Opportunity published: ${o.title}`, "match"), ...p.notifications] })),
     toggleSave: (id) => setS((p) => ({ ...p, saved: p.saved.includes(id) ? p.saved.filter((x) => x !== id) : [...p.saved, id] })),
-    advanceMilestone: (id) => setS((p) => ({ ...p, milestones: p.milestones.map((m) => m.id === id ? { ...m, status: order[Math.min(order.indexOf(m.status) + 1, 4)] } : m) })),
+    advanceMilestone: (id) => setS((p) => ({ ...p, milestones: p.milestones.map((m): Milestone => m.id === id ? { ...m, status: order[Math.min(order.indexOf(m.status) + 1, order.length - 1)] ?? m.status } : m) })),
   };
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
 }
