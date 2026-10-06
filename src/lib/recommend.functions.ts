@@ -13,7 +13,7 @@ const schema = z.object({
 });
 
 export const recommendOpportunities = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => schema.parse(d))
+  .validator((d: unknown) => schema.parse(d))
   .handler(async ({ data }) => {
     const { recommend } = await import("./recommend.server");
     try {
