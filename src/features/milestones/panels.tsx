@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { rwf } from "@/features/data/demo";
-import { useApp } from "@/features/store/app-store";\nimport { supabase } from "@/integrations/supabase/client";
+import { useApp } from "@/features/store/app-store";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, Pill } from "@/features/ui/kit";
 import type { Contract } from "@/features/contracts/service";
 import {
