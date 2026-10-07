@@ -38,7 +38,7 @@ export type Msg = {
   at: string;
   ref?: string;
 };
-export type Notif = { id: string; text: string; at: string; read: boolean; kind: string };
+export type Notif = { id: string; text: string; at: string; read: boolean; kind: string; link?: string | null };
 export type NewOpportunity = Omit<Opportunity, "id" | "businessId" | "posted" | "featured">;
 
 type Ctx = {
@@ -142,7 +142,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       supabase.from("saved_opportunities").select("opportunity_id").eq("user_id", sess.user.id),
       supabase
         .from("notifications")
-        .select("id,text,created_at,read,kind")
+        .select("id,text,created_at,read,kind,link")
         .eq("user_id", sess.user.id)
         .order("created_at", { ascending: false }),
     ]);
