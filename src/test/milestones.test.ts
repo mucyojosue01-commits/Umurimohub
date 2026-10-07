@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  milestoneStatuses,
-  validateMilestone,
-} from "@/features/milestones/service";
+import { milestoneStatuses, validateMilestone } from "@/features/milestones/service";
 
 describe("milestone validation", () => {
   const base = {

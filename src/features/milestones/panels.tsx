@@ -296,7 +296,9 @@ function MilestoneCard({
                 size="sm"
                 variant="outline"
                 disabled={busy}
-                onClick={() => act(() => disputeMilestone(milestone.id, disputeNote), "Milestone disputed")}
+                onClick={() =>
+                  act(() => disputeMilestone(milestone.id, disputeNote), "Milestone disputed")
+                }
               >
                 Dispute
               </Button>
@@ -345,7 +347,9 @@ export function MilestonesPanel({ contracts }: { contracts: Contract[] }) {
     return (
       <Card className="mt-6">
         <h2 className="font-bold">Contract milestones</h2>
-        <p className="mt-2 text-sm text-destructive">Couldn't load milestones. Try again shortly.</p>
+        <p className="mt-2 text-sm text-destructive">
+          Couldn't load milestones. Try again shortly.
+        </p>
       </Card>
     );
   }
@@ -372,10 +376,9 @@ export function MilestonesPanel({ contracts }: { contracts: Contract[] }) {
         const business = user.businessIds.includes(contract.business_id);
         const recipient = Boolean(
           (contract.worker_id && contract.worker_id === user.workerId) ||
-            (contract.team_id && user.leadTeamIds.includes(contract.team_id)),
+          (contract.team_id && user.leadTeamIds.includes(contract.team_id)),
         );
-        const nextSequence =
-          milestones.reduce((max, item) => Math.max(max, item.sequence), 0) + 1;
+        const nextSequence = milestones.reduce((max, item) => Math.max(max, item.sequence), 0) + 1;
 
         return (
           <Card key={contract.id}>
