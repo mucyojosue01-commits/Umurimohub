@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { rwf } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
 import { IncomingApplications, MyApplications, TeamInvites } from "@/features/dashboard/panels";
-import { ContractsPanel } from "@/features/contracts/panels";
+import { ContractsPanel, useContracts } from "@/features/contracts/panels";
+import { MilestonesPanel } from "@/features/milestones/panels";
 import { Card, OpportunityCard, PageHeader, Pill, Stat } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/dashboard")({
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/dashboard")({
 
 function Page() {
   const { user, applications, allOpps, milestones, advanceMilestone, authReady } = useApp();
+  const contractsQuery = useContracts();
   if (!authReady)
     return <div className="container-page py-20 text-center text-muted-foreground">Loading…</div>;
   if (!user)
@@ -67,6 +69,7 @@ function Page() {
       <IncomingApplications />
       <MyApplications />
       <ContractsPanel />
+      <MilestonesPanel contracts={contractsQuery.data ?? []} />
       <Card className="mt-6">
         <h2 className="font-bold">Project: 4-unit housing block (demo)</h2>
         <ul className="mt-3 divide-y">
