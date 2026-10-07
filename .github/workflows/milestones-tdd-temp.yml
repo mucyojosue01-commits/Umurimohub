@@ -1,0 +1,27 @@
+name: Temporary Milestones TDD Gate
+
+on:
+  push:
+    branches: ["feat/milestones-phase-b"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: https://ci-placeholder.invalid
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      SUPABASE_URL: https://ci-placeholder.invalid
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      VITE_SUPABASE_PROJECT_ID: ci-placeholder
+      SUPABASE_PROJECT_ID: ci-placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm test -- src/test/milestones.test.ts
