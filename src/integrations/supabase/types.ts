@@ -8,6 +8,24 @@ export type Database = {
   };
   public: {
     Tables: {
+      contracts: {
+        Row: { id: string; application_id: string; opportunity_id: string; business_id: string; worker_id: string | null; team_id: string | null; title: string; scope: string; amount_rwf: number; currency: string; start_date: string | null; end_date: string | null; terms: string | null; status: Database["public"]["Enums"]["contract_status"]; proposed_by: string; proposed_at: string; accepted_at: string | null; activated_at: string | null; declined_at: string | null; cancelled_at: string | null; completed_at: string | null; is_demo: boolean; created_at: string; updated_at: string };
+        Insert: { id?: string; application_id: string; opportunity_id: string; business_id: string; worker_id?: string | null; team_id?: string | null; title: string; scope: string; amount_rwf: number; currency?: string; start_date?: string | null; end_date?: string | null; terms?: string | null; status?: Database["public"]["Enums"]["contract_status"]; proposed_by: string; proposed_at?: string; accepted_at?: string | null; activated_at?: string | null; declined_at?: string | null; cancelled_at?: string | null; completed_at?: string | null; is_demo?: boolean; created_at?: string; updated_at?: string };
+        Update: Partial<contracts["Insert"]>;
+        Relationships: [];
+      };
+      contract_events: {
+        Row: { id: number; contract_id: string; actor: string | null; event_type: string; from_status: Database["public"]["Enums"]["contract_status"] | null; to_status: Database["public"]["Enums"]["contract_status"]; note: string | null; at: string };
+        Insert: { id?: number; contract_id: string; actor?: string | null; event_type: string; from_status?: Database["public"]["Enums"]["contract_status"] | null; to_status: Database["public"]["Enums"]["contract_status"]; note?: string | null; at?: string };
+        Update: Partial<contract_events["Insert"]>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: { id: string; user_id: string; kind: string; text: string; link: string | null; read: boolean; created_at: string };
+        Insert: { id?: string; user_id: string; kind: string; text: string; link?: string | null; read?: boolean; created_at?: string };
+        Update: { read?: boolean };
+        Relationships: [];
+      };
       applications: {
         Row: {
           applicant_user_id: string;
@@ -617,6 +635,9 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      cancel_contract: { Args: { _contract_id: string; _note?: string | null }; Returns: Database["public"]["Enums"]["contract_status"] };
+      create_contract: { Args: { _application_id: string; _title: string; _scope: string; _amount_rwf: number; _start_date?: string | null; _end_date?: string | null; _terms?: string | null }; Returns: string };
+      respond_contract: { Args: { _contract_id: string; _accept: boolean; _note?: string | null }; Returns: Database["public"]["Enums"]["contract_status"] };
       are_connected: { Args: { _a: string; _b: string }; Returns: boolean };
       has_role: {
         Args: {
@@ -634,6 +655,7 @@ export type Database = {
       worker_network_count: { Args: { _worker_id: string }; Returns: number };
     };
     Enums: {
+      contract_status: "proposed" | "active" | "declined" | "cancelled" | "completed";
       app_role: "worker" | "team_lead" | "business" | "learner" | "admin" | "institution";
       application_status:
         "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" | "withdrawn";
