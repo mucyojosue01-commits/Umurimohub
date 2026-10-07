@@ -14,7 +14,6 @@ import {
   evidenceSummary,
   listMyCompletions,
   listMyCompletionEvents,
-  listMyCompletionEvents as listCompletionEvents,
   listReputationEvidence,
   listVerifiedExperiences,
   rejectCompletion,
