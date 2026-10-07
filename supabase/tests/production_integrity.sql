@@ -28,6 +28,12 @@ begin
   perform pg_temp.as_user(u1);
 
   insert into public.user_roles(user_id, role) values (u1, 'worker');
+
+  if not pg_temp.fails('insert into public.user_roles(user_id,role) values (''11111111-1111-4111-8111-111111111111'',''admin'')')
+    then raise exception 'self-assignment of admin role unexpectedly allowed'; end if;
+  if not pg_temp.fails('insert into public.user_roles(user_id,role) values (''11111111-1111-4111-8111-111111111111'',''institution'')')
+    then raise exception 'self-assignment of institution role unexpectedly allowed'; end if;
+
   insert into public.profiles(id, display_name, district) values (u1, 'Production Test', 'Gasabo');
   insert into public.worker_profiles(id,user_id,name,title,district,sector,rate_rwf,rate_unit)
     values (wid,u1,'Production Test','Mason','Gasabo','Construction',7000,'day');
