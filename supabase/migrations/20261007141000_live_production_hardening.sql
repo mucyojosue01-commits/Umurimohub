@@ -128,7 +128,7 @@ begin
  return new;
 end $$;
 drop trigger if exists referrals_notify on public.referrals;
-create trigger referrals_notify after insert on public.referrals for each row execute function public.notify_referral_created();
+create trigger referrals_notify after insert on public.referrals for each row execute function public.notify_referral_created();\nrevoke all on function public.notify_referral_created() from public,anon,authenticated;
 create or replace function public.notify_message_created() returns trigger language plpgsql security definer set search_path=public as $$
 begin
  insert into public.notifications(user_id,kind,text,link)
@@ -137,7 +137,7 @@ begin
  return new;
 end $$;
 drop trigger if exists messages_notify on public.messages;
-create trigger messages_notify after insert on public.messages for each row execute function public.notify_message_created();
+create trigger messages_notify after insert on public.messages for each row execute function public.notify_message_created();\nrevoke all on function public.notify_message_created() from public,anon,authenticated;
 do $$ begin
  begin alter publication supabase_realtime add table public.notifications; exception when duplicate_object then null; end;
  begin alter publication supabase_realtime add table public.milestones; exception when duplicate_object then null; end;
