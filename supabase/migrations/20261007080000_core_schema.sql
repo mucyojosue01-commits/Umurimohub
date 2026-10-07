@@ -8,7 +8,7 @@ create type public.app_role as enum ('worker','team_lead','business','learner','
 create type public.application_status as enum ('submitted','viewed','shortlisted','rejected','accepted','withdrawn');
 
 create table public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
+  id uuid primary key,
   display_name text not null check (char_length(btrim(display_name)) between 1 and 160),
   district text,
   locale text not null default 'en',
@@ -20,7 +20,7 @@ create table public.profiles (
 
 create table public.user_roles (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null,
   role public.app_role not null,
   created_at timestamptz not null default now(),
   unique (user_id, role)
@@ -28,7 +28,7 @@ create table public.user_roles (
 
 create table public.worker_profiles (
   id text primary key default gen_random_uuid()::text,
-  user_id uuid references auth.users(id) on delete set null,
+  user_id uuid,
   name text not null,
   initials text not null default '',
   title text not null default '',
@@ -65,14 +65,14 @@ create table public.businesses (
   services text[] not null default '{}',
   rating numeric(3,2) not null default 0 check (rating between 0 and 5),
   verified boolean not null default false,
-  created_by uuid references auth.users(id) on delete set null,
+  created_by uuid,
   is_demo boolean not null default false,
   created_at timestamptz not null default now()
 );
 
 create table public.business_members (
   business_id text not null references public.businesses(id) on delete cascade,
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null,
   role text not null default 'member',
   primary key (business_id, user_id)
 );
@@ -84,7 +84,7 @@ create table public.teams (
   sector text not null,
   skills text[] not null default '{}',
   areas text[] not null default '{}',
-  lead_user_id uuid references auth.users(id) on delete set null,
+  lead_user_id uuid,
   lead_worker_id text references public.worker_profiles(id) on delete set null,
   projects integer not null default 0 check (projects >= 0),
   rating numeric(3,2) not null default 0 check (rating between 0 and 5),
@@ -122,7 +122,7 @@ create table public.opportunities (
   team_size integer check (team_size is null or team_size > 0),
   status text not null default 'open',
   featured boolean not null default false,
-  created_by uuid references auth.users(id) on delete set null,
+  created_by uuid,
   is_demo boolean not null default false,
   created_at timestamptz not null default now()
 );
@@ -130,11 +130,11 @@ create table public.opportunities (
 create table public.applications (
   id uuid primary key default gen_random_uuid(),
   opportunity_id text not null references public.opportunities(id) on delete restrict,
-  applicant_user_id uuid not null references auth.users(id) on delete restrict,
+  applicant_user_id uuid not null,
   team_id text references public.teams(id) on delete restrict,
   kind text not null default 'individual',
   note text not null default '',
-  referred_by uuid references auth.users(id) on delete set null,
+  referred_by uuid,
   status public.application_status not null default 'submitted',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -142,7 +142,7 @@ create table public.applications (
 );
 
 create table public.saved_opportunities (
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null,
   opportunity_id text not null references public.opportunities(id) on delete cascade,
   created_at timestamptz not null default now(),
   primary key (user_id, opportunity_id)
@@ -150,8 +150,8 @@ create table public.saved_opportunities (
 
 create table public.connections (
   id uuid primary key default gen_random_uuid(),
-  requester uuid not null references auth.users(id) on delete cascade,
-  addressee uuid not null references auth.users(id) on delete cascade,
+  requester uuid not null,
+  addressee uuid not null,
   relation text not null default 'connection',
   status text not null default 'pending',
   created_at timestamptz not null default now(),
@@ -162,7 +162,7 @@ create table public.referrals (
   id uuid primary key default gen_random_uuid(),
   opportunity_id text not null references public.opportunities(id) on delete restrict,
   referee_worker_id text not null references public.worker_profiles(id) on delete restrict,
-  referrer uuid not null references auth.users(id) on delete restrict,
+  referrer uuid not null,
   note text not null default '',
   status text not null default 'pending',
   created_at timestamptz not null default now()
@@ -170,8 +170,8 @@ create table public.referrals (
 
 create table public.recommendations (
   id uuid primary key default gen_random_uuid(),
-  from_user uuid not null references auth.users(id) on delete restrict,
-  to_user uuid not null references auth.users(id) on delete restrict,
+  from_user uuid not null,
+  to_user uuid not null,
   skill text not null,
   body text not null,
   created_at timestamptz not null default now(),
@@ -180,7 +180,7 @@ create table public.recommendations (
 
 create table public.audit_log (
   id bigint generated always as identity primary key,
-  actor uuid references auth.users(id) on delete set null,
+  actor uuid,
   action text not null,
   entity text not null,
   entity_id text,
