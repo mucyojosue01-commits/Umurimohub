@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Prettier fix
+        run: npx prettier --write .
+
       - name: Prettier check
         run: npx prettier --check .
 

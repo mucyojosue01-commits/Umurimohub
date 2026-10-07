@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { rwf } from "@/features/data/demo";
 import { catalogQuery, useCatalog } from "@/features/data/catalog";
 import { useApp, type Application } from "@/features/store/app-store";
-import { Card, DemoNotice, Pill } from "@/features/ui/kit";
+import { Card, Pill } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: async ({ params, context }) => {
@@ -285,7 +285,7 @@ function Page() {
                   ? "Referral sent"
                   : user
                     ? "Application sent"
-                    : "Demo application saved on this device",
+                    : "Application sent",
               );
               setKind(null);
               setNote("");

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCatalog } from "@/features/data/catalog";
-import { BusinessCard, DemoNotice, PageHeader } from "@/features/ui/kit";
+import { BusinessCard, PageHeader } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/businesses")({
   head: () => ({
@@ -26,8 +26,7 @@ function Page() {
         title="Businesses"
         desc="Verified employers, cooperatives and MSMEs."
       />
-      <DemoNotice />
-      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{businesses.length === 0 && <p className="col-span-full py-12 text-center text-sm text-muted-foreground">No businesses have joined yet.</p>}
         {businesses.map((b) => (
           <BusinessCard key={b.id} b={b} />
         ))}

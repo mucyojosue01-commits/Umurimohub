@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DemoNotice, PageHeader } from "@/features/ui/kit";
+import { PageHeader } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/training")({
   head: () => ({
@@ -23,7 +23,6 @@ export const Route = createFileRoute("/training")({
         title="Skills & training"
         desc="Learn, practice, get assessed, get verified, then get work."
       />
-      <DemoNotice />
     </div>
   ),
 });

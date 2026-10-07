@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DemoNotice, PageHeader } from "@/features/ui/kit";
+import { PageHeader } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/agriculture")({
   head: () => ({
@@ -23,7 +23,6 @@ export const Route = createFileRoute("/agriculture")({
         title="Agriculture"
         desc="Seasonal work, cooperative supply offers and market demand."
       />
-      <DemoNotice />
     </div>
   ),
 });

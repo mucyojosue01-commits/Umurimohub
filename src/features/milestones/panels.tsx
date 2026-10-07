@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { rwf } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, Pill } from "@/features/ui/kit";
 import type { Contract } from "@/features/contracts/service";
 import {
