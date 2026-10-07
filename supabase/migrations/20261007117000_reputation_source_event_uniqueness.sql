@@ -1,0 +1,4 @@
+drop index if exists public.reputation_evidence_source_event_unique;
+create unique index reputation_evidence_source_event_type_unique
+on public.reputation_evidence(source_event_id, evidence_type)
+where source_event_id is not null;
