@@ -16,10 +16,13 @@ export type ContractProposal = {
 
 /** Client-side mirror of database rules, for early feedback only. The database is authoritative. */
 export function validateProposal(p: ContractProposal): string | null {
-  if (p.title.trim().length < 3 || p.title.trim().length > 200) return "Title must be 3–200 characters.";
+  if (p.title.trim().length < 3 || p.title.trim().length > 200)
+    return "Title must be 3–200 characters.";
   if (p.scope.trim().length < 10) return "Describe the scope in at least 10 characters.";
-  if (!Number.isInteger(p.amountRwf) || p.amountRwf <= 0) return "Amount must be a whole number of RWF above 0.";
-  if (p.startDate && p.endDate && p.endDate < p.startDate) return "End date must be after start date.";
+  if (!Number.isInteger(p.amountRwf) || p.amountRwf <= 0)
+    return "Amount must be a whole number of RWF above 0.";
+  if (p.startDate && p.endDate && p.endDate < p.startDate)
+    return "End date must be after start date.";
   return null;
 }
 
@@ -49,7 +52,10 @@ export async function createContract(p: ContractProposal) {
 }
 
 export async function respondContract(id: string, accept: boolean) {
-  const { data, error } = await supabase.rpc("respond_contract", { _contract_id: id, _accept: accept });
+  const { data, error } = await supabase.rpc("respond_contract", {
+    _contract_id: id,
+    _accept: accept,
+  });
   if (error) throw new Error(error.message);
   return data;
 }

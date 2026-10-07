@@ -37,6 +37,7 @@
 ### Task 1: Map the existing data and application interfaces before implementation
 
 **Files:**
+
 - Read: `src/features/store/app-store.tsx`
 - Read: `src/features/dashboard/panels.tsx`
 - Read: `src/routes/opportunities.$id.tsx`
@@ -44,6 +45,7 @@
 - Create: `docs/superpowers/plans/2026-10-07-contracts-workflow.md` (this plan)
 
 **Interfaces:**
+
 - Existing application status values: `submitted | viewed | shortlisted | rejected | accepted | withdrawn`.
 - Existing authenticated user exposes `workerId`, `businessIds`, and `leadTeamIds`.
 - Existing business application controls already update application status through Supabase.
@@ -58,11 +60,13 @@
 ### Task 2: Add the contract domain schema and immutable event ledger
 
 **Files:**
+
 - Create: Supabase migration using the repository/Supabase CLI's generated migration filename for `contracts` and `contract_events`
 - Modify: generated database types only if this repository maintains them manually
 - Test: database/schema tests for constraints and lifecycle invariants
 
 **Interfaces:**
+
 - Produces `contracts` with:
   `id`, `opportunity_id`, `application_id`, `business_id`, `worker_id`, `team_id`, `title`, `scope`, `amount_rwf`, `currency`, `start_date`, `end_date`, `terms`, `status`, lifecycle timestamps, `created_at`, `updated_at`.
 - Produces `contract_events` with:
@@ -82,10 +86,12 @@
 ### Task 3: Enforce contract creation and lifecycle transitions server-side
 
 **Files:**
+
 - Modify: contract migration/function/policy files established by Task 2
 - Create: focused database tests for authorization and state transitions
 
 **Interfaces:**
+
 - Contract creation operation consumes an accepted `applications.id` and an authorized business membership.
 - Transition operation accepts a contract id, requested target status, and authenticated actor; it validates the current state and actor before changing state and appending an event.
 
@@ -103,6 +109,7 @@
 ### Task 4: Add the typed contract data/service layer
 
 **Files:**
+
 - Create: `src/features/contracts/types.ts`
 - Create: `src/features/contracts/service.ts`
 - Create: `src/features/contracts/queries.ts` if the existing query conventions warrant a dedicated query module
@@ -110,6 +117,7 @@
 - Test: contract service tests
 
 **Interfaces:**
+
 - `ContractStatus = "proposed" | "accepted" | "active" | "completed" | "cancelled" | "declined"`.
 - `Contract` exposes the persisted contract fields needed by dashboards.
 - `createContractFromApplication(input)` returns the created contract or a typed error.
@@ -127,12 +135,14 @@
 ### Task 5: Upgrade business application management into contract proposal flow
 
 **Files:**
+
 - Modify: `src/features/dashboard/panels.tsx`
 - Create: `src/features/contracts/ContractProposalDialog.tsx`
 - Create: `src/features/contracts/ContractCard.tsx`
 - Test: dashboard/component tests
 
 **Interfaces:**
+
 - Business action: accepted application → Create contract.
 - Contract proposal form requires title, scope, positive RWF amount; dates and terms are optional.
 - Proposal action creates exactly one proposed contract for that application.
@@ -151,11 +161,13 @@
 ### Task 6: Add worker and team contract response flow
 
 **Files:**
+
 - Modify: `src/features/dashboard/panels.tsx`
 - Create: `src/features/contracts/ContractResponseCard.tsx`
 - Test: worker/team dashboard tests
 
 **Interfaces:**
+
 - Worker recipient can accept or decline a proposed individual contract.
 - Authorized team lead can accept or decline a proposed team contract.
 - Successful acceptance results in `accepted` and then `active` according to the approved transition rules.
@@ -174,11 +186,13 @@
 ### Task 7: Add Phase A in-app notifications
 
 **Files:**
+
 - Modify: existing notification implementation only after confirming whether a persistent notifications table already exists
 - Create/modify: contract notification adapter in `src/features/contracts/`
 - Test: notification event tests
 
 **Interfaces:**
+
 - Events: application accepted, contract proposed, contract accepted, contract declined, contract cancelled.
 - Phase A delivery is in-app only; SMS/email are not implemented.
 
@@ -192,10 +206,12 @@
 ### Task 8: Verify the complete Phase A flow and security boundary
 
 **Files:**
+
 - Modify: tests and small fixes only
 - Test: end-to-end contract workflow/security tests
 
 **Interfaces:**
+
 - Full acceptance path:
   `Opportunity → Application → Accepted → Contract Proposed → Contract Accepted → Active`.
 
@@ -213,6 +229,7 @@
 ### Task 9: Prepare the implementation branch for review
 
 **Files:**
+
 - All Phase A implementation files
 - PR description
 

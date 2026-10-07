@@ -9,6 +9,7 @@ Opportunity → Application → Acceptance → Contract → Milestones → Compl
 The first implementation slice covers acceptance and contracting. It establishes the domain model and authorization boundaries needed for milestones, completion, reputation, and payment integrations later.
 
 ## 2. Product principles
+
 - UmurimoHub is economic infrastructure, not a job-board CRUD app.
 - A contract represents an actual agreement between an opportunity owner/business and an individual worker or team.
 - The same contract model supports individual and team engagements.
@@ -19,7 +20,9 @@ The first implementation slice covers acceptance and contracting. It establishes
 - Demo records remain clearly separated from real user data.
 
 ## 3. Scope
+
 ### Phase A — Contract foundation
+
 1. Business reviews submitted applications.
 2. Business accepts an eligible application.
 3. Accepted application can create one contract.
@@ -31,17 +34,23 @@ The first implementation slice covers acceptance and contracting. It establishes
 9. Parties can view contract details in their dashboards.
 
 ### Phase B — Milestones
+
 Design now, implementation after Phase A verification: ordered milestones, amount, due date, submission, approval, dispute, completion totals.
 
 ### Phase C — Completion/reputation
+
 Design now, implementation after milestone verification: completion confirmation, verified project history, on-time completion signal, repeat employer signal, reputation event ledger.
 
 ### Phase D — Payment integration
+
 Design now, implementation after completion flow: payment requested, payment confirmed, settlement recorded, provider/reference metadata, reconciliation state. No live money movement is part of Phase A.
 
 ## 4. Domain model
+
 ### contracts
+
 Suggested fields:
+
 - id UUID primary key
 - opportunity_id UUID not null
 - application_id UUID not null unique
@@ -60,12 +69,15 @@ Suggested fields:
 - Constraint: exactly one of worker_id or team_id must be populated.
 
 ### contract_events
+
 Immutable audit/event ledger: id, contract_id, actor_user_id, event_type, from_status, to_status, metadata jsonb, created_at.
 
 ### contract_milestones
+
 Reserved for Phase B: id, contract_id, sequence, title, description, amount_rwf, due_date, status, submitted_at, approved_at, disputed_at, created_at, updated_at.
 
 ## 5. Application relationship
+
 - An accepted application becomes the basis for a contract.
 - Only an application in an eligible state can produce a contract.
 - A single application can produce at most one contract.
@@ -74,12 +86,14 @@ Reserved for Phase B: id, contract_id, sequence, title, description, amount_rwf,
 - Changing an opportunity's advertised amount does not silently change an existing contract.
 
 ## 6. State machine
+
 Application: submitted → viewed → shortlisted → accepted.
 Contract: proposed → accepted → active → completed.
 Alternative terminal transitions: proposed → declined; proposed → cancelled; accepted → cancelled; active → cancelled.
 Only authorized actors may cause each transition.
 
 ### Business permissions
+
 - Accept application
 - Create contract from accepted application
 - Cancel proposed/active contract where policy allows
@@ -87,17 +101,20 @@ Only authorized actors may cause each transition.
 - Confirm milestone completion in later phase
 
 ### Worker/team permissions
+
 - View contracts addressed to them
 - Accept or decline proposed contract
 - Confirm their own completion in later phase
 - Submit milestone work in later phase
 
 ### Admin permissions
+
 - Read/audit all records according to platform policy
 - Resolve exceptional/disputed cases
 - Never silently rewrite event history
 
 ## 7. Team contracts
+
 - team_id is the contracting recipient.
 - Only an authorized team lead can accept/decline.
 - Membership changes do not automatically rewrite historical contracts.
@@ -105,6 +122,7 @@ Only authorized actors may cause each transition.
 - Individual members can be associated later with work evidence without changing the contracting party.
 
 ## 8. Security / RLS
+
 - Business members can access contracts for their business.
 - Worker can access contracts where worker_id maps to their account.
 - Team lead/authorized team members can access team contracts according to defined team policy.
@@ -115,24 +133,30 @@ Only authorized actors may cause each transition.
 - Sensitive contact/payment information must not become public through opportunity or profile queries.
 
 ## 9. UI
+
 Business: application management with Accept application, Create contract, contract preview/review, proposed/active/completed contract views.
 Worker/team: dashboard with contract proposal, view terms, accept/decline, active contract, contract history.
 Opportunity: after application acceptance, show application status but not private contract terms publicly.
 Every contract view needs loading, empty, unauthorized/not-found, failed-action, and success states.
 
 ## 10. Notifications
+
 Phase A should create in-app notification events for application accepted, contract proposed, contract accepted, contract declined, and contract cancelled. SMS/email remain separate.
 
 ## 11. Auditability
+
 Important actions produce contract events: contract_proposed, contract_accepted, contract_declined, contract_cancelled, contract_activated, contract_completed. Events contain actor and timestamp and are not editable by normal users.
 
 ## 12. Testing requirements
+
 Database/security: reject contracts for unaccepted applications; reject duplicate contracts; isolate worker/business access; prevent unauthorized field changes and transitions; preserve event history.
 UI: business can accept application and propose contract; worker/team can see and accept/decline; invalid transitions are rejected; dashboards reflect current state.
 CI must remain green: Prettier, ESLint, tests, production build.
 
 ## 13. Non-goals for Phase A
+
 Live payment processing, escrow, banking functionality, dispute arbitration, government/institutional contract access, advanced reputation scoring, AI contract generation, SMS/WhatsApp delivery, and full milestone workflow.
 
 ## 14. Acceptance criteria
+
 Phase A is complete only when a real authenticated business and worker/team can complete: Opportunity → Application → Accepted → Contract Proposed → Contract Accepted → Active, and the platform can prove the lifecycle through persisted records and immutable contract events while RLS prevents unrelated users from accessing or changing the data.

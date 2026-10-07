@@ -19,9 +19,9 @@ describe("contract proposal validation", () => {
   });
 
   it("rejects invalid dates", () => {
-    expect(
-      validateProposal({ ...base, startDate: "2026-11-10", endDate: "2026-11-01" }),
-    ).toContain("End date");
+    expect(validateProposal({ ...base, startDate: "2026-11-10", endDate: "2026-11-01" })).toContain(
+      "End date",
+    );
   });
 
   it("enforces scope and title limits", () => {
