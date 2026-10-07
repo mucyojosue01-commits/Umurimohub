@@ -7,6 +7,7 @@ import { useApp } from "@/features/store/app-store";
 import { IncomingApplications, MyApplications, TeamInvites } from "@/features/dashboard/panels";
 import { ContractsPanel, useContracts } from "@/features/contracts/panels";
 import { MilestonesPanel } from "@/features/milestones/panels";
+import { CompletionPanel } from "@/features/completion/panels";
 import { Card, OpportunityCard, PageHeader, Pill, Stat } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/dashboard")({
@@ -70,6 +71,7 @@ function Page() {
       <MyApplications />
       <ContractsPanel />
       <MilestonesPanel contracts={contractsQuery.data ?? []} />
+      <CompletionPanel contracts={contractsQuery.data ?? []} />
       <Card className="mt-6">
         <h2 className="font-bold">Project: 4-unit housing block (demo)</h2>
         <ul className="mt-3 divide-y">
