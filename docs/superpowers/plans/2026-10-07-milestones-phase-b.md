@@ -35,12 +35,14 @@ This phase is persisted, permissioned, transactionally safe, and contains no liv
 Create a new source-controlled migration after the Phase A migration.
 
 Create enum `public.milestone_status`:
+
 - pending
 - submitted
 - disputed
 - approved
 
 Create `public.milestones`:
+
 - id UUID primary key
 - contract_id UUID → contracts(id), restrict delete
 - sequence positive integer
@@ -57,6 +59,7 @@ Create `public.milestones`:
 - updated_at
 
 Constraints:
+
 - unique `(contract_id, sequence)`
 - positive amount and sequence
 - bounded text lengths
@@ -64,6 +67,7 @@ Constraints:
 - approved rows cannot be materially edited/deleted
 
 Create `public.milestone_events`:
+
 - identity id
 - milestone_id
 - contract_id
@@ -91,6 +95,7 @@ Implement authenticated RPCs:
 - `approve_milestone`
 
 Every RPC must:
+
 - reject unauthenticated callers
 - verify contract relationship
 - validate current state
@@ -101,6 +106,7 @@ Every RPC must:
 ### Allocation invariant
 
 For create/update:
+
 1. lock parent contract with `FOR UPDATE`
 2. verify status = active
 3. calculate current milestone total
@@ -114,6 +120,7 @@ This protects against concurrent writes exceeding the contract ceiling.
 Use existing persisted `notifications` table.
 
 Kinds:
+
 - milestone_created → worker/team lead
 - milestone_submitted → business members
 - milestone_disputed → worker/team lead
@@ -125,6 +132,7 @@ No private milestone data is exposed to unrelated users.
 ## Task 4 — Database types
 
 Update `src/integrations/supabase/types.ts` for:
+
 - milestones table
 - milestone_events table
 - milestone_status enum
@@ -137,6 +145,7 @@ Keep generated types consistent with the migration; do not introduce `any` as a 
 Create `src/features/milestones/service.ts`.
 
 Provide typed models and functions for:
+
 - listing milestones
 - listing milestone events
 - create
@@ -155,7 +164,9 @@ Use stable React Query keys and invalidate them after mutations.
 Create `src/features/milestones/panels.tsx`.
 
 ### Business
+
 For active contracts:
+
 - contract amount
 - planned total
 - approved total
@@ -168,7 +179,9 @@ For active contracts:
 - event history
 
 ### Worker/team
+
 For active contracts:
+
 - milestone list
 - deliverable
 - amount
@@ -194,6 +207,7 @@ Public opportunity pages must not expose private milestone information.
 ## Task 8 — UX states
 
 Handle:
+
 - loading
 - empty
 - unauthorized
@@ -210,6 +224,7 @@ Use existing UmurimoHub components and toast conventions.
 Add `supabase/tests/milestones.sql`.
 
 Cover:
+
 - active contract succeeds
 - proposed/declined/cancelled/completed contracts reject
 - unrelated users cannot read/mutate milestones/events
@@ -228,6 +243,7 @@ Cover:
 ## Task 10 — Application/service tests
 
 Add `src/test/milestones.test.ts` for:
+
 - title/description validation
 - amount/date/sequence validation
 - RPC error propagation
@@ -243,6 +259,7 @@ and:
 **Submit → Dispute → Resubmit → Approve**
 
 Also verify:
+
 - business cannot approve before submission
 - worker/team cannot approve
 - worker/team cannot act on another contract
@@ -253,6 +270,7 @@ Also verify:
 ## Task 12 — Verification
 
 Run the existing production gates without weakening them:
+
 1. Prettier check
 2. ESLint
 3. Vitest
@@ -268,6 +286,7 @@ Branch: `feat/milestones-phase-b`
 Base: `main`
 
 Keep implementation commits logically grouped:
+
 1. migration + types
 2. service
 3. UI/dashboard
@@ -275,6 +294,7 @@ Keep implementation commits logically grouped:
 5. final fixes
 
 Before opening the PR:
+
 - compare branch with main
 - inspect changed files
 - run CI
