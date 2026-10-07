@@ -319,11 +319,16 @@ function MilestoneCard({
 
 export function MilestonesPanel({ contracts }: { contracts: Contract[] }) {
   const { user, session } = useApp();
-  const q = useQuery({
-    queryKey: milestonesKey,
-    enabled: !!session,
-    queryFn: listMyMilestones,
-  });
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: milestonesKey, enabled: !!session, queryFn: listMyMilestones });
+  useEffect(() => {
+    if (!session) return;
+    const channel = supabase.channel("live-milestones-" + session.user.id)
+      .on("postgres_changes", { event: "*", schema: "public", table: "milestones" }, () => void qc.invalidateQueries({ queryKey: milestonesKey }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "milestone_events" }, () => void qc.invalidateQueries({ queryKey: milestonesKey }))
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [session, qc]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, Milestone[]>();
