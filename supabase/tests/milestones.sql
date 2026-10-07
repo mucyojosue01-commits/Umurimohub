@@ -31,7 +31,7 @@ declare
   worker uuid := '00000000-0000-4000-a000-0000000000a1';
   outsider uuid := '00000000-0000-4000-a000-0000000000d1';
   app_id uuid;
-  contract_id uuid;
+  cid uuid;
   milestone_id uuid;
   milestone_id_2 uuid;
   status text;
@@ -49,26 +49,26 @@ begin
     returning id into app_id;
 
   perform pg_temp.as_user(biz);
-  contract_id := public.create_contract(app_id,'Milestone Contract','Deliver the construction scope',1000000);
+  cid := public.create_contract(app_id,'Milestone Contract','Deliver the construction scope',1000000);
   perform pg_temp.as_user(worker);
-  status := public.respond_contract(contract_id, true);
+  status := public.respond_contract(cid, true);
   perform pg_temp.check(status = 'active', 'contract is active');
 
   perform pg_temp.as_user(biz);
   milestone_id := public.create_milestone(
-    contract_id, 1, 'Foundation', 'Complete the foundation and handover.', 400000, current_date + 7
+    cid, 1, 'Foundation', 'Complete the foundation and handover.', 400000, current_date + 7
   );
   perform pg_temp.check((select status = 'pending' from milestones where id = milestone_id), 'created pending');
 
   milestone_id_2 := public.create_milestone(
-    contract_id, 2, 'Walls', 'Complete the walls and handover.', 300000, current_date + 14
+    cid, 2, 'Walls', 'Complete the walls and handover.', 300000, current_date + 14
   );
-  perform pg_temp.check((select count(*) from milestones where contract_id = contract_id) = 2, 'two milestones created');
+  perform pg_temp.check((select count(*) from milestones where milestones.contract_id = cid) = 2, 'two milestones created');
 
   perform pg_temp.check(
     pg_temp.fails(format(
       $q$select public.create_milestone(%L,3,'Roof','Complete the roof and handover.',400001,current_date+21)$q$,
-      contract_id
+      cid
     )),
     'contract ceiling enforced'
   );
@@ -104,7 +104,7 @@ begin
   status := public.submit_milestone(milestone_id, 'Foundation completed and ready for review.');
   perform pg_temp.check(status = 'submitted', 'worker submits pending milestone');
   perform pg_temp.check(
-    (select count(*) from milestone_events where milestone_id = milestone_id and event_type = 'submitted') = 1,
+    (select count(*) from milestone_events where milestone_events.milestone_id = milestone_id and event_type = 'submitted') = 1,
     'submission event recorded'
   );
   perform pg_temp.check(
@@ -156,10 +156,10 @@ begin
   );
 
   perform pg_temp.as_owner();
-  select coalesce(sum(amount_rwf),0) into total from milestones where contract_id = contract_id;
+  select coalesce(sum(m.amount_rwf),0) into total from milestones m where m.contract_id = cid;
   perform pg_temp.check(total = 700000, 'milestone totals preserved');
   perform pg_temp.check(
-    (select count(*) from milestone_events where contract_id = contract_id) = 6,
+    (select count(*) from milestone_events where milestone_events.contract_id = cid) = 6,
     'created/submitted/disputed/resubmitted/approved history recorded'
   );
   perform pg_temp.check(
