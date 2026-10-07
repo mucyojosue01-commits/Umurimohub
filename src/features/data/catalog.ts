@@ -1,6 +1,12 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { getCatalog } from "@/lib/catalog.functions";
-import type { Catalog } from "./mappers";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  mapBusiness,
+  mapOpportunity,
+  mapTeam,
+  mapWorker,
+  type Catalog,
+} from "./mappers";
 
 export const emptyCatalog: Catalog = {
   workers: [],
@@ -13,8 +19,35 @@ export const emptyCatalog: Catalog = {
 
 export const catalogQuery = queryOptions({
   queryKey: ["catalog"],
-  queryFn: async () => getCatalog(),
-  staleTime: 30_000,
+  queryFn: async (): Promise<Catalog> => {
+    const [w, s, t, m, b, o] = await Promise.all([
+      supabase.from("worker_profiles").select("*").eq("is_demo", false).order("created_at", { ascending: false }).limit(200),
+      supabase.from("worker_skills").select("*").limit(2000),
+      supabase.from("teams").select("*").eq("is_demo", false).order("created_at", { ascending: false }).limit(200),
+      supabase.from("team_members").select("*").limit(2000),
+      supabase.from("businesses").select("*").eq("is_demo", false).order("created_at", { ascending: false }).limit(200),
+      supabase.from("opportunities").select("*").eq("is_demo", false).neq("status", "draft").order("created_at", { ascending: false }).limit(200),
+    ]);
+    const err = w.error ?? s.error ?? t.error ?? m.error ?? b.error ?? o.error;
+    if (err) throw new Error(err.message);
+
+    const workers = w.data ?? [];
+    const skills = s.data ?? [];
+    const teams = t.data ?? [];
+    const members = m.data ?? [];
+    const businesses = b.data ?? [];
+    const opportunities = (o.data ?? []).filter((x) => x.status === "open");
+
+    return {
+      workers: workers.map((x) => mapWorker(x, skills, members)),
+      teams: teams.map((x) => mapTeam(x, members)),
+      businesses: businesses.map((x) => mapBusiness(x, opportunities)),
+      opportunities: opportunities.map(mapOpportunity),
+      workerUserIds: Object.fromEntries(workers.map((x) => [x.id, x.user_id])),
+      source: "database",
+    };
+  },
+  staleTime: 15_000,
 });
 
 export function withGetters(c: Catalog) {
@@ -29,5 +62,5 @@ export function withGetters(c: Catalog) {
 
 export function useCatalog() {
   const q = useQuery({ ...catalogQuery, placeholderData: emptyCatalog });
-  return { ...withGetters(q.data ?? emptyCatalog), refresh: q.refetch };
+  return { ...withGetters(q.data ?? emptyCatalog), refresh: q.refetch, loading: q.isLoading, error: q.error };
 }
