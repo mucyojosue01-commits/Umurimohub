@@ -1,1128 +1,1446 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.18";
-  };
+    PostgrestVersion: "14.18"
+  }
   public: {
     Tables: {
       applications: {
         Row: {
-          applicant_user_id: string;
-          created_at: string;
-          id: string;
-          kind: string;
-          note: string;
-          opportunity_id: string;
-          referred_by: string | null;
-          status: Database["public"]["Enums"]["application_status"];
-          team_id: string | null;
-          updated_at: string;
-        };
+          applicant_user_id: string
+          created_at: string
+          id: string
+          kind: string
+          note: string
+          opportunity_id: string
+          referred_by: string | null
+          status: Database["public"]["Enums"]["application_status"]
+          team_id: string | null
+          updated_at: string
+        }
         Insert: {
-          applicant_user_id: string;
-          created_at?: string;
-          id?: string;
-          kind: string;
-          note?: string;
-          opportunity_id: string;
-          referred_by?: string | null;
-          status?: Database["public"]["Enums"]["application_status"];
-          team_id?: string | null;
-          updated_at?: string;
-        };
+          applicant_user_id: string
+          created_at?: string
+          id?: string
+          kind?: string
+          note?: string
+          opportunity_id: string
+          referred_by?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          team_id?: string | null
+          updated_at?: string
+        }
         Update: {
-          applicant_user_id?: string;
-          created_at?: string;
-          id?: string;
-          kind?: string;
-          note?: string;
-          opportunity_id?: string;
-          referred_by?: string | null;
-          status?: Database["public"]["Enums"]["application_status"];
-          team_id?: string | null;
-          updated_at?: string;
-        };
+          applicant_user_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          note?: string
+          opportunity_id?: string
+          referred_by?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          team_id?: string | null
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "applications_opportunity_id_fkey";
-            columns: ["opportunity_id"];
-            isOneToOne: false;
-            referencedRelation: "opportunities";
-            referencedColumns: ["id"];
+            foreignKeyName: "applications_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "applications_team_id_fkey";
-            columns: ["team_id"];
-            isOneToOne: false;
-            referencedRelation: "teams";
-            referencedColumns: ["id"];
+            foreignKeyName: "applications_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       audit_log: {
         Row: {
-          action: string;
-          actor: string | null;
-          at: string;
-          entity: string;
-          entity_id: string | null;
-          id: number;
-        };
+          action: string
+          actor: string | null
+          at: string
+          entity: string
+          entity_id: string | null
+          id: number
+        }
         Insert: {
-          action: string;
-          actor?: string | null;
-          at?: string;
-          entity: string;
-          entity_id?: string | null;
-          id?: number;
-        };
+          action: string
+          actor?: string | null
+          at?: string
+          entity: string
+          entity_id?: string | null
+          id?: never
+        }
         Update: {
-          action?: string;
-          actor?: string | null;
-          at?: string;
-          entity?: string;
-          entity_id?: string | null;
-          id?: number;
-        };
-        Relationships: [];
-      };
+          action?: string
+          actor?: string | null
+          at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: never
+        }
+        Relationships: []
+      }
       business_members: {
         Row: {
-          business_id: string;
-          role: string;
-          user_id: string;
-        };
+          business_id: string
+          role: string
+          user_id: string
+        }
         Insert: {
-          business_id: string;
-          role?: string;
-          user_id: string;
-        };
+          business_id: string
+          role?: string
+          user_id: string
+        }
         Update: {
-          business_id?: string;
-          role?: string;
-          user_id?: string;
-        };
+          business_id?: string
+          role?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "business_members_business_id_fkey";
-            columns: ["business_id"];
-            isOneToOne: false;
-            referencedRelation: "businesses";
-            referencedColumns: ["id"];
+            foreignKeyName: "business_members_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       businesses: {
         Row: {
-          about: string;
-          created_at: string;
-          created_by: string | null;
-          district: string;
-          id: string;
-          is_demo: boolean;
-          name: string;
-          rating: number;
-          sector: string;
-          services: string[];
-          verified: boolean;
-        };
+          about: string
+          created_at: string
+          created_by: string | null
+          district: string
+          id: string
+          is_demo: boolean
+          name: string
+          rating: number
+          sector: string
+          services: string[]
+          verified: boolean
+        }
         Insert: {
-          about?: string;
-          created_at?: string;
-          created_by?: string | null;
-          district: string;
-          id?: string;
-          is_demo?: boolean;
-          name: string;
-          rating?: number;
-          sector: string;
-          services?: string[];
-          verified?: boolean;
-        };
+          about?: string
+          created_at?: string
+          created_by?: string | null
+          district: string
+          id?: string
+          is_demo?: boolean
+          name: string
+          rating?: number
+          sector: string
+          services?: string[]
+          verified?: boolean
+        }
         Update: {
-          about?: string;
-          created_at?: string;
-          created_by?: string | null;
-          district?: string;
-          id?: string;
-          is_demo?: boolean;
-          name?: string;
-          rating?: number;
-          sector?: string;
-          services?: string[];
-          verified?: boolean;
-        };
-        Relationships: [];
-      };
+          about?: string
+          created_at?: string
+          created_by?: string | null
+          district?: string
+          id?: string
+          is_demo?: boolean
+          name?: string
+          rating?: number
+          sector?: string
+          services?: string[]
+          verified?: boolean
+        }
+        Relationships: []
+      }
+      completion_events: {
+        Row: {
+          actor: string | null
+          at: string
+          completion_id: string
+          contract_id: string
+          event_type: string
+          from_status: Database["public"]["Enums"]["completion_status"] | null
+          id: number
+          note: string | null
+          to_status: Database["public"]["Enums"]["completion_status"]
+        }
+        Insert: {
+          actor?: string | null
+          at?: string
+          completion_id: string
+          contract_id: string
+          event_type: string
+          from_status?: Database["public"]["Enums"]["completion_status"] | null
+          id?: never
+          note?: string | null
+          to_status: Database["public"]["Enums"]["completion_status"]
+        }
+        Update: {
+          actor?: string | null
+          at?: string
+          completion_id?: string
+          contract_id?: string
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["completion_status"] | null
+          id?: never
+          note?: string | null
+          to_status?: Database["public"]["Enums"]["completion_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "completion_events_completion_id_fkey"
+            columns: ["completion_id"]
+            isOneToOne: false
+            referencedRelation: "contract_completions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completion_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connections: {
         Row: {
-          addressee: string;
-          created_at: string;
-          id: string;
-          relation: string;
-          requester: string;
-          status: string;
-        };
+          addressee: string
+          created_at: string
+          id: string
+          relation: string
+          requester: string
+          status: string
+        }
         Insert: {
-          addressee: string;
-          created_at?: string;
-          id?: string;
-          relation?: string;
-          requester: string;
-          status?: string;
-        };
+          addressee: string
+          created_at?: string
+          id?: string
+          relation?: string
+          requester: string
+          status?: string
+        }
         Update: {
-          addressee?: string;
-          created_at?: string;
-          id?: string;
-          relation?: string;
-          requester?: string;
-          status?: string;
-        };
-        Relationships: [];
-      };
+          addressee?: string
+          created_at?: string
+          id?: string
+          relation?: string
+          requester?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      contract_completions: {
+        Row: {
+          completed_at: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          contract_id: string
+          created_at: string
+          id: string
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_note: string | null
+          request_note: string | null
+          requested_at: string
+          requested_by: string
+          status: Database["public"]["Enums"]["completion_status"]
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_note?: string | null
+          request_note?: string | null
+          requested_at?: string
+          requested_by: string
+          status?: Database["public"]["Enums"]["completion_status"]
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_note?: string | null
+          request_note?: string | null
+          requested_at?: string
+          requested_by?: string
+          status?: Database["public"]["Enums"]["completion_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_completions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_events: {
         Row: {
-          actor: string | null;
-          at: string;
-          contract_id: string;
-          event_type: string;
-          from_status: Database["public"]["Enums"]["contract_status"] | null;
-          id: number;
-          note: string | null;
-          to_status: Database["public"]["Enums"]["contract_status"];
-        };
+          actor: string | null
+          at: string
+          contract_id: string
+          event_type: string
+          from_status: Database["public"]["Enums"]["contract_status"] | null
+          id: number
+          note: string | null
+          to_status: Database["public"]["Enums"]["contract_status"]
+        }
         Insert: {
-          actor?: string | null;
-          at?: string;
-          contract_id: string;
-          event_type: string;
-          from_status?: Database["public"]["Enums"]["contract_status"] | null;
-          id?: never;
-          note?: string | null;
-          to_status: Database["public"]["Enums"]["contract_status"];
-        };
+          actor?: string | null
+          at?: string
+          contract_id: string
+          event_type: string
+          from_status?: Database["public"]["Enums"]["contract_status"] | null
+          id?: never
+          note?: string | null
+          to_status: Database["public"]["Enums"]["contract_status"]
+        }
         Update: {
-          actor?: string | null;
-          at?: string;
-          contract_id?: string;
-          event_type?: string;
-          from_status?: Database["public"]["Enums"]["contract_status"] | null;
-          id?: never;
-          note?: string | null;
-          to_status?: Database["public"]["Enums"]["contract_status"];
-        };
+          actor?: string | null
+          at?: string
+          contract_id?: string
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["contract_status"] | null
+          id?: never
+          note?: string | null
+          to_status?: Database["public"]["Enums"]["contract_status"]
+        }
         Relationships: [
           {
-            foreignKeyName: "contract_events_contract_id_fkey";
-            columns: ["contract_id"];
-            isOneToOne: false;
-            referencedRelation: "contracts";
-            referencedColumns: ["id"];
+            foreignKeyName: "contract_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       contracts: {
         Row: {
-          accepted_at: string | null;
-          activated_at: string | null;
-          amount_rwf: number;
-          application_id: string;
-          business_id: string;
-          cancelled_at: string | null;
-          completed_at: string | null;
-          created_at: string;
-          currency: string;
-          declined_at: string | null;
-          end_date: string | null;
-          id: string;
-          is_demo: boolean;
-          opportunity_id: string;
-          proposed_at: string;
-          proposed_by: string;
-          scope: string;
-          start_date: string | null;
-          status: Database["public"]["Enums"]["contract_status"];
-          team_id: string | null;
-          terms: string | null;
-          title: string;
-          updated_at: string;
-          worker_id: string | null;
-        };
+          accepted_at: string | null
+          activated_at: string | null
+          amount_rwf: number
+          application_id: string
+          business_id: string
+          cancelled_at: string | null
+          completed_at: string | null
+          created_at: string
+          currency: string
+          declined_at: string | null
+          end_date: string | null
+          id: string
+          is_demo: boolean
+          opportunity_id: string
+          proposed_at: string
+          proposed_by: string
+          scope: string
+          start_date: string | null
+          status: Database["public"]["Enums"]["contract_status"]
+          team_id: string | null
+          terms: string | null
+          title: string
+          updated_at: string
+          worker_id: string | null
+        }
         Insert: {
-          accepted_at?: string | null;
-          activated_at?: string | null;
-          amount_rwf: number;
-          application_id: string;
-          business_id: string;
-          cancelled_at?: string | null;
-          completed_at?: string | null;
-          created_at?: string;
-          currency?: string;
-          declined_at?: string | null;
-          end_date?: string | null;
-          id?: string;
-          is_demo?: boolean;
-          opportunity_id: string;
-          proposed_at?: string;
-          proposed_by: string;
-          scope: string;
-          start_date?: string | null;
-          status?: Database["public"]["Enums"]["contract_status"];
-          team_id?: string | null;
-          terms?: string | null;
-          title: string;
-          updated_at?: string;
-          worker_id?: string | null;
-        };
+          accepted_at?: string | null
+          activated_at?: string | null
+          amount_rwf: number
+          application_id: string
+          business_id: string
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          declined_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_demo?: boolean
+          opportunity_id: string
+          proposed_at?: string
+          proposed_by: string
+          scope: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          team_id?: string | null
+          terms?: string | null
+          title: string
+          updated_at?: string
+          worker_id?: string | null
+        }
         Update: {
-          accepted_at?: string | null;
-          activated_at?: string | null;
-          amount_rwf?: number;
-          application_id?: string;
-          business_id?: string;
-          cancelled_at?: string | null;
-          completed_at?: string | null;
-          created_at?: string;
-          currency?: string;
-          declined_at?: string | null;
-          end_date?: string | null;
-          id?: string;
-          is_demo?: boolean;
-          opportunity_id?: string;
-          proposed_at?: string;
-          proposed_by?: string;
-          scope?: string;
-          start_date?: string | null;
-          status?: Database["public"]["Enums"]["contract_status"];
-          team_id?: string | null;
-          terms?: string | null;
-          title?: string;
-          updated_at?: string;
-          worker_id?: string | null;
-        };
+          accepted_at?: string | null
+          activated_at?: string | null
+          amount_rwf?: number
+          application_id?: string
+          business_id?: string
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          declined_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_demo?: boolean
+          opportunity_id?: string
+          proposed_at?: string
+          proposed_by?: string
+          scope?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          team_id?: string | null
+          terms?: string | null
+          title?: string
+          updated_at?: string
+          worker_id?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "contracts_application_id_fkey";
-            columns: ["application_id"];
-            isOneToOne: true;
-            referencedRelation: "applications";
-            referencedColumns: ["id"];
+            foreignKeyName: "contracts_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "contracts_business_id_fkey";
-            columns: ["business_id"];
-            isOneToOne: false;
-            referencedRelation: "businesses";
-            referencedColumns: ["id"];
+            foreignKeyName: "contracts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "contracts_opportunity_id_fkey";
-            columns: ["opportunity_id"];
-            isOneToOne: false;
-            referencedRelation: "opportunities";
-            referencedColumns: ["id"];
+            foreignKeyName: "contracts_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "contracts_team_id_fkey";
-            columns: ["team_id"];
-            isOneToOne: false;
-            referencedRelation: "teams";
-            referencedColumns: ["id"];
+            foreignKeyName: "contracts_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "contracts_worker_id_fkey";
-            columns: ["worker_id"];
-            isOneToOne: false;
-            referencedRelation: "worker_profiles";
-            referencedColumns: ["id"];
+            foreignKeyName: "contracts_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
           },
-        ];
-      };
-      milestones: {
-        Row: {
-          amount_rwf: number;
-          approved_at: string | null;
-          contract_id: string;
-          created_at: string;
-          description: string;
-          disputed_at: string | null;
-          due_date: string;
-          id: string;
-          sequence: number;
-          status: Database["public"]["Enums"]["milestone_status"];
-          submission_note: string | null;
-          submitted_at: string | null;
-          title: string;
-          updated_at: string;
-        };
-        Insert: {
-          amount_rwf: number;
-          approved_at?: string | null;
-          contract_id: string;
-          created_at?: string;
-          description: string;
-          disputed_at?: string | null;
-          due_date: string;
-          id?: string;
-          sequence: number;
-          status?: Database["public"]["Enums"]["milestone_status"];
-          submission_note?: string | null;
-          submitted_at?: string | null;
-          title: string;
-          updated_at?: string;
-        };
-        Update: {
-          amount_rwf?: number;
-          approved_at?: string | null;
-          contract_id?: string;
-          created_at?: string;
-          description?: string;
-          disputed_at?: string | null;
-          due_date?: string;
-          id?: string;
-          sequence?: number;
-          status?: Database["public"]["Enums"]["milestone_status"];
-          submission_note?: string | null;
-          submitted_at?: string | null;
-          title?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "milestones_contract_id_fkey";
-            columns: ["contract_id"];
-            isOneToOne: false;
-            referencedRelation: "contracts";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
+        ]
+      }
       milestone_events: {
         Row: {
-          actor: string | null;
-          at: string;
-          contract_id: string;
-          event_type: string;
-          from_status: Database["public"]["Enums"]["milestone_status"] | null;
-          id: number;
-          milestone_id: string;
-          note: string | null;
-          to_status: Database["public"]["Enums"]["milestone_status"];
-        };
+          actor: string | null
+          at: string
+          contract_id: string
+          event_type: string
+          from_status: Database["public"]["Enums"]["milestone_status"] | null
+          id: number
+          milestone_id: string
+          note: string | null
+          to_status: Database["public"]["Enums"]["milestone_status"]
+        }
         Insert: {
-          actor?: string | null;
-          at?: string;
-          contract_id: string;
-          event_type: string;
-          from_status?: Database["public"]["Enums"]["milestone_status"] | null;
-          id?: never;
-          milestone_id: string;
-          note?: string | null;
-          to_status: Database["public"]["Enums"]["milestone_status"];
-        };
+          actor?: string | null
+          at?: string
+          contract_id: string
+          event_type: string
+          from_status?: Database["public"]["Enums"]["milestone_status"] | null
+          id?: never
+          milestone_id: string
+          note?: string | null
+          to_status: Database["public"]["Enums"]["milestone_status"]
+        }
         Update: {
-          actor?: string | null;
-          at?: string;
-          contract_id?: string;
-          event_type?: string;
-          from_status?: Database["public"]["Enums"]["milestone_status"] | null;
-          id?: never;
-          milestone_id?: string;
-          note?: string | null;
-          to_status?: Database["public"]["Enums"]["milestone_status"];
-        };
+          actor?: string | null
+          at?: string
+          contract_id?: string
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["milestone_status"] | null
+          id?: never
+          milestone_id?: string
+          note?: string | null
+          to_status?: Database["public"]["Enums"]["milestone_status"]
+        }
         Relationships: [
           {
-            foreignKeyName: "milestone_events_contract_id_fkey";
-            columns: ["contract_id"];
-            isOneToOne: false;
-            referencedRelation: "contracts";
-            referencedColumns: ["id"];
+            foreignKeyName: "milestone_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "milestone_events_milestone_id_fkey";
-            columns: ["milestone_id"];
-            isOneToOne: false;
-            referencedRelation: "milestones";
-            referencedColumns: ["id"];
+            foreignKeyName: "milestone_events_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
+      milestones: {
+        Row: {
+          amount_rwf: number
+          approved_at: string | null
+          contract_id: string
+          created_at: string
+          description: string
+          disputed_at: string | null
+          due_date: string
+          id: string
+          sequence: number
+          status: Database["public"]["Enums"]["milestone_status"]
+          submission_note: string | null
+          submitted_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount_rwf: number
+          approved_at?: string | null
+          contract_id: string
+          created_at?: string
+          description: string
+          disputed_at?: string | null
+          due_date: string
+          id?: string
+          sequence: number
+          status?: Database["public"]["Enums"]["milestone_status"]
+          submission_note?: string | null
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount_rwf?: number
+          approved_at?: string | null
+          contract_id?: string
+          created_at?: string
+          description?: string
+          disputed_at?: string | null
+          due_date?: string
+          id?: string
+          sequence?: number
+          status?: Database["public"]["Enums"]["milestone_status"]
+          submission_note?: string | null
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
-          created_at: string;
-          id: string;
-          kind: string;
-          link: string | null;
-          read: boolean;
-          text: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          read: boolean
+          text: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          kind: string;
-          link?: string | null;
-          read?: boolean;
-          text: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          read?: boolean
+          text: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          kind?: string;
-          link?: string | null;
-          read?: boolean;
-          text?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          read?: boolean
+          text?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       opportunities: {
         Row: {
-          business_id: string;
-          created_at: string;
-          created_by: string | null;
-          deadline: string;
-          district: string;
-          duration: string;
-          featured: boolean;
-          id: string;
-          is_demo: boolean;
-          mode: string;
-          pay_rwf: number;
-          pay_unit: string;
-          requirements: string[];
-          responsibilities: string[];
-          sector: string;
-          skills: string[];
-          status: string;
-          summary: string;
-          team_allowed: boolean;
-          team_size: number | null;
-          title: string;
-          type: string;
-        };
+          business_id: string
+          created_at: string
+          created_by: string | null
+          deadline: string
+          district: string
+          duration: string
+          featured: boolean
+          id: string
+          is_demo: boolean
+          mode: string
+          pay_rwf: number
+          pay_unit: string
+          requirements: string[]
+          responsibilities: string[]
+          sector: string
+          skills: string[]
+          status: string
+          summary: string
+          team_allowed: boolean
+          team_size: number | null
+          title: string
+          type: string
+        }
         Insert: {
-          business_id: string;
-          created_at?: string;
-          created_by?: string | null;
-          deadline: string;
-          district: string;
-          duration?: string;
-          featured?: boolean;
-          id?: string;
-          is_demo?: boolean;
-          mode: string;
-          pay_rwf: number;
-          pay_unit: string;
-          requirements?: string[];
-          responsibilities?: string[];
-          sector: string;
-          skills?: string[];
-          status?: string;
-          summary?: string;
-          team_allowed?: boolean;
-          team_size?: number | null;
-          title: string;
-          type: string;
-        };
+          business_id: string
+          created_at?: string
+          created_by?: string | null
+          deadline: string
+          district: string
+          duration?: string
+          featured?: boolean
+          id?: string
+          is_demo?: boolean
+          mode: string
+          pay_rwf: number
+          pay_unit: string
+          requirements?: string[]
+          responsibilities?: string[]
+          sector: string
+          skills?: string[]
+          status?: string
+          summary?: string
+          team_allowed?: boolean
+          team_size?: number | null
+          title: string
+          type: string
+        }
         Update: {
-          business_id?: string;
-          created_at?: string;
-          created_by?: string | null;
-          deadline?: string;
-          district?: string;
-          duration?: string;
-          featured?: boolean;
-          id?: string;
-          is_demo?: boolean;
-          mode?: string;
-          pay_rwf?: number;
-          pay_unit?: string;
-          requirements?: string[];
-          responsibilities?: string[];
-          sector?: string;
-          skills?: string[];
-          status?: string;
-          summary?: string;
-          team_allowed?: boolean;
-          team_size?: number | null;
-          title?: string;
-          type?: string;
-        };
+          business_id?: string
+          created_at?: string
+          created_by?: string | null
+          deadline?: string
+          district?: string
+          duration?: string
+          featured?: boolean
+          id?: string
+          is_demo?: boolean
+          mode?: string
+          pay_rwf?: number
+          pay_unit?: string
+          requirements?: string[]
+          responsibilities?: string[]
+          sector?: string
+          skills?: string[]
+          status?: string
+          summary?: string
+          team_allowed?: boolean
+          team_size?: number | null
+          title?: string
+          type?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "opportunities_business_id_fkey";
-            columns: ["business_id"];
-            isOneToOne: false;
-            referencedRelation: "businesses";
-            referencedColumns: ["id"];
+            foreignKeyName: "opportunities_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       profiles: {
         Row: {
-          created_at: string;
-          display_name: string;
-          district: string | null;
-          id: string;
-          locale: string;
-          phone: string | null;
-          phone_verified: boolean;
-          updated_at: string;
-        };
+          created_at: string
+          display_name: string
+          district: string | null
+          id: string
+          locale: string
+          phone: string | null
+          phone_verified: boolean
+          updated_at: string
+        }
         Insert: {
-          created_at?: string;
-          display_name: string;
-          district?: string | null;
-          id: string;
-          locale?: string;
-          phone?: string | null;
-          phone_verified?: boolean;
-          updated_at?: string;
-        };
+          created_at?: string
+          display_name: string
+          district?: string | null
+          id: string
+          locale?: string
+          phone?: string | null
+          phone_verified?: boolean
+          updated_at?: string
+        }
         Update: {
-          created_at?: string;
-          display_name?: string;
-          district?: string | null;
-          id?: string;
-          locale?: string;
-          phone?: string | null;
-          phone_verified?: boolean;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          display_name?: string
+          district?: string | null
+          id?: string
+          locale?: string
+          phone?: string | null
+          phone_verified?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       recommendations: {
         Row: {
-          body: string;
-          created_at: string;
-          from_user: string;
-          id: string;
-          skill: string;
-          to_user: string;
-        };
+          body: string
+          created_at: string
+          from_user: string
+          id: string
+          skill: string
+          to_user: string
+        }
         Insert: {
-          body: string;
-          created_at?: string;
-          from_user: string;
-          id?: string;
-          skill: string;
-          to_user: string;
-        };
+          body: string
+          created_at?: string
+          from_user: string
+          id?: string
+          skill: string
+          to_user: string
+        }
         Update: {
-          body?: string;
-          created_at?: string;
-          from_user?: string;
-          id?: string;
-          skill?: string;
-          to_user?: string;
-        };
-        Relationships: [];
-      };
+          body?: string
+          created_at?: string
+          from_user?: string
+          id?: string
+          skill?: string
+          to_user?: string
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
-          created_at: string;
-          id: string;
-          note: string;
-          opportunity_id: string;
-          referee_worker_id: string;
-          referrer: string;
-          status: string;
-        };
+          created_at: string
+          id: string
+          note: string
+          opportunity_id: string
+          referee_worker_id: string
+          referrer: string
+          status: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          note?: string;
-          opportunity_id: string;
-          referee_worker_id: string;
-          referrer: string;
-          status?: string;
-        };
+          created_at?: string
+          id?: string
+          note?: string
+          opportunity_id: string
+          referee_worker_id: string
+          referrer: string
+          status?: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          note?: string;
-          opportunity_id?: string;
-          referee_worker_id?: string;
-          referrer?: string;
-          status?: string;
-        };
+          created_at?: string
+          id?: string
+          note?: string
+          opportunity_id?: string
+          referee_worker_id?: string
+          referrer?: string
+          status?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "referrals_opportunity_id_fkey";
-            columns: ["opportunity_id"];
-            isOneToOne: false;
-            referencedRelation: "opportunities";
-            referencedColumns: ["id"];
+            foreignKeyName: "referrals_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "referrals_referee_worker_id_fkey";
-            columns: ["referee_worker_id"];
-            isOneToOne: false;
-            referencedRelation: "worker_profiles";
-            referencedColumns: ["id"];
+            foreignKeyName: "referrals_referee_worker_id_fkey"
+            columns: ["referee_worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
+      reputation_evidence: {
+        Row: {
+          created_at: string
+          evidence_type: string
+          id: string
+          metadata: Json
+          occurred_at: string
+          source_contract_id: string | null
+          source_event_id: number | null
+          source_experience_id: string | null
+          subject_id: string
+          subject_type: string
+        }
+        Insert: {
+          created_at?: string
+          evidence_type: string
+          id?: string
+          metadata?: Json
+          occurred_at: string
+          source_contract_id?: string | null
+          source_event_id?: number | null
+          source_experience_id?: string | null
+          subject_id: string
+          subject_type: string
+        }
+        Update: {
+          created_at?: string
+          evidence_type?: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          source_contract_id?: string | null
+          source_event_id?: number | null
+          source_experience_id?: string | null
+          subject_id?: string
+          subject_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reputation_evidence_source_contract_id_fkey"
+            columns: ["source_contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reputation_evidence_source_experience_id_fkey"
+            columns: ["source_experience_id"]
+            isOneToOne: false
+            referencedRelation: "verified_experiences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_opportunities: {
         Row: {
-          created_at: string;
-          opportunity_id: string;
-          user_id: string;
-        };
+          created_at: string
+          opportunity_id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          opportunity_id: string;
-          user_id: string;
-        };
+          created_at?: string
+          opportunity_id: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          opportunity_id?: string;
-          user_id?: string;
-        };
+          created_at?: string
+          opportunity_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "saved_opportunities_opportunity_id_fkey";
-            columns: ["opportunity_id"];
-            isOneToOne: false;
-            referencedRelation: "opportunities";
-            referencedColumns: ["id"];
+            foreignKeyName: "saved_opportunities_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       team_members: {
         Row: {
-          joined_at: string;
-          role: string;
-          status: string;
-          team_id: string;
-          worker_id: string;
-        };
+          joined_at: string
+          role: string
+          status: string
+          team_id: string
+          worker_id: string
+        }
         Insert: {
-          joined_at?: string;
-          role?: string;
-          status?: string;
-          team_id: string;
-          worker_id: string;
-        };
+          joined_at?: string
+          role?: string
+          status?: string
+          team_id: string
+          worker_id: string
+        }
         Update: {
-          joined_at?: string;
-          role?: string;
-          status?: string;
-          team_id?: string;
-          worker_id?: string;
-        };
+          joined_at?: string
+          role?: string
+          status?: string
+          team_id?: string
+          worker_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "team_members_team_id_fkey";
-            columns: ["team_id"];
-            isOneToOne: false;
-            referencedRelation: "teams";
-            referencedColumns: ["id"];
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "team_members_worker_id_fkey";
-            columns: ["worker_id"];
-            isOneToOne: false;
-            referencedRelation: "worker_profiles";
-            referencedColumns: ["id"];
+            foreignKeyName: "team_members_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       teams: {
         Row: {
-          areas: string[];
-          available: boolean;
-          created_at: string;
-          id: string;
-          is_demo: boolean;
-          lead_user_id: string | null;
-          lead_worker_id: string | null;
-          name: string;
-          projects: number;
-          rating: number;
-          sector: string;
-          skills: string[];
-          summary: string;
-        };
+          areas: string[]
+          available: boolean
+          created_at: string
+          id: string
+          is_demo: boolean
+          lead_user_id: string | null
+          lead_worker_id: string | null
+          name: string
+          projects: number
+          rating: number
+          sector: string
+          skills: string[]
+          summary: string
+        }
         Insert: {
-          areas?: string[];
-          available?: boolean;
-          created_at?: string;
-          id?: string;
-          is_demo?: boolean;
-          lead_user_id?: string | null;
-          lead_worker_id?: string | null;
-          name: string;
-          projects?: number;
-          rating?: number;
-          sector: string;
-          skills?: string[];
-          summary?: string;
-        };
+          areas?: string[]
+          available?: boolean
+          created_at?: string
+          id?: string
+          is_demo?: boolean
+          lead_user_id?: string | null
+          lead_worker_id?: string | null
+          name: string
+          projects?: number
+          rating?: number
+          sector: string
+          skills?: string[]
+          summary?: string
+        }
         Update: {
-          areas?: string[];
-          available?: boolean;
-          created_at?: string;
-          id?: string;
-          is_demo?: boolean;
-          lead_user_id?: string | null;
-          lead_worker_id?: string | null;
-          name?: string;
-          projects?: number;
-          rating?: number;
-          sector?: string;
-          skills?: string[];
-          summary?: string;
-        };
+          areas?: string[]
+          available?: boolean
+          created_at?: string
+          id?: string
+          is_demo?: boolean
+          lead_user_id?: string | null
+          lead_worker_id?: string | null
+          name?: string
+          projects?: number
+          rating?: number
+          sector?: string
+          skills?: string[]
+          summary?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "teams_lead_worker_id_fkey";
-            columns: ["lead_worker_id"];
-            isOneToOne: false;
-            referencedRelation: "worker_profiles";
-            referencedColumns: ["id"];
+            foreignKeyName: "teams_lead_worker_id_fkey"
+            columns: ["lead_worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       user_roles: {
         Row: {
-          created_at: string;
-          id: string;
-          role: Database["public"]["Enums"]["app_role"];
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          role: Database["public"]["Enums"]["app_role"];
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          role?: Database["public"]["Enums"]["app_role"];
-          user_id?: string;
-        };
-        Relationships: [];
-      };
-      worker_profiles: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      verified_experiences: {
         Row: {
-          available: boolean;
-          bio: string;
-          created_at: string;
-          district: string;
-          id: string;
-          initials: string;
-          is_demo: boolean;
-          name: string;
-          rate_rwf: number;
-          rate_unit: string;
-          rating: number;
-          rep: Json;
-          reviews: number;
-          sector: string;
-          title: string;
-          user_id: string | null;
-          verified: boolean;
-          visibility: string;
-          years: number;
-        };
+          amount_rwf: number
+          approved_milestone_count: number
+          business_id: string
+          completed_at: string
+          completion_id: string
+          contract_id: string
+          created_at: string
+          currency: string
+          end_date: string | null
+          id: string
+          milestone_count: number
+          opportunity_id: string
+          scope: string
+          start_date: string | null
+          team_id: string | null
+          title: string
+          verified_at: string
+          worker_id: string | null
+        }
         Insert: {
-          available?: boolean;
-          bio?: string;
-          created_at?: string;
-          district: string;
-          id?: string;
-          initials?: string;
-          is_demo?: boolean;
-          name: string;
-          rate_rwf?: number;
-          rate_unit?: string;
-          rating?: number;
-          rep?: Json;
-          reviews?: number;
-          sector: string;
-          title?: string;
-          user_id?: string | null;
-          verified?: boolean;
-          visibility?: string;
-          years?: number;
-        };
+          amount_rwf: number
+          approved_milestone_count?: number
+          business_id: string
+          completed_at: string
+          completion_id: string
+          contract_id: string
+          created_at?: string
+          currency?: string
+          end_date?: string | null
+          id?: string
+          milestone_count?: number
+          opportunity_id: string
+          scope: string
+          start_date?: string | null
+          team_id?: string | null
+          title: string
+          verified_at?: string
+          worker_id?: string | null
+        }
         Update: {
-          available?: boolean;
-          bio?: string;
-          created_at?: string;
-          district?: string;
-          id?: string;
-          initials?: string;
-          is_demo?: boolean;
-          name?: string;
-          rate_rwf?: number;
-          rate_unit?: string;
-          rating?: number;
-          rep?: Json;
-          reviews?: number;
-          sector?: string;
-          title?: string;
-          user_id?: string | null;
-          verified?: boolean;
-          visibility?: string;
-          years?: number;
-        };
-        Relationships: [];
-      };
-      worker_skills: {
-        Row: {
-          id: string;
-          level: string;
-          name: string;
-          verification: string;
-          worker_id: string;
-        };
-        Insert: {
-          id?: string;
-          level?: string;
-          name: string;
-          verification?: string;
-          worker_id: string;
-        };
-        Update: {
-          id?: string;
-          level?: string;
-          name?: string;
-          verification?: string;
-          worker_id?: string;
-        };
+          amount_rwf?: number
+          approved_milestone_count?: number
+          business_id?: string
+          completed_at?: string
+          completion_id?: string
+          contract_id?: string
+          created_at?: string
+          currency?: string
+          end_date?: string | null
+          id?: string
+          milestone_count?: number
+          opportunity_id?: string
+          scope?: string
+          start_date?: string | null
+          team_id?: string | null
+          title?: string
+          verified_at?: string
+          worker_id?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "worker_skills_worker_id_fkey";
-            columns: ["worker_id"];
-            isOneToOne: false;
-            referencedRelation: "worker_profiles";
-            referencedColumns: ["id"];
+            foreignKeyName: "verified_experiences_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
           },
-        ];
-      };
-    };
+          {
+            foreignKeyName: "verified_experiences_completion_id_fkey"
+            columns: ["completion_id"]
+            isOneToOne: true
+            referencedRelation: "contract_completions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verified_experiences_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verified_experiences_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verified_experiences_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verified_experiences_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      worker_profiles: {
+        Row: {
+          available: boolean
+          bio: string
+          created_at: string
+          district: string
+          id: string
+          initials: string
+          is_demo: boolean
+          name: string
+          rate_rwf: number
+          rate_unit: string
+          rating: number
+          rep: Json
+          reviews: number
+          sector: string
+          title: string
+          user_id: string | null
+          verified: boolean
+          visibility: string
+          years: number
+        }
+        Insert: {
+          available?: boolean
+          bio?: string
+          created_at?: string
+          district: string
+          id?: string
+          initials?: string
+          is_demo?: boolean
+          name: string
+          rate_rwf?: number
+          rate_unit?: string
+          rating?: number
+          rep?: Json
+          reviews?: number
+          sector: string
+          title?: string
+          user_id?: string | null
+          verified?: boolean
+          visibility?: string
+          years?: number
+        }
+        Update: {
+          available?: boolean
+          bio?: string
+          created_at?: string
+          district?: string
+          id?: string
+          initials?: string
+          is_demo?: boolean
+          name?: string
+          rate_rwf?: number
+          rate_unit?: string
+          rating?: number
+          rep?: Json
+          reviews?: number
+          sector?: string
+          title?: string
+          user_id?: string | null
+          verified?: boolean
+          visibility?: string
+          years?: number
+        }
+        Relationships: []
+      }
+      worker_skills: {
+        Row: {
+          id: string
+          level: string
+          name: string
+          verification: string
+          worker_id: string
+        }
+        Insert: {
+          id?: string
+          level?: string
+          name: string
+          verification?: string
+          worker_id: string
+        }
+        Update: {
+          id?: string
+          level?: string
+          name?: string
+          verification?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_skills_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
     Views: {
-      [_ in never]: never;
-    };
+      [_ in never]: never
+    }
     Functions: {
-      are_connected: { Args: { _a: string; _b: string }; Returns: boolean };
+      approve_milestone: {
+        Args: { _milestone_id: string }
+        Returns: Database["public"]["Enums"]["milestone_status"]
+      }
+      are_connected: { Args: { _a: string; _b: string }; Returns: boolean }
       cancel_contract: {
-        Args: { _contract_id: string; _note?: string };
-        Returns: Database["public"]["Enums"]["contract_status"];
-      };
-      contract_counterparty_user: { Args: { _cid: string }; Returns: string };
+        Args: { _contract_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["contract_status"]
+      }
+      confirm_completion: {
+        Args: { _contract_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["completion_status"]
+      }
+      contract_counterparty_user: { Args: { _cid: string }; Returns: string }
       create_contract: {
         Args: {
-          _amount_rwf: number;
-          _application_id: string;
-          _end_date?: string;
-          _scope: string;
-          _start_date?: string;
-          _terms?: string;
-          _title: string;
-        };
-        Returns: string;
-      };
-      approve_milestone: {
-        Args: { _milestone_id: string };
-        Returns: Database["public"]["Enums"]["milestone_status"];
-      };
+          _amount_rwf: number
+          _application_id: string
+          _end_date?: string
+          _scope: string
+          _start_date?: string
+          _terms?: string
+          _title: string
+        }
+        Returns: string
+      }
       create_milestone: {
         Args: {
-          _amount_rwf: number;
-          _contract_id: string;
-          _description: string;
-          _due_date: string;
-          _sequence: number;
-          _title: string;
-        };
-        Returns: string;
-      };
+          _amount_rwf: number
+          _contract_id: string
+          _description: string
+          _due_date: string
+          _sequence: number
+          _title: string
+        }
+        Returns: string
+      }
       delete_pending_milestone: {
-        Args: { _milestone_id: string };
-        Returns: undefined;
-      };
+        Args: { _milestone_id: string }
+        Returns: undefined
+      }
       dispute_milestone: {
-        Args: { _milestone_id: string; _note?: string };
-        Returns: Database["public"]["Enums"]["milestone_status"];
-      };
-      submit_milestone: {
-        Args: { _milestone_id: string; _submission_note?: string };
-        Returns: Database["public"]["Enums"]["milestone_status"];
-      };
-      update_pending_milestone: {
-        Args: {
-          _amount_rwf: number;
-          _description: string;
-          _due_date: string;
-          _milestone_id: string;
-          _sequence: number;
-          _title: string;
-        };
-        Returns: undefined;
-      };
+        Args: { _milestone_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["milestone_status"]
+      }
       has_role: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"];
-          _user_id: string;
-        };
-        Returns: boolean;
-      };
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_business_member: {
-        Args: { _bid: string; _roles?: string[] };
-        Returns: boolean;
-      };
-      is_contract_party: { Args: { _cid: string }; Returns: boolean };
-      is_team_lead: { Args: { _tid: string }; Returns: boolean };
-      my_worker_id: { Args: never; Returns: string };
-      notify_business: {
-        Args: { _bid: string; _kind: string; _link: string; _text: string };
-        Returns: undefined;
-      };
+        Args: { _bid: string; _roles?: string[] }
+        Returns: boolean
+      }
+      is_contract_party: { Args: { _cid: string }; Returns: boolean }
+      is_team_lead: { Args: { _tid: string }; Returns: boolean }
+      my_worker_id: { Args: never; Returns: string }
+      reject_completion: {
+        Args: { _contract_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["completion_status"]
+      }
+      request_completion: {
+        Args: { _contract_id: string; _request_note?: string }
+        Returns: string
+      }
       respond_contract: {
-        Args: { _accept: boolean; _contract_id: string; _note?: string };
-        Returns: Database["public"]["Enums"]["contract_status"];
-      };
-      worker_network_count: { Args: { _worker_id: string }; Returns: number };
-    };
+        Args: { _accept: boolean; _contract_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["contract_status"]
+      }
+      submit_milestone: {
+        Args: { _milestone_id: string; _submission_note?: string }
+        Returns: Database["public"]["Enums"]["milestone_status"]
+      }
+      update_pending_milestone: {
+        Args: {
+          _amount_rwf: number
+          _description: string
+          _due_date: string
+          _milestone_id: string
+          _sequence: number
+          _title: string
+        }
+        Returns: undefined
+      }
+      withdraw_completion_request: {
+        Args: { _contract_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["completion_status"]
+      }
+      worker_network_count: { Args: { _worker_id: string }; Returns: number }
+    }
     Enums: {
-      app_role: "worker" | "team_lead" | "business" | "learner" | "admin" | "institution";
+      app_role:
+        | "worker"
+        | "team_lead"
+        | "business"
+        | "learner"
+        | "admin"
+        | "institution"
       application_status:
-        "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" | "withdrawn";
-      contract_status: "proposed" | "active" | "declined" | "cancelled" | "completed";
-      milestone_status: "pending" | "submitted" | "disputed" | "approved";
-    };
+        | "submitted"
+        | "viewed"
+        | "shortlisted"
+        | "rejected"
+        | "accepted"
+        | "withdrawn"
+      completion_status: "requested" | "rejected" | "confirmed"
+      contract_status:
+        | "proposed"
+        | "active"
+        | "declined"
+        | "cancelled"
+        | "completed"
+      milestone_status: "pending" | "submitted" | "disputed" | "approved"
+    }
     CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
-};
+      [_ in never]: never
+    }
+  }
+}
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R;
+      Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R;
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
       }
       ? R
       : never
-    : never;
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I;
+      Insert: infer I
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I;
+        Insert: infer I
       }
       ? I
       : never
-    : never;
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U;
+      Update: infer U
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U;
+        Update: infer U
       }
       ? U
       : never
-    : never;
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never;
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    keyof DefaultSchema["CompositeTypes"] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never;
+    : never
 
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["worker", "team_lead", "business", "learner", "admin", "institution"],
+      app_role: [
+        "worker",
+        "team_lead",
+        "business",
+        "learner",
+        "admin",
+        "institution",
+      ],
       application_status: [
         "submitted",
         "viewed",
@@ -1131,8 +1449,15 @@ export const Constants = {
         "accepted",
         "withdrawn",
       ],
-      contract_status: ["proposed", "active", "declined", "cancelled", "completed"],
+      completion_status: ["requested", "rejected", "confirmed"],
+      contract_status: [
+        "proposed",
+        "active",
+        "declined",
+        "cancelled",
+        "completed",
+      ],
       milestone_status: ["pending", "submitted", "disputed", "approved"],
     },
   },
-} as const;
+} as const
