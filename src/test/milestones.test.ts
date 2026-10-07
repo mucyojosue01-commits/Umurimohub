@@ -27,7 +27,7 @@ describe("milestone validation", () => {
 
   it("rejects short or oversized text", () => {
     expect(validateMilestone({ ...base, title: "x" })).toContain("Title");
-    expect(validateMilestone({ ...base, description: "short" })).toContain("description");
+    expect(validateMilestone({ ...base, description: "short" })).toContain("Description");
     expect(validateMilestone({ ...base, title: "x".repeat(201) })).toContain("Title");
   });
 
