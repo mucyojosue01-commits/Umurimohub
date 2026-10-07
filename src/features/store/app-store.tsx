@@ -166,6 +166,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         at: new Date(n.created_at).toLocaleString(),
         read: n.read,
         kind: n.kind,
+        link: n.link,
       })),
     );
   }, []);
@@ -254,7 +255,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await loadPersonal(session);
       return { ok: true };
     },
-    send: () => undefined,
+    send: () => {
+      // Legacy store API; live messaging is implemented by src/routes/messages.tsx.
+      // Keeping this compatibility hook prevents older UI consumers from crashing.
+    },
     markAllRead: () => {
       if (session) void supabase.rpc("mark_all_notifications_read").then(() => loadPersonal(session));
     },
