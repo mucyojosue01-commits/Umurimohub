@@ -26,6 +26,8 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrainingRouteImport } from './routes/training'
+import { Route as GrowRouteImport } from './routes/grow'
+import { Route as CompanyRouteImport } from './routes/company'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as OpportunitiesNewRouteImport } from './routes/opportunities.new'
@@ -119,6 +121,16 @@ const TrainingRoute = TrainingRouteImport.update({
   path: '/training',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GrowRoute = GrowRouteImport.update({
+  id: '/grow',
+  path: '/grow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompanyRoute = CompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OpportunitiesIndexRoute = OpportunitiesIndexRouteImport.update({
   id: '/opportunities/',
   path: '/opportunities/',
@@ -173,6 +185,8 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
+  '/grow': typeof GrowRoute
+  '/company': typeof CompanyRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -199,6 +213,8 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
+  '/grow': typeof GrowRoute
+  '/company': typeof CompanyRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -226,6 +242,8 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
+  '/grow': typeof GrowRoute
+  '/company': typeof CompanyRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -254,6 +272,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/terms'
     | '/training'
+    | '/grow'
+    | '/company'
     | '/opportunities/$id'
     | '/opportunities/new'
     | '/teams/$id'
@@ -333,6 +353,8 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   TermsRoute: typeof TermsRoute
   TrainingRoute: typeof TrainingRoute
+  GrowRoute: typeof GrowRoute
+  CompanyRoute: typeof CompanyRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   OpportunitiesNewRoute: typeof OpportunitiesNewRoute
   TeamsIdRoute: typeof TeamsIdRoute
@@ -456,6 +478,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/grow': {
+      id: '/grow'
+      path: '/grow'
+      fullPath: '/grow'
+      preLoaderRoute: typeof GrowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/company': {
+      id: '/company'
+      path: '/company'
+      fullPath: '/company'
+      preLoaderRoute: typeof CompanyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/training': {
       id: '/training'
       path: '/training'
@@ -533,6 +569,8 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   TermsRoute: TermsRoute,
   TrainingRoute: TrainingRoute,
+  GrowRoute: GrowRoute,
+  CompanyRoute: CompanyRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
   OpportunitiesNewRoute: OpportunitiesNewRoute,
   TeamsIdRoute: TeamsIdRoute,

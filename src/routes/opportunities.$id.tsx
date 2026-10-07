@@ -128,7 +128,7 @@ function Page() {
               ))}
             </div>
           </section>
-          <DemoNotice className="mt-8" />
+            <p className="mt-8 text-xs text-muted-foreground">All opportunities shown here are published by UmurimoHub members.</p>
         </div>
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <Card>
@@ -165,7 +165,7 @@ function Page() {
                     <Link to="/login" className="text-primary">
                       Sign in
                     </Link>{" "}
-                    to apply for real — without an account, applications are demo-only.
+                    to apply for this opportunity.
                   </p>
                 )}
               </div>
