@@ -31,7 +31,6 @@ type Rec = { id: string; score: number; fit: string; gaps: string };
 const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
 
 function Page() {
-  // CI formatting pass
   const { allOpps } = useApp();
   const run = useServerFn(recommendOpportunities);
   const [skills, setSkills] = useState("");
