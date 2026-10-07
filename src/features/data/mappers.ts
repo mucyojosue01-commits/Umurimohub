@@ -17,8 +17,8 @@ export type Catalog = {
   teams: Team[];
   businesses: Business[];
   opportunities: Opportunity[];
-  workerUserIds: Record<string, string | null>; // worker id -> account id (null for demo profiles)
-  source: "database" | "demo";
+  workerUserIds: Record<string, string | null>; // worker id -> account id
+  source: "database";
 };
 
 const emptyRep: Rep = {
@@ -131,6 +131,6 @@ export function mapOpportunity(o: Tables<"opportunities">): Opportunity {
     responsibilities: o.responsibilities,
     requirements: o.requirements,
     featured: o.featured,
-    posted: o.is_demo ? "demo" : relTime(o.created_at),
+    posted: relTime(o.created_at),
   };
 }
