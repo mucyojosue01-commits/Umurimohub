@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCatalog } from "@/features/data/catalog";
 import { useApp } from "@/features/store/app-store";
 import { Card, Pill } from "@/features/ui/kit";
+import { CreateContractForm } from "@/features/contracts/panels";
 
 type Status = "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" | "withdrawn";
 
@@ -96,6 +98,7 @@ export function IncomingApplications() {
       return { opps: opps ?? [], apps: apps ?? [] };
     },
   });
+  const [contractApplication, setContractApplication] = useState<string | null>(null);
   if (!ids.length) return null;
   const setStatus = async (id: string, status: Status) => {
     const { error } = await supabase.from("applications").update({ status }).eq("id", id);
@@ -146,6 +149,19 @@ export function IncomingApplications() {
                 </span>
               </div>
               {a.note && <p className="mt-1 text-sm text-muted-foreground">“{a.note}”</p>}
+              {a.status === "accepted" && (
+                <div className="mt-2">
+                  <Button size="sm" onClick={() => setContractApplication(a.id)}>
+                    Create contract
+                  </Button>
+                  {contractApplication === a.id && (
+                    <CreateContractForm
+                      applicationId={a.id}
+                      onDone={() => setContractApplication(null)}
+                    />
+                  )}
+                </div>
+              )}
             </li>
           ))}
         </ul>

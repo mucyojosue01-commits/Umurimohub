@@ -21,7 +21,13 @@ export function useContracts() {
   return useQuery({ queryKey: contractsKey, enabled: !!session, queryFn: listMyContracts });
 }
 
-export function CreateContractForm({ applicationId, onDone }: { applicationId: string; onDone: () => void }) {
+export function CreateContractForm({
+  applicationId,
+  onDone,
+}: {
+  applicationId: string;
+  onDone: () => void;
+}) {
   const qc = useQueryClient();
   const [f, setF] = useState({ title: "", scope: "", amount: "", start: "", end: "", terms: "" });
   const [busy, setBusy] = useState(false);
@@ -51,23 +57,58 @@ export function CreateContractForm({ applicationId, onDone }: { applicationId: s
   };
   return (
     <div className="mt-3 grid gap-2 rounded-2xl border bg-muted/30 p-4">
-      <Input placeholder="Contract title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
-      <Textarea placeholder="Scope of work" value={f.scope} onChange={(e) => setF({ ...f, scope: e.target.value })} />
-      <Input type="number" min={1} step={1} placeholder="Amount (RWF)" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} />
+      <Input
+        placeholder="Contract title"
+        value={f.title}
+        onChange={(e) => setF({ ...f, title: e.target.value })}
+      />
+      <Textarea
+        placeholder="Scope of work"
+        value={f.scope}
+        onChange={(e) => setF({ ...f, scope: e.target.value })}
+      />
+      <Input
+        type="number"
+        min={1}
+        step={1}
+        placeholder="Amount (RWF)"
+        value={f.amount}
+        onChange={(e) => setF({ ...f, amount: e.target.value })}
+      />
       <div className="grid grid-cols-2 gap-2">
-        <Input type="date" aria-label="Start date" value={f.start} onChange={(e) => setF({ ...f, start: e.target.value })} />
-        <Input type="date" aria-label="End date" value={f.end} onChange={(e) => setF({ ...f, end: e.target.value })} />
+        <Input
+          type="date"
+          aria-label="Start date"
+          value={f.start}
+          onChange={(e) => setF({ ...f, start: e.target.value })}
+        />
+        <Input
+          type="date"
+          aria-label="End date"
+          value={f.end}
+          onChange={(e) => setF({ ...f, end: e.target.value })}
+        />
       </div>
-      <Textarea placeholder="Terms (optional)" value={f.terms} onChange={(e) => setF({ ...f, terms: e.target.value })} />
+      <Textarea
+        placeholder="Terms (optional)"
+        value={f.terms}
+        onChange={(e) => setF({ ...f, terms: e.target.value })}
+      />
       <div className="flex gap-2">
-        <Button size="sm" disabled={busy} onClick={submit}>{busy ? "Sending…" : "Send proposal"}</Button>
-        <Button size="sm" variant="ghost" onClick={onDone}>Cancel</Button>
+        <Button size="sm" disabled={busy} onClick={submit}>
+          {busy ? "Sending…" : "Send proposal"}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onDone}>
+          Cancel
+        </Button>
       </div>
     </div>
   );
 }
 
-const tone = (s: string) => (s === "active" ? "success" : s === "proposed" ? "primary" : "muted") as "success" | "primary" | "muted";
+const tone = (s: string) =>
+  (s === "active" ? "success" : s === "proposed" ? "primary" : "muted") as
+    "success" | "primary" | "muted";
 
 export function ContractsPanel() {
   const { user } = useApp();
@@ -91,28 +132,53 @@ export function ContractsPanel() {
       ) : q.isError ? (
         <p className="mt-2 text-sm text-destructive">Couldn't load contracts. Try again shortly.</p>
       ) : !q.data?.length ? (
-        <p className="mt-2 text-sm text-muted-foreground">No contracts yet. Contracts appear once an accepted application gets a proposal.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          No contracts yet. Contracts appear once an accepted application gets a proposal.
+        </p>
       ) : (
         <ul className="mt-3 divide-y">
           {q.data.map((c) => {
             const isBiz = user.businessIds.includes(c.business_id);
-            const isParty = (c.worker_id && c.worker_id === user.workerId) || (c.team_id && user.leadTeamIds.includes(c.team_id));
+            const isParty =
+              (c.worker_id && c.worker_id === user.workerId) ||
+              (c.team_id && user.leadTeamIds.includes(c.team_id));
             return (
               <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                 <div>
                   <p className="font-medium">{c.title}</p>
-                  <p className="text-sm text-muted-foreground">{rwf(c.amount_rwf)} · {c.team_id ? "Team" : "Individual"}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {rwf(c.amount_rwf)} · {c.team_id ? "Team" : "Individual"}
+                  </p>
                 </div>
                 <span className="flex flex-wrap items-center gap-2">
                   <Pill tone={tone(c.status)}>{c.status}</Pill>
                   {isParty && c.status === "proposed" && (
                     <>
-                      <Button size="sm" onClick={() => act(() => respondContract(c.id, true), "Contract accepted — now active")}>Accept</Button>
-                      <Button size="sm" variant="outline" onClick={() => act(() => respondContract(c.id, false), "Contract declined")}>Decline</Button>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          act(() => respondContract(c.id, true), "Contract accepted — now active")
+                        }
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => act(() => respondContract(c.id, false), "Contract declined")}
+                      >
+                        Decline
+                      </Button>
                     </>
                   )}
                   {isBiz && (c.status === "proposed" || c.status === "active") && (
-                    <Button size="sm" variant="ghost" onClick={() => act(() => cancelContract(c.id), "Contract cancelled")}>Cancel</Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => act(() => cancelContract(c.id), "Contract cancelled")}
+                    >
+                      Cancel
+                    </Button>
                   )}
                 </span>
               </li>
