@@ -117,7 +117,7 @@ begin
   end if;
   if new.status is distinct from old.status and not (
     (old.status = 'proposed' and new.status in ('active','declined','cancelled'))
-    or (old.status = 'active' and new.status = 'cancelled')
+    or (old.status = 'active' and new.status in ('cancelled','completed'))
   ) then
     raise exception 'Invalid contract transition % -> %', old.status, new.status;
   end if;
