@@ -4,7 +4,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { DISTRICTS, SECTORS } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
-import { DemoNotice, EmptyState, OpportunityCard, PageHeader } from "@/features/ui/kit";
+import { EmptyState, OpportunityCard, PageHeader } from "@/features/ui/kit";
 
 const search = z.object({
   q: z.string().optional().catch(""),
@@ -128,7 +128,6 @@ function Page() {
           Teams welcome
         </label>
       </div>
-      <DemoNotice className="mt-4" />
       <p className="mt-6 text-sm text-muted-foreground">{list.length} results</p>
       {list.length ? (
         <div className="mt-3 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
