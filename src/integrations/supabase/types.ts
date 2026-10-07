@@ -342,6 +342,116 @@ export type Database = {
           },
         ];
       };
+      milestones: {
+        Row: {
+          amount_rwf: number;
+          approved_at: string | null;
+          contract_id: string;
+          created_at: string;
+          description: string;
+          disputed_at: string | null;
+          due_date: string;
+          id: string;
+          sequence: number;
+          status: Database["public"]["Enums"]["milestone_status"];
+          submission_note: string | null;
+          submitted_at: string | null;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          amount_rwf: number;
+          approved_at?: string | null;
+          contract_id: string;
+          created_at?: string;
+          description: string;
+          disputed_at?: string | null;
+          due_date: string;
+          id?: string;
+          sequence: number;
+          status?: Database["public"]["Enums"]["milestone_status"];
+          submission_note?: string | null;
+          submitted_at?: string | null;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          amount_rwf?: number;
+          approved_at?: string | null;
+          contract_id?: string;
+          created_at?: string;
+          description?: string;
+          disputed_at?: string | null;
+          due_date?: string;
+          id?: string;
+          sequence?: number;
+          status?: Database["public"]["Enums"]["milestone_status"];
+          submission_note?: string | null;
+          submitted_at?: string | null;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "milestones_contract_id_fkey";
+            columns: ["contract_id"];
+            isOneToOne: false;
+            referencedRelation: "contracts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      milestone_events: {
+        Row: {
+          actor: string | null;
+          at: string;
+          contract_id: string;
+          event_type: string;
+          from_status: Database["public"]["Enums"]["milestone_status"] | null;
+          id: number;
+          milestone_id: string;
+          note: string | null;
+          to_status: Database["public"]["Enums"]["milestone_status"];
+        };
+        Insert: {
+          actor?: string | null;
+          at?: string;
+          contract_id: string;
+          event_type: string;
+          from_status?: Database["public"]["Enums"]["milestone_status"] | null;
+          id?: never;
+          milestone_id: string;
+          note?: string | null;
+          to_status: Database["public"]["Enums"]["milestone_status"];
+        };
+        Update: {
+          actor?: string | null;
+          at?: string;
+          contract_id?: string;
+          event_type?: string;
+          from_status?: Database["public"]["Enums"]["milestone_status"] | null;
+          id?: never;
+          milestone_id?: string;
+          note?: string | null;
+          to_status?: Database["public"]["Enums"]["milestone_status"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "milestone_events_contract_id_fkey";
+            columns: ["contract_id"];
+            isOneToOne: false;
+            referencedRelation: "contracts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "milestone_events_milestone_id_fkey";
+            columns: ["milestone_id"];
+            isOneToOne: false;
+            referencedRelation: "milestones";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notifications: {
         Row: {
           created_at: string;
@@ -823,6 +933,44 @@ export type Database = {
         };
         Returns: string;
       };
+      approve_milestone: {
+        Args: { _milestone_id: string };
+        Returns: Database["public"]["Enums"]["milestone_status"];
+      };
+      create_milestone: {
+        Args: {
+          _amount_rwf: number;
+          _contract_id: string;
+          _description: string;
+          _due_date: string;
+          _sequence: number;
+          _title: string;
+        };
+        Returns: string;
+      };
+      delete_pending_milestone: {
+        Args: { _milestone_id: string };
+        Returns: undefined;
+      };
+      dispute_milestone: {
+        Args: { _milestone_id: string; _note?: string };
+        Returns: Database["public"]["Enums"]["milestone_status"];
+      };
+      submit_milestone: {
+        Args: { _milestone_id: string; _submission_note?: string };
+        Returns: Database["public"]["Enums"]["milestone_status"];
+      };
+      update_pending_milestone: {
+        Args: {
+          _amount_rwf: number;
+          _description: string;
+          _due_date: string;
+          _milestone_id: string;
+          _sequence: number;
+          _title: string;
+        };
+        Returns: undefined;
+      };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
@@ -852,6 +1000,7 @@ export type Database = {
       application_status:
         "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" | "withdrawn";
       contract_status: "proposed" | "active" | "declined" | "cancelled" | "completed";
+      milestone_status: "pending" | "submitted" | "disputed" | "approved";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -983,6 +1132,7 @@ export const Constants = {
         "withdrawn",
       ],
       contract_status: ["proposed", "active", "declined", "cancelled", "completed"],
+      milestone_status: ["pending", "submitted", "disputed", "approved"],
     },
   },
 } as const;
