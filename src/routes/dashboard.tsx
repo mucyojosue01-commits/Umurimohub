@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { rwf } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
 import { IncomingApplications, MyApplications, TeamInvites } from "@/features/dashboard/panels";
+import { ContractsPanel } from "@/features/contracts/panels";
 import { Card, OpportunityCard, PageHeader, Pill, Stat } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/dashboard")({
@@ -65,6 +66,7 @@ function Page() {
       <TeamInvites />
       <IncomingApplications />
       <MyApplications />
+      <ContractsPanel />
       <Card className="mt-6">
         <h2 className="font-bold">Project: 4-unit housing block (demo)</h2>
         <ul className="mt-3 divide-y">
