@@ -326,6 +326,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
         return { ok: true };
       }
+      // Validate against the canonical database before inserting. The FK remains
+      // authoritative, but this prevents a stale/demo catalog entry from surfacing
+      // as a raw Postgres foreign-key error in the UI.
+      const { data: opportunity, error: opportunityLookupError } = await supabase
+        .from("opportunities")
+        .select("id,status")
+        .eq("id", a.oppId)
+        .maybeSingle();
+      if (opportunityLookupError)
+        return { ok: false, error: "We couldn't verify this opportunity. Please try again." };
+      if (!opportunity || opportunity.status !== "open")
+        return { ok: false, error: "This opportunity is no longer available." };
+
       const { error } = await supabase.from("applications").insert({
         opportunity_id: a.oppId,
         applicant_user_id: session.user.id,
