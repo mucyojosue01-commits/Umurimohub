@@ -76,7 +76,7 @@ begin
   perform pg_temp.check(
     pg_temp.fails(format(
       $q$select public.create_milestone(%L,2,'Duplicate','Duplicate sequence should fail.',100000,current_date+20)$q$,
-      contract_id
+      cid
     )),
     'duplicate sequence rejected'
   );
@@ -84,7 +84,7 @@ begin
   perform pg_temp.check(
     pg_temp.fails(format(
       $q$insert into milestones(contract_id,sequence,title,description,amount_rwf,due_date) values (%L,3,'Direct','Direct insert is blocked.',1,current_date+20)$q$,
-      contract_id
+      cid
     )),
     'direct milestone insert denied'
   );
