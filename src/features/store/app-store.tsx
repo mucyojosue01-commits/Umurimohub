@@ -20,6 +20,7 @@ export type User = {
   businessIds: string[];
   leadTeamIds: string[];
   onboarded: boolean;
+  avatarUrl: string | null;
 };
 export type Application = {
   id: string;
@@ -111,6 +112,7 @@ async function loadUser(session: Session): Promise<User> {
     businessIds: (bm.data ?? []).map((x) => x.business_id),
     leadTeamIds: (t.data ?? []).map((x) => x.id),
     onboarded: !!p.data && roles.length > 0,
+    avatarUrl: p.data?.avatar_url ?? null,
   };
 }
 

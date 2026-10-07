@@ -71,11 +71,8 @@ function Page() {
     void reloadMessages();
     const channel = supabase
       .channel("conversation-" + activeId)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "messages", filter: "conversation_id=eq." + activeId },
-        () => void reloadMessages(),
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: "conversation_id=eq." + activeId }, () => void reloadMessages())
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_reads" }, () => void reloadMessages())
       .subscribe();
     return () => void supabase.removeChannel(channel);
   }, [activeId, session]);

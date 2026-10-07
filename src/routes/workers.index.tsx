@@ -87,7 +87,6 @@ function Page() {
           Available
         </label>
       </div>
-      <DemoNotice className="mt-4" />
       <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{workers.length === 0 && <p className="col-span-full py-12 text-center text-sm text-muted-foreground">No workers have joined yet.</p>}
         {list.map((w) => (
           <WorkerCard key={w.id} w={w} />

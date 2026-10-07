@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useApp } from "@/features/store/app-store";
 import { Card } from "@/features/ui/kit";
 
@@ -79,8 +78,9 @@ function Page() {
           className="mt-5 w-full"
           size="lg"
           onClick={async () => {
-            const r = await lovable.auth.signInWithOAuth("google", {
-              redirect_uri: window.location.origin + "/login",
+            const r = await supabase.auth.signInWithOAuth({
+              provider: "google",
+              options: { redirectTo: window.location.origin + "/login" },
             });
             if (r.error) setErr(r.error.message ?? "Google sign-in failed");
           }}
