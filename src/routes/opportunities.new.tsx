@@ -45,7 +45,7 @@ const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
 
 function Page() {
   const { createOpp, user, authReady } = useApp();
-  const { businesses, teams } = useCatalog();
+  const { businesses } = useCatalog();
   const nav = useNavigate();
   const {
     register,
