@@ -98,8 +98,8 @@ export function IncomingApplications() {
       return { opps: opps ?? [], apps: apps ?? [] };
     },
   });
-  if (!ids.length) return null;
   const [contractApplication, setContractApplication] = useState<string | null>(null);
+  if (!ids.length) return null;
   const setStatus = async (id: string, status: Status) => {
     const { error } = await supabase.from("applications").update({ status }).eq("id", id);
     if (error) toast.error(error.message);
