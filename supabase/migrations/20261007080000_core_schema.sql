@@ -247,16 +247,6 @@ returns integer language sql stable security definer set search_path = public as
   where c.status = 'accepted' and (a.id = _worker_id or b.id = _worker_id);
 $$;
 
-create or replace function public.notify_business(_bid text, _kind text, _text text, _link text)
-returns void language plpgsql security definer set search_path = public as $$
-begin
-  insert into public.notifications(user_id, kind, text, link)
-  select bm.user_id, _kind, _text, _link
-  from public.business_members bm
-  where bm.business_id = _bid;
-end;
-$$;
-
 alter table public.profiles enable row level security;
 alter table public.user_roles enable row level security;
 alter table public.worker_profiles enable row level security;
@@ -334,4 +324,3 @@ grant execute on function public.is_business_member(text, text[]) to authenticat
 grant execute on function public.is_team_lead(text) to authenticated;
 grant execute on function public.are_connected(text,text) to authenticated;
 grant execute on function public.worker_network_count(text) to authenticated;
-grant execute on function public.notify_business(text,text,text,text) to authenticated;
