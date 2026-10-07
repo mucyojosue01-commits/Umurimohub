@@ -77,8 +77,8 @@ create table public.reputation_evidence (
   created_at timestamptz not null default now()
 );
 
-create unique index reputation_evidence_source_event_unique
-on public.reputation_evidence(source_event_id)
+create unique index reputation_evidence_source_event_type_unique
+on public.reputation_evidence(source_event_id, evidence_type)
 where source_event_id is not null;
 
 create unique index reputation_evidence_contract_type_unique
