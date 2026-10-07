@@ -37,7 +37,8 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Prettier check
-        run: npx prettier --write .\n          npx prettier --check .
+        run: npx prettier --write .
+          npx prettier --check .
 
       - name: Lint
         run: npm run lint
