@@ -21,7 +21,7 @@ const NAV = [
 export function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2 font-display text-lg font-extrabold">
-      <span className="grid size-8 place-items-center rounded-xl bg-primary text-primary-foreground">U</span>
+      <img src="/umurimohub-mark.svg" alt="" className="size-8 rounded-xl" />
       UmurimoHub
     </Link>
   );
