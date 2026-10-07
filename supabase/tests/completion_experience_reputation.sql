@@ -71,12 +71,12 @@ begin
   insert into applications(opportunity_id,applicant_user_id,team_id,kind,note,status)
     values ('c_team_opp',lead,'c_team','Team','n','accepted')
     returning id into team_app;
-
-  perform pg_temp.as_user(biz);
-  cid := public.create_contract(app_id,'Direct Completion','Complete the construction scope',500000,current_date,current_date+10,null);
   insert into applications(opportunity_id,applicant_user_id,kind,note,status)
     values ('c_opp',worker,'Individual','gated','accepted')
     returning id into gated_app;
+
+  perform pg_temp.as_user(biz);
+  cid := public.create_contract(app_id,'Direct Completion','Complete the construction scope',500000,current_date,current_date+10,null);
   gated_cid := public.create_contract(
     gated_app,'Gated Completion','Complete the gated scope',500000,current_date,current_date+10,null
   );
