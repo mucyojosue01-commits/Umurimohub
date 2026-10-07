@@ -153,6 +153,12 @@ const AppCtx = createContext<Ctx | null>(null);
 const KEY = "umurimohub-demo-v2";
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+export function applicationErrorMessage(error: { code?: string; message?: string }) {
+  if (error.code === "23505") return "You've already applied to this opportunity.";
+  if (error.code === "23503") return "This opportunity is no longer available.";
+  return error.message ?? "Couldn't submit the application.";
+}
+
 async function loadUser(session: Session): Promise<User> {
   const uid = session.user.id;
   const [p, r, w, bm, t] = await Promise.all([
@@ -349,12 +355,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (error)
         return {
           ok: false,
-          error:
-            error.code === "23505"
-              ? "You've already applied to this opportunity."
-              : error.code === "23503"
-                ? "This opportunity is no longer available."
-                : error.message,
+          error: applicationErrorMessage(error),
         };
       push(notify(`Application sent (${a.kind.toLowerCase()})`, "application"));
       await loadPersonal(session);
