@@ -172,8 +172,8 @@ begin
   if old.status = 'confirmed' then
     raise exception 'Confirmed completion is immutable';
   end if;
-  if new.contract_id <> old.contract_id or new.requested_by <> old.requested_by then
-    raise exception 'Completion identity is immutable';
+  if new.contract_id <> old.contract_id then
+    raise exception 'Completion contract identity is immutable';
   end if;
   if new.status is distinct from old.status and not (
     (old.status = 'requested' and new.status = 'rejected')
