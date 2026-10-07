@@ -36,16 +36,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Format CI-blocking files for inspection
-        run: npx prettier --write src/features/store/app-store.tsx src/routes/match.tsx
-
-      - name: Upload formatted files
-        uses: actions/upload-artifact@v4
-        with:
-          name: prettier-fixed-files
-          path: |
-            src/features/store/app-store.tsx
-            src/routes/match.tsx
+      - name: Prettier check
+        run: npx prettier --check .
 
       - name: Lint
         run: npm run lint
