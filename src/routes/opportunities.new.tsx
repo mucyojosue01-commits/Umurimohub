@@ -209,18 +209,7 @@ function Page() {
             <input type="checkbox" {...register("teamAllowed")} />
             Teams can apply
           </label>
-          {watch("teamAllowed") && user?.leadTeamIds.length > 0 && (
-            <label className="text-sm md:col-span-2">
-              Your team
-              <select className={inp} defaultValue="">
-                <option value="">Optional — choose a team for context</option>
-                {teams.filter((t) => user.leadTeamIds.includes(t.id)).map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
-              <span className="mt-1 block text-xs text-muted-foreground">Teams can apply to this opportunity; this selection is only shown while creating it.</span>
-            </label>
-          )}          {watch("teamAllowed") && (
+          {watch("teamAllowed") && (
             <label className="text-sm">
               Team size
               <input type="number" {...register("teamSize")} className={inp} />
