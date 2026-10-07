@@ -88,13 +88,13 @@ begin
   end loop;
 
   if 'worker'=any(_roles) or 'team_lead'=any(_roles) then
-    initials:=upper(left(regexp_replace(btrim(_display_name),'[^A-Za-z0-9 ]','','g'),1)||coalesce(left(split_part(btrim(_display_name),' ',2),1),''));
+    v_initials:=upper(left(regexp_replace(btrim(_display_name),'[^A-Za-z0-9 ]','','g'),1)||coalesce(left(split_part(btrim(_display_name),' ',2),1),''));
     select id into wid from worker_profiles where user_id=uid limit 1;
     if wid is null then
       insert into worker_profiles(name,title,district,sector,rate_rwf,initials,user_id,is_demo)
-      values(btrim(_display_name),btrim(coalesce(_title,'')),btrim(_district),btrim(coalesce(_sector,'Construction')),_rate_rwf,initials,uid,false) returning id into wid;
+      values(btrim(_display_name),btrim(coalesce(_title,'')),btrim(_district),btrim(coalesce(_sector,'Construction')),_rate_rwf,v_initials,uid,false) returning id into wid;
     else
-      update worker_profiles set name=btrim(_display_name),title=btrim(coalesce(_title,'')),district=btrim(_district),sector=btrim(coalesce(_sector,'Construction')),rate_rwf=_rate_rwf,initials=initials,is_demo=false where id=wid;
+      update worker_profiles set name=btrim(_display_name),title=btrim(coalesce(_title,'')),district=btrim(_district),sector=btrim(coalesce(_sector,'Construction')),rate_rwf=_rate_rwf,initials=v_initials,is_demo=false where id=wid;
     end if;
     foreach s in array coalesce(_skills,'{}') loop
       if char_length(btrim(s)) between 1 and 60 then
