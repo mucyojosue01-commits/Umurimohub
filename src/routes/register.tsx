@@ -123,7 +123,7 @@ function Page() {
       return;
     }
     const v = p.data;
-    const uid = session.user.id;
+    try {
     const roles = v.roles as Array<"worker" | "team_lead" | "business" | "learner">;
     const skills = [...new Set(v.skills.split(",").map((s) => s.trim()).filter(Boolean))].slice(0, 15);
     const { error } = await supabase.rpc("complete_onboarding", {
