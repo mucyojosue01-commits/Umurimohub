@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DemoNotice, PageHeader } from "@/features/ui/kit";
+import { PageHeader } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/insights")({
   head: () => ({
@@ -25,7 +25,6 @@ export const Route = createFileRoute("/insights")({
         title="Economic insights"
         desc="Skills demand, district activity and training needs, published only from verified data."
       />
-      <DemoNotice />
     </div>
   ),
 });
