@@ -40,7 +40,7 @@ export type Msg = {
   ref?: string;
 };
 export type Notif = { id: string; text: string; at: string; read: boolean; kind: string; link?: string | null };
-export type NewOpportunity = Omit<Opportunity, "id" | "businessId" | "posted" | "featured">;
+export type NewOpportunity = Omit<Opportunity, "id" | "businessId" | "posted" | "featured"> & { businessId?: string };
 
 type Ctx = {
   user: User | null;
@@ -103,6 +103,7 @@ async function loadUser(session: Session): Promise<User> {
       session.user.email?.split("@")[0] ??
       "Member",
     phone: p.data?.phone ?? "",
+    avatarUrl: p.data?.avatar_url ?? null,
     district: p.data?.district ?? w.data?.district ?? "",
     verifiedPhone: !!p.data?.phone_verified,
     roles,
@@ -266,7 +267,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     createOpp: async (o) => {
       if (!session || !user) return { error: "Sign in with a business account to publish." };
-      const businessId = user.businessIds[0];
+      const businessId = o.businessId ?? user.businessIds[0];
       if (!businessId) return { error: "Create your business profile first." };
       const { data, error } = await supabase
         .from("opportunities")

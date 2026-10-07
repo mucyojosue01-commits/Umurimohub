@@ -6,6 +6,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { DISTRICTS, SECTORS, type Opportunity } from "@/features/data/demo";
 import { useApp, type NewOpportunity } from "@/features/store/app-store";
+import { useCatalog } from "@/features/data/catalog";
 import { Card, PageHeader } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/opportunities/new")({
@@ -37,12 +38,14 @@ const schema = z.object({
   summary: z.string().trim().min(20, "Describe the work (20+ chars)").max(1000),
   teamAllowed: z.boolean(),
   teamSize: z.coerce.number().min(0).max(500).optional(),
+  businessId: z.string().min(1, "Choose the business publishing this opportunity"),
 });
 type F = z.infer<typeof schema>;
 const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
 
 function Page() {
   const { createOpp, user, authReady } = useApp();
+  const { businesses } = useCatalog();
   const nav = useNavigate();
   const {
     register,
@@ -58,6 +61,7 @@ function Page() {
       teamAllowed: true,
       sector: "Construction",
       district: "",
+      businessId: "",
     },
   });
   const onSubmit = async (f: F) => {
@@ -68,6 +72,7 @@ function Page() {
     const { teamSize, ...rest } = f;
     const o: NewOpportunity = {
       ...rest,
+      businessId: f.businessId,
       ...(f.teamAllowed && teamSize ? { teamSize } : {}),
       sector: f.sector as Opportunity["sector"],
       skills: f.skills
@@ -126,6 +131,16 @@ function Page() {
                 <option key={x}>{x}</option>
               ))}
             </select>
+          </label>
+          <label className="text-sm">
+            Business
+            <select {...register("businessId")} className={inp} defaultValue={user?.businessIds[0] ?? ""}>
+              <option value="">Select business…</option>
+              {businesses.filter((b) => user?.businessIds.includes(b.id)).map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+            <Err k="businessId" />
           </label>
           <label className="text-sm">
             Sector
