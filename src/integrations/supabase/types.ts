@@ -11,13 +11,47 @@ export type Database = {
       contracts: {
         Row: { id: string; application_id: string; opportunity_id: string; business_id: string; worker_id: string | null; team_id: string | null; title: string; scope: string; amount_rwf: number; currency: string; start_date: string | null; end_date: string | null; terms: string | null; status: Database["public"]["Enums"]["contract_status"]; proposed_by: string; proposed_at: string; accepted_at: string | null; activated_at: string | null; declined_at: string | null; cancelled_at: string | null; completed_at: string | null; is_demo: boolean; created_at: string; updated_at: string };
         Insert: { id?: string; application_id: string; opportunity_id: string; business_id: string; worker_id?: string | null; team_id?: string | null; title: string; scope: string; amount_rwf: number; currency?: string; start_date?: string | null; end_date?: string | null; terms?: string | null; status?: Database["public"]["Enums"]["contract_status"]; proposed_by: string; proposed_at?: string; accepted_at?: string | null; activated_at?: string | null; declined_at?: string | null; cancelled_at?: string | null; completed_at?: string | null; is_demo?: boolean; created_at?: string; updated_at?: string };
-        Update: Partial<contracts["Insert"]>;
+        Update: {
+          id?: string;
+          application_id?: string;
+          opportunity_id?: string;
+          business_id?: string;
+          worker_id?: string | null;
+          team_id?: string | null;
+          title?: string;
+          scope?: string;
+          amount_rwf?: number;
+          currency?: string;
+          start_date?: string | null;
+          end_date?: string | null;
+          terms?: string | null;
+          status?: Database["public"]["Enums"]["contract_status"];
+          proposed_by?: string;
+          proposed_at?: string;
+          accepted_at?: string | null;
+          activated_at?: string | null;
+          declined_at?: string | null;
+          cancelled_at?: string | null;
+          completed_at?: string | null;
+          is_demo?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
         Relationships: [];
       };
       contract_events: {
         Row: { id: number; contract_id: string; actor: string | null; event_type: string; from_status: Database["public"]["Enums"]["contract_status"] | null; to_status: Database["public"]["Enums"]["contract_status"]; note: string | null; at: string };
         Insert: { id?: number; contract_id: string; actor?: string | null; event_type: string; from_status?: Database["public"]["Enums"]["contract_status"] | null; to_status: Database["public"]["Enums"]["contract_status"]; note?: string | null; at?: string };
-        Update: Partial<contract_events["Insert"]>;
+        Update: {
+          id?: number;
+          contract_id?: string;
+          actor?: string | null;
+          event_type?: string;
+          from_status?: Database["public"]["Enums"]["contract_status"] | null;
+          to_status?: Database["public"]["Enums"]["contract_status"];
+          note?: string | null;
+          at?: string;
+        };
         Relationships: [];
       };
       notifications: {
