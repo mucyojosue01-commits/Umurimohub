@@ -1,0 +1,17 @@
+name: Phase C formatter helper
+on:
+  push:
+    branches:
+      - feat/phase-c-completion-experience-reputation
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx prettier --write docs/superpowers/plans/2026-10-07-completion-experience-reputation-phase-c.md src/features/completion/panels.tsx src/features/completion/service.ts src/test/completion.test.ts
+      - run: git diff -- docs/superpowers/plans/2026-10-07-completion-experience-reputation-phase-c.md src/features/completion/panels.tsx src/features/completion/service.ts src/test/completion.test.ts
