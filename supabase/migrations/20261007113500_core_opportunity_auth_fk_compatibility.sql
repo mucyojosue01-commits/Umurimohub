@@ -1,0 +1,1 @@
+alter table public.opportunities drop constraint if exists opportunities_created_by_fkey;

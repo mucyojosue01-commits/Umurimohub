@@ -8,6 +8,277 @@ export type Database = {
   };
   public: {
     Tables: {
+      completion_events: {
+        Row: {
+          actor: string | null;
+          at: string;
+          completion_id: string;
+          contract_id: string;
+          event_type: string;
+          from_status: Database["public"]["Enums"]["completion_status"] | null;
+          id: number;
+          note: string | null;
+          to_status: Database["public"]["Enums"]["completion_status"];
+        };
+        Insert: {
+          actor?: string | null;
+          at?: string;
+          completion_id: string;
+          contract_id: string;
+          event_type: string;
+          from_status?: Database["public"]["Enums"]["completion_status"] | null;
+          id?: never;
+          note?: string | null;
+          to_status: Database["public"]["Enums"]["completion_status"];
+        };
+        Update: {
+          actor?: string | null;
+          at?: string;
+          completion_id?: string;
+          contract_id?: string;
+          event_type?: string;
+          from_status?: Database["public"]["Enums"]["completion_status"] | null;
+          id?: never;
+          note?: string | null;
+          to_status?: Database["public"]["Enums"]["completion_status"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "completion_events_completion_id_fkey";
+            columns: ["completion_id"];
+            isOneToOne: false;
+            referencedRelation: "contract_completions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "completion_events_contract_id_fkey";
+            columns: ["contract_id"];
+            isOneToOne: false;
+            referencedRelation: "contracts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      contract_completions: {
+        Row: {
+          completed_at: string | null;
+          confirmed_at: string | null;
+          confirmed_by: string | null;
+          contract_id: string;
+          created_at: string;
+          id: string;
+          rejected_at: string | null;
+          rejected_by: string | null;
+          rejection_note: string | null;
+          request_note: string | null;
+          requested_at: string;
+          requested_by: string;
+          status: Database["public"]["Enums"]["completion_status"];
+          updated_at: string;
+        };
+        Insert: {
+          completed_at?: string | null;
+          confirmed_at?: string | null;
+          confirmed_by?: string | null;
+          contract_id: string;
+          created_at?: string;
+          id?: string;
+          rejected_at?: string | null;
+          rejected_by?: string | null;
+          rejection_note?: string | null;
+          request_note?: string | null;
+          requested_at?: string;
+          requested_by: string;
+          status?: Database["public"]["Enums"]["completion_status"];
+          updated_at?: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          confirmed_at?: string | null;
+          confirmed_by?: string | null;
+          contract_id?: string;
+          created_at?: string;
+          id?: string;
+          rejected_at?: string | null;
+          rejected_by?: string | null;
+          rejection_note?: string | null;
+          request_note?: string | null;
+          requested_at?: string;
+          requested_by?: string;
+          status?: Database["public"]["Enums"]["completion_status"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contract_completions_contract_id_fkey";
+            columns: ["contract_id"];
+            isOneToOne: true;
+            referencedRelation: "contracts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      reputation_evidence: {
+        Row: {
+          created_at: string;
+          evidence_type: string;
+          id: string;
+          metadata: Json;
+          occurred_at: string;
+          source_contract_id: string | null;
+          source_event_id: number | null;
+          source_experience_id: string | null;
+          subject_id: string;
+          subject_type: string;
+        };
+        Insert: {
+          created_at?: string;
+          evidence_type: string;
+          id?: string;
+          metadata?: Json;
+          occurred_at: string;
+          source_contract_id?: string | null;
+          source_event_id?: number | null;
+          source_experience_id?: string | null;
+          subject_id: string;
+          subject_type: string;
+        };
+        Update: {
+          created_at?: string;
+          evidence_type?: string;
+          id?: string;
+          metadata?: Json;
+          occurred_at?: string;
+          source_contract_id?: string | null;
+          source_event_id?: number | null;
+          source_experience_id?: string | null;
+          subject_id?: string;
+          subject_type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reputation_evidence_source_contract_id_fkey";
+            columns: ["source_contract_id"];
+            isOneToOne: false;
+            referencedRelation: "contracts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reputation_evidence_source_experience_id_fkey";
+            columns: ["source_experience_id"];
+            isOneToOne: false;
+            referencedRelation: "verified_experiences";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      verified_experiences: {
+        Row: {
+          amount_rwf: number;
+          approved_milestone_count: number;
+          business_id: string;
+          completed_at: string;
+          completion_id: string;
+          contract_id: string;
+          created_at: string;
+          currency: string;
+          end_date: string | null;
+          id: string;
+          milestone_count: number;
+          opportunity_id: string;
+          scope: string;
+          start_date: string | null;
+          team_id: string | null;
+          title: string;
+          verified_at: string;
+          worker_id: string | null;
+        };
+        Insert: {
+          amount_rwf: number;
+          approved_milestone_count?: number;
+          business_id: string;
+          completed_at: string;
+          completion_id: string;
+          contract_id: string;
+          created_at?: string;
+          currency?: string;
+          end_date?: string | null;
+          id?: string;
+          milestone_count?: number;
+          opportunity_id: string;
+          scope: string;
+          start_date?: string | null;
+          team_id?: string | null;
+          title: string;
+          verified_at?: string;
+          worker_id?: string | null;
+        };
+        Update: {
+          amount_rwf?: number;
+          approved_milestone_count?: number;
+          business_id?: string;
+          completed_at?: string;
+          completion_id?: string;
+          contract_id?: string;
+          created_at?: string;
+          currency?: string;
+          end_date?: string | null;
+          id?: string;
+          milestone_count?: number;
+          opportunity_id?: string;
+          scope?: string;
+          start_date?: string | null;
+          team_id?: string | null;
+          title?: string;
+          verified_at?: string;
+          worker_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "verified_experiences_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "verified_experiences_completion_id_fkey";
+            columns: ["completion_id"];
+            isOneToOne: true;
+            referencedRelation: "contract_completions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "verified_experiences_contract_id_fkey";
+            columns: ["contract_id"];
+            isOneToOne: true;
+            referencedRelation: "contracts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "verified_experiences_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "verified_experiences_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "verified_experiences_worker_id_fkey";
+            columns: ["worker_id"];
+            isOneToOne: false;
+            referencedRelation: "worker_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+
       applications: {
         Row: {
           applicant_user_id: string;
@@ -915,6 +1186,23 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      confirm_completion: {
+        Args: { _contract_id: string; _note?: string };
+        Returns: Database["public"]["Enums"]["completion_status"];
+      };
+      reject_completion: {
+        Args: { _contract_id: string; _note?: string };
+        Returns: Database["public"]["Enums"]["completion_status"];
+      };
+      request_completion: {
+        Args: { _contract_id: string; _request_note?: string };
+        Returns: string;
+      };
+      withdraw_completion_request: {
+        Args: { _contract_id: string; _note?: string };
+        Returns: Database["public"]["Enums"]["completion_status"];
+      };
+
       are_connected: { Args: { _a: string; _b: string }; Returns: boolean };
       cancel_contract: {
         Args: { _contract_id: string; _note?: string };
@@ -996,6 +1284,7 @@ export type Database = {
       worker_network_count: { Args: { _worker_id: string }; Returns: number };
     };
     Enums: {
+      completion_status: "requested" | "rejected" | "confirmed";
       app_role: "worker" | "team_lead" | "business" | "learner" | "admin" | "institution";
       application_status:
         "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" | "withdrawn";
