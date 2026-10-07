@@ -124,90 +124,24 @@ function Page() {
     }
     const v = p.data;
     const uid = session.user.id;
-    setBusy(true);
-    try {
-      const pr = await supabase
-        .from("profiles")
-        .upsert({ id: uid, display_name: v.name, phone: v.phone, district: v.district });
-      if (pr.error) throw pr.error;
-      for (const role of v.roles) {
-        const r = await supabase.from("user_roles").insert({ user_id: uid, role });
-        if (r.error && r.error.code !== "23505") throw r.error;
-      }
-      let workerId = user?.workerId ?? null;
-      if (needsWorker) {
-        const initials = v.name
-          .split(/\s+/)
-          .map((x) => x[0])
-          .slice(0, 2)
-          .join("")
-          .toUpperCase();
-        const row = {
-          name: v.name,
-          title: v.title,
-          district: v.district,
-          sector: v.sector,
-          rate_rwf: v.rate,
-          initials,
-        };
-        if (workerId) {
-          const u = await supabase.from("worker_profiles").update(row).eq("id", workerId);
-          if (u.error) throw u.error;
-        } else {
-          const w = await supabase
-            .from("worker_profiles")
-            .insert({ ...row, user_id: uid })
-            .select("id")
-            .single();
-          if (w.error) throw w.error;
-          workerId = w.data.id;
-        }
-        const skills = [
-          ...new Set(
-            v.skills
-              .split(",")
-              .map((s) => s.trim())
-              .filter((s) => s.length > 0 && s.length <= 60),
-          ),
-        ].slice(0, 15);
-        if (skills.length) {
-          const s = await supabase.from("worker_skills").upsert(
-            skills.map((name) => ({ worker_id: workerId!, name })),
-            { onConflict: "worker_id,name", ignoreDuplicates: true },
-          );
-          if (s.error) throw s.error;
-        }
-      }
-      if (v.roles.includes("business") && !user?.businessIds.length) {
-        const b = await supabase
-          .from("businesses")
-          .insert({ name: v.businessName, sector: v.sector, district: v.district, created_by: uid })
-          .select("id")
-          .single();
-        if (b.error) throw b.error;
-        const m = await supabase
-          .from("business_members")
-          .insert({ business_id: b.data.id, user_id: uid, role: "owner" });
-        if (m.error) throw m.error;
-      }
-      if (v.roles.includes("team_lead") && !user?.leadTeamIds.length && workerId) {
-        const t = await supabase
-          .from("teams")
-          .insert({
-            name: v.teamName,
-            lead_user_id: uid,
-            lead_worker_id: workerId,
-            sector: v.sector,
-            areas: [v.district],
-          })
-          .select("id")
-          .single();
-        if (t.error) throw t.error;
-        const m = await supabase
-          .from("team_members")
-          .insert({ team_id: t.data.id, worker_id: workerId, role: "lead", status: "active" });
-        if (m.error) throw m.error;
-      }
+    const roles = v.roles as Array<"worker" | "team_lead" | "business" | "learner">;
+    const skills = [...new Set(v.skills.split(",").map((s) => s.trim()).filter(Boolean))].slice(0, 15);
+    const { error } = await supabase.rpc("complete_onboarding", {
+      _display_name: v.name,
+      _phone: v.phone ?? null,
+      _district: v.district,
+      _roles: roles,
+      _title: v.title,
+      _sector: v.sector,
+      _rate_rwf: v.rate,
+      _skills: skills,
+      _business_name: v.roles.includes("business") ? v.businessName : null,
+      _team_name: v.roles.includes("team_lead") ? v.teamName : null,
+    });
+    if (error) {
+      if (error.code === "42501") throw new Error("Your account is not authorized to complete onboarding.");
+      throw new Error("We couldn't save your profile. Please check your details and try again.");
+    }
       await reloadUser();
       await qc.invalidateQueries({ queryKey: ["catalog"] });
       toast.success("Profile saved");
