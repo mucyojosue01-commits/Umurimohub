@@ -39,96 +39,18 @@ export type Msg = {
   ref?: string;
 };
 export type Notif = { id: string; text: string; at: string; read: boolean; kind: string };
-export type Milestone = {
-  id: string;
-  title: string;
-  amount: number;
-  status: "Pending" | "In progress" | "Submitted" | "Approved" | "Paid";
-};
-
-// Local-only demo state (messages, notifications, milestones) until those slices ship.
-type LocalState = {
-  messages: Msg[];
-  notifications: Notif[];
-  milestones: Milestone[];
-  demoApplications: Application[];
-  demoSaved: string[];
-};
-
-const initial: LocalState = {
-  demoApplications: [],
-  demoSaved: [],
-  messages: [
-    {
-      id: "m1",
-      thread: "Inzira Homes Ltd (demo)",
-      from: "them",
-      text: "Hello! We saw your crew's profile. Are you available from 1 Nov?",
-      at: "09:12",
-      ref: "o1",
-    },
-    {
-      id: "m2",
-      thread: "Ubumwe Builders Crew",
-      from: "them",
-      text: "Team, site visit Thursday 8am in Kinyinya.",
-      at: "Yesterday",
-    },
-    {
-      id: "m3",
-      thread: "Kivu Hills Coffee Coop (demo)",
-      from: "them",
-      text: "Weekly payment for 12–18 Oct is approved.",
-      at: "Mon",
-    },
-  ],
-  notifications: [
-    {
-      id: "n1",
-      text: "New matching opportunity: Solar install for 3 rural schools",
-      at: "1h",
-      read: false,
-      kind: "match",
-    },
-    {
-      id: "n2",
-      text: "Inzira Homes viewed your application",
-      at: "3h",
-      read: false,
-      kind: "viewed",
-    },
-    {
-      id: "n3",
-      text: "Milestone 1 payment approved — RWF 960,000",
-      at: "1d",
-      read: true,
-      kind: "payment",
-    },
-    {
-      id: "n4",
-      text: "Aline Uwase recommended you for Masonry",
-      at: "2d",
-      read: true,
-      kind: "recommendation",
-    },
-  ],
-  milestones: [
-    { id: "ms1", title: "Foundation & slab", amount: 960000, status: "Paid" },
-    { id: "ms2", title: "Walls to ring beam", amount: 1440000, status: "In progress" },
-    { id: "ms3", title: "Roofing structure", amount: 1200000, status: "Pending" },
-    { id: "ms4", title: "Finishing & handover", amount: 1200000, status: "Pending" },
-  ],
-};
-
 export type NewOpportunity = Omit<Opportunity, "id" | "businessId" | "posted" | "featured">;
 
-type Ctx = Omit<LocalState, "demoApplications" | "demoSaved"> & {
+type Ctx = {
   user: User | null;
   session: Session | null;
   authReady: boolean;
   applications: Application[];
   saved: string[];
   allOpps: Opportunity[];
+  messages: Msg[];
+  notifications: Notif[];
+  milestones: never[];
   signOut: () => Promise<void>;
   reloadUser: () => Promise<void>;
   apply: (a: {
@@ -137,11 +59,7 @@ type Ctx = Omit<LocalState, "demoApplications" | "demoSaved"> & {
     note: string;
     teamId?: string | null;
   }) => Promise<{ ok: boolean; error?: string }>;
-  refer: (
-    oppId: string,
-    workerId: string,
-    note: string,
-  ) => Promise<{ ok: boolean; error?: string }>;
+  refer: (oppId: string, workerId: string, note: string) => Promise<{ ok: boolean; error?: string }>;
   send: (thread: string, text: string) => void;
   markAllRead: () => void;
   createOpp: (o: NewOpportunity) => Promise<{ id?: string; error?: string }>;
@@ -150,12 +68,12 @@ type Ctx = Omit<LocalState, "demoApplications" | "demoSaved"> & {
 };
 
 const AppCtx = createContext<Ctx | null>(null);
-const KEY = "umurimohub-demo-v2";
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function applicationErrorMessage(error: { code?: string; message?: string }) {
   if (error.code === "23505") return "You've already applied to this opportunity.";
   if (error.code === "23503") return "This opportunity is no longer available.";
+  if (error.code === "42501") return "You are not authorized to do that.";
   return error.message ?? "Couldn't submit the application.";
 }
 
@@ -170,10 +88,10 @@ async function loadUser(session: Session): Promise<User> {
   ]);
   const roles = (r.data ?? []).map((x) => x.role as Role);
   let skills: string[] = [];
-  if (w.data)
-    skills = (
-      (await supabase.from("worker_skills").select("name").eq("worker_id", w.data.id)).data ?? []
-    ).map((s) => s.name);
+  if (w.data) {
+    const result = await supabase.from("worker_skills").select("name").eq("worker_id", w.data.id);
+    skills = (result.data ?? []).map((s) => s.name);
+  }
   const order: Role[] = ["admin", "institution", "business", "team_lead", "worker", "learner"];
   return {
     id: uid,
@@ -199,29 +117,12 @@ async function loadUser(session: Session): Promise<User> {
 export function AppProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
   const { opportunities, refresh } = useCatalog();
-  const [s, setS] = useState<LocalState>(initial);
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [dbApps, setDbApps] = useState<Application[]>([]);
   const [dbSaved, setDbSaved] = useState<string[]>([]);
   const [dbNotifs, setDbNotifs] = useState<Notif[]>([]);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setS({ ...initial, ...JSON.parse(raw) });
-    } catch {
-      /* ignore */
-    }
-  }, []);
-  useEffect(() => {
-    try {
-      localStorage.setItem(KEY, JSON.stringify(s));
-    } catch {
-      /* ignore */
-    }
-  }, [s]);
 
   const loadPersonal = useCallback(async (sess: Session | null) => {
     if (!sess) {
@@ -273,12 +174,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
       setSession(sess);
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        setTimeout(() => {
-          void loadPersonal(sess);
-        }, 0);
+        setTimeout(() => void loadPersonal(sess), 0);
       }
     });
-    supabase.auth.getSession().then(async ({ data }) => {
+    void supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
       await loadPersonal(data.session);
       setAuthReady(true);
@@ -286,26 +185,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, [loadPersonal]);
 
-  const notify = (text: string, kind: string): Notif => ({
-    id: crypto.randomUUID(),
-    text,
-    at: "now",
-    read: false,
-    kind,
-  });
-  const order: Milestone["status"][] = ["Pending", "In progress", "Submitted", "Approved", "Paid"];
-  const push = (n: Notif) => setS((p) => ({ ...p, notifications: [n, ...p.notifications] }));
+  useEffect(() => {
+    if (!session) return;
+    const channel = supabase
+      .channel("user-notifications")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${session.user.id}` },
+        () => void loadPersonal(session),
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [session, loadPersonal]);
 
   const value: Ctx = {
-    messages: s.messages,
-    notifications: session ? [...dbNotifs, ...s.notifications] : s.notifications,
-    milestones: s.milestones,
     user,
     session,
     authReady,
-    applications: session ? dbApps : s.demoApplications,
-    saved: session ? dbSaved : s.demoSaved,
+    applications: dbApps,
+    saved: dbSaved,
     allOpps: opportunities,
+    messages: [],
+    notifications: dbNotifs,
+    milestones: [],
     reloadUser: () => loadPersonal(session),
     signOut: async () => {
       await qc.cancelQueries();
@@ -314,37 +218,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       void refresh();
     },
     apply: async (a) => {
-      if (!session) {
-        setS((p) => ({
-          ...p,
-          demoApplications: [
-            {
-              ...a,
-              id: crypto.randomUUID(),
-              status: "Submitted",
-              at: new Date().toLocaleDateString(),
-            },
-            ...p.demoApplications,
-          ],
-        }));
-        push(
-          notify(`Demo application saved on this device (${a.kind.toLowerCase()})`, "application"),
-        );
-        return { ok: true };
-      }
-      // Validate against the canonical database before inserting. The FK remains
-      // authoritative, but this prevents a stale/demo catalog entry from surfacing
-      // as a raw Postgres foreign-key error in the UI.
-      const { data: opportunity, error: opportunityLookupError } = await supabase
+      if (!session) return { ok: false, error: "Sign in to apply for opportunities." };
+      const { data: opportunity, error: lookupError } = await supabase
         .from("opportunities")
         .select("id,status")
         .eq("id", a.oppId)
         .maybeSingle();
-      if (opportunityLookupError)
-        return { ok: false, error: "We couldn't verify this opportunity. Please try again." };
+      if (lookupError) return { ok: false, error: "We couldn't verify this opportunity. Please try again." };
       if (!opportunity || opportunity.status !== "open")
         return { ok: false, error: "This opportunity is no longer available." };
-
       const { error } = await supabase.from("applications").insert({
         opportunity_id: a.oppId,
         applicant_user_id: session.user.id,
@@ -352,12 +234,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         note: a.note.slice(0, 2000),
         team_id: a.teamId ?? null,
       });
-      if (error)
-        return {
-          ok: false,
-          error: applicationErrorMessage(error),
-        };
-      push(notify(`Application sent (${a.kind.toLowerCase()})`, "application"));
+      if (error) return { ok: false, error: applicationErrorMessage(error) };
       await loadPersonal(session);
       return { ok: true };
     },
@@ -369,35 +246,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
         opportunity_id: oppId,
         note: note.slice(0, 500),
       });
-      if (error)
-        return {
-          ok: false,
-          error:
-            error.code === "23505" ? "You've already referred this person here." : error.message,
-        };
-      push(notify("Referral sent", "recommendation"));
+      if (error) {
+        if (error.code === "23505") return { ok: false, error: "You've already referred this person here." };
+        if (error.code === "42501") return { ok: false, error: "You cannot refer this person for this opportunity." };
+        return { ok: false, error: "We couldn't send the referral. Please try again." };
+      }
+      await loadPersonal(session);
       return { ok: true };
     },
-    send: (thread, text) =>
-      setS((p) => ({
-        ...p,
-        messages: [...p.messages, { id: crypto.randomUUID(), thread, from: "me", text, at: "now" }],
-      })),
+    send: () => undefined,
     markAllRead: () => {
-      setS((p) => ({ ...p, notifications: p.notifications.map((n) => ({ ...n, read: true })) }));
-      if (session) {
-        setDbNotifs((p) => p.map((n) => ({ ...n, read: true })));
-        void supabase
-          .from("notifications")
-          .update({ read: true })
-          .eq("user_id", session.user.id)
-          .eq("read", false);
-      }
+      if (session) void supabase.rpc("mark_all_notifications_read").then(() => loadPersonal(session));
     },
     createOpp: async (o) => {
       if (!session || !user) return { error: "Sign in with a business account to publish." };
       const businessId = user.businessIds[0];
-      if (!businessId) return { error: "Create your business profile first (onboarding)." };
+      if (!businessId) return { error: "Create your business profile first." };
       const { data, error } = await supabase
         .from("opportunities")
         .insert({
@@ -419,54 +283,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
           responsibilities: o.responsibilities,
           requirements: o.requirements,
           status: "open",
+          is_demo: false,
         })
         .select("id")
         .single();
-      if (error) return { error: error.message };
-      push(notify(`Opportunity published: ${o.title}`, "match"));
+      if (error) {
+        if (error.code === "42501") return { error: "Your business account is not authorized to publish for this business." };
+        if (error.code === "23503") return { error: "The selected business no longer exists." };
+        return { error: "We couldn't publish this opportunity. Please check the details and try again." };
+      }
       await refresh();
       return { id: data.id };
     },
     toggleSave: (id) => {
-      if (!session) {
-        setS((p) => ({
-          ...p,
-          demoSaved: p.demoSaved.includes(id)
-            ? p.demoSaved.filter((x) => x !== id)
-            : [...p.demoSaved, id],
-        }));
-        return;
-      }
+      if (!session) return;
       const on = dbSaved.includes(id);
       setDbSaved((p) => (on ? p.filter((x) => x !== id) : [...p, id]));
       void (on
-        ? supabase
-            .from("saved_opportunities")
-            .delete()
-            .eq("user_id", session.user.id)
-            .eq("opportunity_id", id)
-        : supabase
-            .from("saved_opportunities")
-            .insert({ user_id: session.user.id, opportunity_id: id }));
+        ? supabase.from("saved_opportunities").delete().eq("user_id", session.user.id).eq("opportunity_id", id)
+        : supabase.from("saved_opportunities").insert({ user_id: session.user.id, opportunity_id: id }));
     },
-    advanceMilestone: (id) =>
-      setS((p) => ({
-        ...p,
-        milestones: p.milestones.map((m): Milestone =>
-          m.id === id
-            ? {
-                ...m,
-                status: order[Math.min(order.indexOf(m.status) + 1, order.length - 1)] ?? m.status,
-              }
-            : m,
-        ),
-      })),
+    advanceMilestone: () => undefined,
   };
+
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
 }
 
 export function useApp() {
-  const c = useContext(AppCtx);
-  if (!c) throw new Error("useApp outside AppProvider");
-  return c;
+  const value = useContext(AppCtx);
+  if (!value) throw new Error("useApp must be used inside AppProvider");
+  return value;
 }
