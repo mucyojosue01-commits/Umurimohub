@@ -105,7 +105,7 @@ export async function listReputationEvidence(): Promise<ReputationEvidence[]> {
 export async function requestCompletion(contractId: string, note?: string) {
   const { data, error } = await supabase.rpc("request_completion", {
     _contract_id: contractId,
-    _request_note: note?.trim() || undefined,
+    _request_note: note?.trim() || null,
   });
   if (error) throw new Error(error.message);
   return data;
