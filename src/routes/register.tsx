@@ -264,7 +264,7 @@ function Page() {
               </label>
             </>
           )}
-          {f.roles.includes("business") && !user?.businessIds.length && (
+          {f.roles.includes("business") && (
             <label className="text-sm md:col-span-2">
               Business name
               <input
@@ -275,7 +275,7 @@ function Page() {
               />
             </label>
           )}
-          {f.roles.includes("team_lead") && !user?.leadTeamIds.length && (
+          {f.roles.includes("team_lead") && (
             <label className="text-sm md:col-span-2">
               Team name
               <input
