@@ -199,6 +199,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [authReady, setAuthReady] = useState(false);
   const [dbApps, setDbApps] = useState<Application[]>([]);
   const [dbSaved, setDbSaved] = useState<string[]>([]);
+  const [dbNotifs, setDbNotifs] = useState<Notif[]>([]);
 
   useEffect(() => {
     try {
@@ -221,9 +222,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setDbApps([]);
       setDbSaved([]);
+      setDbNotifs([]);
       return;
     }
-    const [u, a, sv] = await Promise.all([
+    const [u, a, sv, ns] = await Promise.all([
       loadUser(sess),
       supabase
         .from("applications")
@@ -231,6 +233,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .eq("applicant_user_id", sess.user.id)
         .order("created_at", { ascending: false }),
       supabase.from("saved_opportunities").select("opportunity_id").eq("user_id", sess.user.id),
+      supabase
+        .from("notifications")
+        .select("id,text,created_at,read,kind")
+        .eq("user_id", sess.user.id)
+        .order("created_at", { ascending: false }),
     ]);
     setUser(u);
     setDbApps(
@@ -245,6 +252,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })),
     );
     setDbSaved((sv.data ?? []).map((x) => x.opportunity_id));
+    setDbNotifs(
+      (ns.data ?? []).map((n) => ({
+        id: n.id,
+        text: n.text,
+        at: new Date(n.created_at).toLocaleString(),
+        read: n.read,
+        kind: n.kind,
+      })),
+    );
   }, []);
 
   useEffect(() => {
@@ -276,7 +292,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: Ctx = {
     messages: s.messages,
-    notifications: s.notifications,
+    notifications: session ? [...dbNotifs, ...s.notifications] : s.notifications,
     milestones: s.milestones,
     user,
     session,
@@ -349,8 +365,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...p,
         messages: [...p.messages, { id: crypto.randomUUID(), thread, from: "me", text, at: "now" }],
       })),
-    markAllRead: () =>
-      setS((p) => ({ ...p, notifications: p.notifications.map((n) => ({ ...n, read: true })) })),
+    markAllRead: () => {
+      setS((p) => ({ ...p, notifications: p.notifications.map((n) => ({ ...n, read: true })) }));
+      if (session) {
+        setDbNotifs((p) => p.map((n) => ({ ...n, read: true })));
+        void supabase
+          .from("notifications")
+          .update({ read: true })
+          .eq("user_id", session.user.id)
+          .eq("read", false);
+      }
+    },
     createOpp: async (o) => {
       if (!session || !user) return { error: "Sign in with a business account to publish." };
       const businessId = user.businessIds[0];
