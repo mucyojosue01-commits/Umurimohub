@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { rwf } from "@/features/data/demo";
-import { catalogQuery, useCatalog } from "@/features/data/catalog";
+import { useCatalog } from "@/features/data/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { mapOpportunity } from "@/features/data/mappers";
 import { useApp, type Application } from "@/features/store/app-store";
