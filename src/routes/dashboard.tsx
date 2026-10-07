@@ -43,7 +43,21 @@ function Page() {
         </Button>
       </div>
     );
-  return (\n    <div className="container-page py-10">\n      <PageHeader eyebrow={user.roles.map((r) => r.replace("_", " ")).join(" · ") + " dashboard"} title={"Muraho, " + user.name.split(" ")[0]} />\n      <div className="grid gap-4 md:grid-cols-3">\n        <Stat icon={Briefcase} label="Applications" value={String(applications.length)} />\n        <Stat icon={CheckCircle2} label="Contracts & projects" value={String(contractsQuery.data?.length ?? 0)} />\n        <Stat icon={Wallet} label="Payment status" value="Not enabled yet" hint="Payments come after project verification." />\n      </div>\n      <TeamInvites />\n      <IncomingApplications />\n      <MyApplications />\n      <ContractsPanel />\n      <MilestonesPanel contracts={contractsQuery.data ?? []} />\n      <CompletionPanel contracts={contractsQuery.data ?? []} />\n      <h2 className="mt-10 text-xl font-bold">Recommended for you</h2>
+  return (
+    <div className="container-page py-10">
+      <PageHeader eyebrow={user.roles.map((r) => r.replace("_", " ")).join(" · ") + " dashboard"} title={"Muraho, " + user.name.split(" ")[0]} />
+      <div className="grid gap-4 md:grid-cols-3">
+        <Stat icon={Briefcase} label="Applications" value={String(applications.length)} />
+        <Stat icon={CheckCircle2} label="Contracts & projects" value={String(contractsQuery.data?.length ?? 0)} />
+        <Stat icon={Wallet} label="Payment status" value="Not enabled yet" hint="Payments come after project verification." />
+      </div>
+      <TeamInvites />
+      <IncomingApplications />
+      <MyApplications />
+      <ContractsPanel />
+      <MilestonesPanel contracts={contractsQuery.data ?? []} />
+      <CompletionPanel contracts={contractsQuery.data ?? []} />
+      <h2 className="mt-10 text-xl font-bold">Recommended for you</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {allOpps.slice(0, 3).map((o) => (
           <OpportunityCard key={o.id} o={o} />
