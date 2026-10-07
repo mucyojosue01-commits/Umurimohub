@@ -27,11 +27,8 @@ import {
 import { listMyMilestones, milestonesKey, type Milestone } from "@/features/milestones/service";
 
 const statusTone = (status: Completion["status"]) =>
-  (status === "confirmed"
-    ? "success"
-    : status === "requested"
-      ? "primary"
-      : "warning") as "success" | "primary" | "warning";
+  (status === "confirmed" ? "success" : status === "requested" ? "primary" : "warning") as
+    "success" | "primary" | "warning";
 
 function CompletionHistory({ completionId }: { completionId: string }) {
   const q = useQuery({
@@ -40,8 +37,10 @@ function CompletionHistory({ completionId }: { completionId: string }) {
   });
 
   if (q.isLoading) return <p className="mt-2 text-xs text-muted-foreground">Loading history…</p>;
-  if (q.isError) return <p className="mt-2 text-xs text-destructive">Couldn’t load completion history.</p>;
-  if (!q.data?.length) return <p className="mt-2 text-xs text-muted-foreground">No completion events yet.</p>;
+  if (q.isError)
+    return <p className="mt-2 text-xs text-destructive">Couldn’t load completion history.</p>;
+  if (!q.data?.length)
+    return <p className="mt-2 text-xs text-muted-foreground">No completion events yet.</p>;
 
   return (
     <ol className="mt-2 space-y-2 border-l pl-3 text-xs text-muted-foreground">
@@ -76,7 +75,7 @@ function CompletionCard({
   const isBusiness = user?.businessIds.includes(contract.business_id) ?? false;
   const isRecipient = Boolean(
     (contract.worker_id && contract.worker_id === user?.workerId) ||
-      (contract.team_id && user?.leadTeamIds.includes(contract.team_id)),
+    (contract.team_id && user?.leadTeamIds.includes(contract.team_id)),
   );
 
   const readiness = completionReadiness(contract.status, milestones);
@@ -122,10 +121,13 @@ function CompletionCard({
         <p className="font-medium">Completion readiness</p>
         {milestones.length ? (
           <p className="mt-1 text-muted-foreground">
-            {milestones.filter((m) => m.status === "approved").length}/{milestones.length} milestones approved.
+            {milestones.filter((m) => m.status === "approved").length}/{milestones.length}{" "}
+            milestones approved.
           </p>
         ) : (
-          <p className="mt-1 text-muted-foreground">No milestones — direct two-party confirmation is available.</p>
+          <p className="mt-1 text-muted-foreground">
+            No milestones — direct two-party confirmation is available.
+          </p>
         )}
         {!readiness.eligible && <p className="mt-1 text-destructive">{readiness.reason}</p>}
       </div>
@@ -146,7 +148,8 @@ function CompletionCard({
 
       {completion?.status === "confirmed" && (
         <p className="mt-3 text-sm text-emerald-700">
-          Completed {completion.completed_at ? new Date(completion.completed_at).toLocaleDateString() : ""}.
+          Completed{" "}
+          {completion.completed_at ? new Date(completion.completed_at).toLocaleDateString() : ""}.
           Verified work history has been created.
         </p>
       )}
@@ -164,7 +167,9 @@ function CompletionCard({
               <Button
                 size="sm"
                 disabled={busy}
-                onClick={() => act(() => requestCompletion(contract.id, note), "Completion requested")}
+                onClick={() =>
+                  act(() => requestCompletion(contract.id, note), "Completion requested")
+                }
               >
                 Request completion
               </Button>
@@ -189,7 +194,9 @@ function CompletionCard({
                 <Button
                   size="sm"
                   disabled={busy}
-                  onClick={() => act(() => confirmCompletion(contract.id, note), "Contract completed")}
+                  onClick={() =>
+                    act(() => confirmCompletion(contract.id, note), "Contract completed")
+                  }
                 >
                   Confirm completion
                 </Button>
@@ -197,7 +204,9 @@ function CompletionCard({
                   size="sm"
                   variant="outline"
                   disabled={busy}
-                  onClick={() => act(() => rejectCompletion(contract.id, note), "Completion request rejected")}
+                  onClick={() =>
+                    act(() => rejectCompletion(contract.id, note), "Completion request rejected")
+                  }
                 >
                   Reject
                 </Button>
@@ -208,7 +217,12 @@ function CompletionCard({
       )}
 
       {completion && (
-        <Button size="sm" variant="ghost" className="mt-2" onClick={() => setHistory((value) => !value)}>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="mt-2"
+          onClick={() => setHistory((value) => !value)}
+        >
           {history ? "Hide history" : "View history"}
         </Button>
       )}
@@ -224,10 +238,7 @@ function VerifiedWorkHistory({ experiences }: { experiences: VerifiedExperience[
     queryFn: listReputationEvidence,
   });
 
-  const summary = useMemo(
-    () => evidenceSummary(q.data ?? []),
-    [q.data],
-  );
+  const summary = useMemo(() => evidenceSummary(q.data ?? []), [q.data]);
 
   if (q.isLoading) {
     return (
@@ -285,7 +296,8 @@ function VerifiedWorkHistory({ experiences }: { experiences: VerifiedExperience[
               <p className="font-medium">{experience.title}</p>
               <p className="mt-1 text-sm text-muted-foreground">{experience.scope}</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Completed {new Date(experience.completed_at).toLocaleDateString()} · {rwf(experience.amount_rwf)}
+                Completed {new Date(experience.completed_at).toLocaleDateString()} ·{" "}
+                {rwf(experience.amount_rwf)}
               </p>
             </li>
           ))}
@@ -317,25 +329,33 @@ export function CompletionPanel({ contracts }: { contracts: Contract[] }) {
   if (completionsQuery.isLoading || milestonesQuery.isLoading || experiencesQuery.isLoading) {
     return (
       <div className="mt-6 space-y-4">
-        <Card><p className="text-sm text-muted-foreground">Loading completion workflow…</p></Card>
+        <Card>
+          <p className="text-sm text-muted-foreground">Loading completion workflow…</p>
+        </Card>
       </div>
     );
   }
   if (completionsQuery.isError || milestonesQuery.isError || experiencesQuery.isError) {
     return (
       <div className="mt-6 space-y-4">
-        <Card><p className="text-sm text-destructive">Couldn’t load completion workflow. Try again shortly.</p></Card>
+        <Card>
+          <p className="text-sm text-destructive">
+            Couldn’t load completion workflow. Try again shortly.
+          </p>
+        </Card>
       </div>
     );
   }
 
-  const completionByContract = new Map((completionsQuery.data ?? []).map((item) => [item.contract_id, item]));
+  const completionByContract = new Map(
+    (completionsQuery.data ?? []).map((item) => [item.contract_id, item]),
+  );
   const milestonesByContract = new Map<string, Milestone[]>();
   for (const milestone of milestonesQuery.data ?? []) {
-    milestonesByContract.set(
-      milestone.contract_id,
-      [...(milestonesByContract.get(milestone.contract_id) ?? []), milestone],
-    );
+    milestonesByContract.set(milestone.contract_id, [
+      ...(milestonesByContract.get(milestone.contract_id) ?? []),
+      milestone,
+    ]);
   }
 
   const visibleContracts = contracts.filter((contract) => {

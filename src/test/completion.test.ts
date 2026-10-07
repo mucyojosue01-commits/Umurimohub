@@ -15,10 +15,7 @@ describe("completion readiness", () => {
   });
 
   it("blocks active contracts with an unapproved milestone", () => {
-    const milestones: MilestoneSummary[] = [
-      { status: "approved" },
-      { status: "submitted" },
-    ];
+    const milestones: MilestoneSummary[] = [{ status: "approved" }, { status: "submitted" }];
     expect(completionReadiness("active", milestones)).toEqual({
       eligible: false,
       reason: "Approve all milestones before requesting completion.",

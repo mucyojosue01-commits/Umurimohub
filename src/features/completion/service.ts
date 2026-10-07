@@ -39,7 +39,9 @@ export function completionReadiness(
   return { eligible: true, reason: null };
 }
 
-export function evidenceSummary(evidence: Array<Pick<ReputationEvidence, "evidence_type">>): EvidenceSummary {
+export function evidenceSummary(
+  evidence: Array<Pick<ReputationEvidence, "evidence_type">>,
+): EvidenceSummary {
   return evidence.reduce<EvidenceSummary>(
     (summary, item) => {
       if (item.evidence_type === "verified_project_completed") summary.verifiedProjects += 1;

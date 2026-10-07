@@ -277,7 +277,7 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
-      },
+      };
 
       applications: {
         Row: {

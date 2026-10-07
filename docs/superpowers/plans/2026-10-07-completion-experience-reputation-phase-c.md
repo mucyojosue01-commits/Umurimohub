@@ -40,11 +40,13 @@
 ### Task 1: Phase C database foundation
 
 **Files:**
+
 - Create: `supabase/migrations/YYYYMMDDHHMMSS_phase_c_completion_experience_reputation.sql`
 - Modify: generated Supabase TypeScript database types at the repository's existing generated-types path
 - Test: `supabase/tests/completion_experience_reputation.sql`
 
 **Interfaces:**
+
 - Consumes: Phase A `contracts`/contract events and Phase B `milestones`/milestone events.
 - Produces: `contract_completions`, `completion_events`, `verified_experiences`, `reputation_evidence`, completion enum(s), indexes, RLS policies, and supporting RPCs.
 
@@ -63,12 +65,14 @@
 ### Task 2: Server-authoritative completion lifecycle
 
 **Files:**
+
 - Modify: `supabase/migrations/YYYYMMDDHHMMSS_phase_c_completion_experience_reputation.sql`
 - Modify: `supabase/tests/completion_experience_reputation.sql`
 - Create/Modify: `src/features/completion/service.ts`
 - Test: `src/test/completion.test.ts`
 
 **Interfaces:**
+
 - Consumes: Phase A contract party relationships and Phase B milestone statuses.
 - Produces:
   - `request_completion(contract_id, request_note)`
@@ -94,12 +98,14 @@
 ### Task 3: Reputation evidence derivation and history queries
 
 **Files:**
+
 - Modify: `supabase/migrations/YYYYMMDDHHMMSS_phase_c_completion_experience_reputation.sql`
 - Modify: `src/features/completion/service.ts` or create `src/features/reputation/service.ts` following existing feature boundaries
 - Test: `src/test/reputation.test.ts`
 - Modify: `supabase/tests/completion_experience_reputation.sql`
 
 **Interfaces:**
+
 - Consumes: finalized completion and verified-experience records plus existing recommendations/connections and historical completed contracts.
 - Produces typed queries for:
   - verified experience history;
@@ -120,11 +126,13 @@
 ### Task 4: Persisted notifications for Phase C
 
 **Files:**
+
 - Modify: existing notifications migration/function area as appropriate
 - Modify: `src/features/notifications` files following existing project structure
 - Test: `src/test/completion-notifications.test.ts`
 
 **Interfaces:**
+
 - Consumes: completion lifecycle events.
 - Produces notifications:
   - `completion_requested`
@@ -144,6 +152,7 @@
 ### Task 5: Completion UI and dashboard integration
 
 **Files:**
+
 - Create/Modify: `src/features/completion/panels.tsx`
 - Modify: existing business dashboard/contract panel files
 - Modify: existing worker/team dashboard/contract panel files
@@ -151,6 +160,7 @@
 - Test: `src/test/completion-ui.test.ts`
 
 **Interfaces:**
+
 - Consumes: completion service, milestone service, verified-experience queries, notifications.
 - Produces: authenticated business and worker/team UI for request/confirm/reject/withdraw, readiness, history, and verified experience.
 
@@ -170,11 +180,13 @@
 ### Task 6: End-to-end security and regression verification
 
 **Files:**
+
 - Modify: `supabase/tests/completion_experience_reputation.sql` as needed
 - Modify: existing Phase A/B tests only if a compatibility assertion is required
 - Modify: `docs/superpowers/plans/2026-10-07-completion-experience-reputation-phase-c.md`
 
 **Interfaces:**
+
 - Consumes: all Phase C schema, RPC, service, notification, and UI work.
 - Produces: verified Phase C acceptance evidence and a final implementation plan record.
 
@@ -194,9 +206,11 @@
 ### Task 7: Code review and integration gate
 
 **Files:**
+
 - Entire Phase C diff
 
 **Interfaces:**
+
 - Consumes: verified Phase C branch.
 - Produces: review-ready PR with CI evidence and no unverified completion claims.
 
