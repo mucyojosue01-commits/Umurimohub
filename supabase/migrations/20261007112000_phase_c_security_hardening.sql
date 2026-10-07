@@ -32,16 +32,21 @@ begin
     raise exception 'No pending completion request found';
   end if;
 
-  requester_is_business := public.is_business_member(c.business_id) and cc.requested_by = (select auth.uid());
-  requester_is_worker := c.worker_id is not null
-    and c.worker_id = public.my_worker_id()
-    and cc.requested_by = (select auth.uid());
-  requester_is_team := c.team_id is not null
-    and public.is_team_lead(c.team_id)
-    and cc.requested_by = (select auth.uid());
+  requester_is_business := exists (
+    select 1 from public.business_members bm
+    where bm.business_id = c.business_id and bm.user_id = cc.requested_by
+  );
+  requester_is_worker := c.worker_id is not null and exists (
+    select 1 from public.worker_profiles wp
+    where wp.id = c.worker_id and wp.user_id = cc.requested_by
+  );
+  requester_is_team := c.team_id is not null and exists (
+    select 1 from public.teams t
+    where t.id = c.team_id and t.lead_user_id = cc.requested_by
+  );
 
   if not (requester_is_business or requester_is_worker or requester_is_team) then
-    raise exception 'Completion request is not owned by the authenticated contracting party' using errcode = '42501';
+    raise exception 'Completion request is not owned by a contracting party' using errcode = '42501';
   end if;
 
   caller_is_business := public.is_business_member(c.business_id);
