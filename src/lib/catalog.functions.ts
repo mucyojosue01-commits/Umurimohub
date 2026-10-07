@@ -30,14 +30,14 @@ export const getCatalog = createServerFn({ method: "GET" }).handler(async (): Pr
     db
       .from("worker_profiles")
       .select("*")
-      .order("is_demo")
+      .eq("is_demo", false)
       .order("created_at", { ascending: false })
       .limit(200),
     db.from("worker_skills").select("*").limit(1000),
-    db.from("teams").select("*").limit(200),
+    db.from("teams").select("*").eq("is_demo", false).limit(200),
     db.from("team_members").select("*").limit(1000),
-    db.from("businesses").select("*").limit(200),
-    db.from("opportunities").select("*").order("created_at", { ascending: false }).limit(200),
+    db.from("businesses").select("*").eq("is_demo", false).limit(200),
+    db.from("opportunities").select("*").eq("is_demo", false).order("created_at", { ascending: false }).limit(200),
   ]);
   const err = w.error || s.error || t.error || m.error || b.error || o.error;
   if (err) throw new Error(err.message);
