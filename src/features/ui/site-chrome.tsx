@@ -11,6 +11,8 @@ const NAV = [
   { to: "/teams", label: "Teams" },
   { to: "/agriculture", label: "Agriculture" },
   { to: "/training", label: "Training" },
+  { to: "/grow", label: "Grow" },
+  { to: "/company", label: "Company" },
   { to: "/pricing", label: "For business" },
 ] as const;
 
@@ -209,7 +211,7 @@ export function SiteFooter() {
       </div>
       <div className="container-page border-t py-5 text-xs text-muted-foreground">
         UmurimoHub is a work platform, not a bank. Payments will be processed by licensed partners.
-        Prototype with demo data.
+        Live platform. Data shown is created by UmurimoHub members.
       </div>
     </footer>
   );
