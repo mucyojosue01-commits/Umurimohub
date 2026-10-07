@@ -78,6 +78,13 @@ function MilestoneForm({
         toast.success("Milestone updated");
       } else {
         await createMilestone(input);
+        setForm({
+          sequence: String(nextSequence + 1),
+          title: "",
+          description: "",
+          amount: "",
+          dueDate: "",
+        });
         toast.success("Milestone created");
       }
       void qc.invalidateQueries({ queryKey: milestonesKey });
@@ -127,9 +134,13 @@ function MilestoneForm({
         value={form.dueDate}
         onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
       />
-      {!initial && <p className="text-xs text-muted-foreground">Remaining: {rwf(remaining)}</p>}
+      {!initial && (
+        <p className="text-xs text-muted-foreground">
+          {remaining > 0 ? "Remaining: " + rwf(remaining) : "No remaining contract allocation."}
+        </p>
+      )}
       <div className="flex gap-2">
-        <Button size="sm" disabled={busy} onClick={save}>
+        <Button size="sm" disabled={busy || (!initial && remaining <= 0)} onClick={save}>
           {busy ? "Saving…" : initial ? "Save milestone" : "Add milestone"}
         </Button>
         <Button size="sm" variant="ghost" onClick={onDone}>
