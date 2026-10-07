@@ -116,7 +116,7 @@ export async function requestCompletion(contractId: string, note?: string) {
 export async function withdrawCompletionRequest(contractId: string, note?: string) {
   const { data, error } = await supabase.rpc("withdraw_completion_request", {
     _contract_id: contractId,
-    _note: note?.trim() || undefined,
+    _note: note?.trim() || null,
   });
   if (error) throw new Error(error.message);
   return data;
