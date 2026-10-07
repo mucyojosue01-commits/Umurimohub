@@ -350,7 +350,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return {
           ok: false,
           error:
-            error.code === "23505" ? "You've already applied to this opportunity." : error.message,
+            error.code === "23505"
+              ? "You've already applied to this opportunity."
+              : error.code === "23503"
+                ? "This opportunity is no longer available."
+                : error.message,
         };
       push(notify(`Application sent (${a.kind.toLowerCase()})`, "application"));
       await loadPersonal(session);
