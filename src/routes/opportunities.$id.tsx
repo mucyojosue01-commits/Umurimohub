@@ -6,14 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { rwf } from "@/features/data/demo";
 import { catalogQuery, useCatalog } from "@/features/data/catalog";
+import { supabase } from "@/integrations/supabase/client";
+import { mapOpportunity } from "@/features/data/mappers";
 import { useApp, type Application } from "@/features/store/app-store";
 import { Card, Pill } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/opportunities/$id")({
-  loader: async ({ params, context }) => {
-    const c = await context.queryClient.ensureQueryData(catalogQuery);
-    const o = c.opportunities.find((x) => x.id === params.id);
-    return { o: o ?? null };
+  loader: async ({ params }) => {
+    const { data, error } = await supabase
+      .from("opportunities")
+      .select("*")
+      .eq("id", params.id)
+      .eq("is_demo", false)
+      .maybeSingle();
+    if (error) throw error;
+    return { o: data ? mapOpportunity(data) : null };
   },
   head: ({ loaderData }) => {
     const o = loaderData?.o;
