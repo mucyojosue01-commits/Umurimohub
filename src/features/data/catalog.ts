@@ -1,10 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { getCatalog } from "@/lib/catalog.functions";
-import { BUSINESSES, OPPORTUNITIES, TEAMS, WORKERS } from "./demo";
 import type { Catalog } from "./mappers";
 
-// Demo fallback mirrors the seeded rows, so the UI renders identically if the
-// database is unreachable.
 export const emptyCatalog: Catalog = {
   workers: [],
   teams: [],
@@ -14,26 +11,10 @@ export const emptyCatalog: Catalog = {
   source: "database",
 };
 
-export const demoCatalog: Catalog = {
-  workers: WORKERS,
-  teams: TEAMS,
-  businesses: BUSINESSES,
-  opportunities: OPPORTUNITIES,
-  workerUserIds: Object.fromEntries(WORKERS.map((w) => [w.id, null])),
-  source: "demo",
-};
-
 export const catalogQuery = queryOptions({
   queryKey: ["catalog"],
-  queryFn: async () => {
-    try {
-      return await getCatalog();
-    } catch (e) {
-      console.warn("catalog fallback", e);
-      return demoCatalog;
-    }
-  },
-  staleTime: 60_000,
+  queryFn: async () => getCatalog(),
+  staleTime: 30_000,
 });
 
 export function withGetters(c: Catalog) {
@@ -48,5 +29,5 @@ export function withGetters(c: Catalog) {
 
 export function useCatalog() {
   const q = useQuery({ ...catalogQuery, placeholderData: emptyCatalog });
-  return { ...withGetters(q.data ?? demoCatalog), refresh: q.refetch };
+  return { ...withGetters(q.data ?? emptyCatalog), refresh: q.refetch };
 }
