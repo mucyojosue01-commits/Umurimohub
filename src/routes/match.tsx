@@ -30,7 +30,8 @@ export const Route = createFileRoute("/match")({
 type Rec = { id: string; score: number; fit: string; gaps: string };
 const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
 
-function Page() { // CI formatting pass
+function Page() {
+  // CI formatting pass
   const { allOpps } = useApp();
   const run = useServerFn(recommendOpportunities);
   const [skills, setSkills] = useState("");
@@ -59,20 +60,18 @@ function Page() { // CI formatting pass
           skills: list,
           district,
           availability,
-          opportunities: allOpps
-            .slice(0, 40)
-            .map((o) => ({
-              id: o.id,
-              title: o.title,
-              sector: o.sector,
-              district: o.district,
-              type: o.type,
-              mode: o.mode,
-              skills: o.skills,
-              pay: `${rwf(o.payRwf)}/${o.payUnit}`,
-              duration: o.duration,
-              teamAllowed: o.teamAllowed,
-            })),
+          opportunities: allOpps.slice(0, 40).map((o) => ({
+            id: o.id,
+            title: o.title,
+            sector: o.sector,
+            district: o.district,
+            type: o.type,
+            mode: o.mode,
+            skills: o.skills,
+            pay: `${rwf(o.payRwf)}/${o.payUnit}`,
+            duration: o.duration,
+            teamAllowed: o.teamAllowed,
+          })),
         },
       });
       if (res.ok) setRecs(res.recs);

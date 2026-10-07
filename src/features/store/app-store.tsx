@@ -310,15 +310,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
         return { ok: true };
       }
-      const { error } = await supabase
-        .from("applications")
-        .insert({
-          opportunity_id: a.oppId,
-          applicant_user_id: session.user.id,
-          kind: a.kind,
-          note: a.note.slice(0, 2000),
-          team_id: a.teamId ?? null,
-        });
+      const { error } = await supabase.from("applications").insert({
+        opportunity_id: a.oppId,
+        applicant_user_id: session.user.id,
+        kind: a.kind,
+        note: a.note.slice(0, 2000),
+        team_id: a.teamId ?? null,
+      });
       if (error)
         return {
           ok: false,
@@ -331,14 +329,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     refer: async (oppId, workerId, note) => {
       if (!session) return { ok: false, error: "Sign in to refer someone." };
-      const { error } = await supabase
-        .from("referrals")
-        .insert({
-          referrer: session.user.id,
-          referee_worker_id: workerId,
-          opportunity_id: oppId,
-          note: note.slice(0, 500),
-        });
+      const { error } = await supabase.from("referrals").insert({
+        referrer: session.user.id,
+        referee_worker_id: workerId,
+        opportunity_id: oppId,
+        note: note.slice(0, 500),
+      });
       if (error)
         return {
           ok: false,
