@@ -190,6 +190,194 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_events: {
+        Row: {
+          actor: string | null
+          at: string
+          contract_id: string
+          event_type: string
+          from_status: Database["public"]["Enums"]["contract_status"] | null
+          id: number
+          note: string | null
+          to_status: Database["public"]["Enums"]["contract_status"]
+        }
+        Insert: {
+          actor?: string | null
+          at?: string
+          contract_id: string
+          event_type: string
+          from_status?: Database["public"]["Enums"]["contract_status"] | null
+          id?: never
+          note?: string | null
+          to_status: Database["public"]["Enums"]["contract_status"]
+        }
+        Update: {
+          actor?: string | null
+          at?: string
+          contract_id?: string
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["contract_status"] | null
+          id?: never
+          note?: string | null
+          to_status?: Database["public"]["Enums"]["contract_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          accepted_at: string | null
+          activated_at: string | null
+          amount_rwf: number
+          application_id: string
+          business_id: string
+          cancelled_at: string | null
+          completed_at: string | null
+          created_at: string
+          currency: string
+          declined_at: string | null
+          end_date: string | null
+          id: string
+          is_demo: boolean
+          opportunity_id: string
+          proposed_at: string
+          proposed_by: string
+          scope: string
+          start_date: string | null
+          status: Database["public"]["Enums"]["contract_status"]
+          team_id: string | null
+          terms: string | null
+          title: string
+          updated_at: string
+          worker_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          activated_at?: string | null
+          amount_rwf: number
+          application_id: string
+          business_id: string
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          declined_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_demo?: boolean
+          opportunity_id: string
+          proposed_at?: string
+          proposed_by: string
+          scope: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          team_id?: string | null
+          terms?: string | null
+          title: string
+          updated_at?: string
+          worker_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          activated_at?: string | null
+          amount_rwf?: number
+          application_id?: string
+          business_id?: string
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          declined_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_demo?: boolean
+          opportunity_id?: string
+          proposed_at?: string
+          proposed_by?: string
+          scope?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          team_id?: string | null
+          terms?: string | null
+          title?: string
+          updated_at?: string
+          worker_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          read: boolean
+          text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          read?: boolean
+          text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          read?: boolean
+          text?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       opportunities: {
         Row: {
           business_id: string
@@ -624,6 +812,23 @@ export type Database = {
     }
     Functions: {
       are_connected: { Args: { _a: string; _b: string }; Returns: boolean }
+      cancel_contract: {
+        Args: { _contract_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["contract_status"]
+      }
+      contract_counterparty_user: { Args: { _cid: string }; Returns: string }
+      create_contract: {
+        Args: {
+          _amount_rwf: number
+          _application_id: string
+          _end_date?: string
+          _scope: string
+          _start_date?: string
+          _terms?: string
+          _title: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -635,8 +840,17 @@ export type Database = {
         Args: { _bid: string; _roles?: string[] }
         Returns: boolean
       }
+      is_contract_party: { Args: { _cid: string }; Returns: boolean }
       is_team_lead: { Args: { _tid: string }; Returns: boolean }
       my_worker_id: { Args: never; Returns: string }
+      notify_business: {
+        Args: { _bid: string; _kind: string; _link: string; _text: string }
+        Returns: undefined
+      }
+      respond_contract: {
+        Args: { _accept: boolean; _contract_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["contract_status"]
+      }
       worker_network_count: { Args: { _worker_id: string }; Returns: number }
     }
     Enums: {
@@ -654,6 +868,12 @@ export type Database = {
         | "rejected"
         | "accepted"
         | "withdrawn"
+      contract_status:
+        | "proposed"
+        | "active"
+        | "declined"
+        | "cancelled"
+        | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -796,6 +1016,13 @@ export const Constants = {
         "rejected",
         "accepted",
         "withdrawn",
+      ],
+      contract_status: [
+        "proposed",
+        "active",
+        "declined",
+        "cancelled",
+        "completed",
       ],
     },
   },
