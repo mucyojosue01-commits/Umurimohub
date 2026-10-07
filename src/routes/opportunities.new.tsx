@@ -36,6 +36,8 @@ const schema = z.object({
   deadline: z.string().min(1, "Pick a date"),
   skills: z.string().trim().min(2).max(200),
   summary: z.string().trim().min(20, "Describe the work (20+ chars)").max(1000),
+  responsibilities: z.string().trim().min(10, "Add the main responsibilities").max(3000),
+  requirements: z.string().trim().min(2, "Add at least one requirement").max(3000),
   teamAllowed: z.boolean(),
   teamSize: z.coerce.number().min(0).max(500).optional(),
   businessId: z.string().min(1, "Choose the business publishing this opportunity"),
@@ -75,13 +77,14 @@ function Page() {
       businessId: f.businessId,
       ...(f.teamAllowed && teamSize ? { teamSize } : {}),
       sector: f.sector as Opportunity["sector"],
+      responsibilities: f.responsibilities.split("\\n").map((s) => s.trim()).filter(Boolean).slice(0, 20),
+      requirements: f.requirements.split("\\n").map((s) => s.trim()).filter(Boolean).slice(0, 20),
       skills: f.skills
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean)
         .slice(0, 15),
-      responsibilities: ["As described"],
-      requirements: ["See description"],
+
     };
     const r = await createOpp(o);
     if (!r.id) {
@@ -195,6 +198,17 @@ function Page() {
             Skills (comma separated)
             <input {...register("skills")} placeholder="Masonry, Carpentry" className={inp} />
             <Err k="skills" />
+          </label>
+          <label className="text-sm md:col-span-2">
+            Responsibilities
+            <textarea rows={5} {...register("responsibilities")} placeholder="List the concrete work this person/team will do, one responsibility per line. Example: Install 120 m² of floor tiles; prepare surfaces and measure materials; keep the work area safe and clean; report daily progress." className="mt-1 w-full rounded-xl border bg-card p-3" />
+            <Err k="responsibilities" />
+          </label>
+          <label className="text-sm md:col-span-2">
+            Requirements
+            <textarea rows={5} {...register("requirements")} placeholder="List what an applicant must bring or be able to do, one requirement per line. Example: 2+ years masonry experience; able to work on-site in Kigali; bring basic hand tools; available for the full project period." className="mt-1 w-full rounded-xl border bg-card p-3" />
+            <span className="mt-1 block text-xs text-muted-foreground">Each line becomes a check-list item applicants can review before applying.</span>
+            <Err k="requirements" />
           </label>
           <label className="text-sm md:col-span-2">
             Description
