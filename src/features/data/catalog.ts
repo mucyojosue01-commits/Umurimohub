@@ -6,13 +6,24 @@ import type { Catalog } from "./mappers";
 // Demo fallback mirrors the seeded rows, so the UI renders identically if the
 // database is unreachable.
 export const demoCatalog: Catalog = {
-  workers: WORKERS, teams: TEAMS, businesses: BUSINESSES, opportunities: OPPORTUNITIES,
-  workerUserIds: Object.fromEntries(WORKERS.map((w) => [w.id, null])), source: "demo",
+  workers: WORKERS,
+  teams: TEAMS,
+  businesses: BUSINESSES,
+  opportunities: OPPORTUNITIES,
+  workerUserIds: Object.fromEntries(WORKERS.map((w) => [w.id, null])),
+  source: "demo",
 };
 
 export const catalogQuery = queryOptions({
   queryKey: ["catalog"],
-  queryFn: async () => { try { return await getCatalog(); } catch (e) { console.warn("catalog fallback", e); return demoCatalog; } },
+  queryFn: async () => {
+    try {
+      return await getCatalog();
+    } catch (e) {
+      console.warn("catalog fallback", e);
+      return demoCatalog;
+    }
+  },
   staleTime: 60_000,
 });
 

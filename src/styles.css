@@ -95,19 +95,36 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
 }
 
-@utility shadow-soft { box-shadow: var(--shadow-soft); }
-@utility shadow-lift { box-shadow: var(--shadow-lift); }
-@utility container-page { width: 100%; max-width: 80rem; margin-inline: auto; padding-inline: 1.25rem; }
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+@utility shadow-lift {
+  box-shadow: var(--shadow-lift);
+}
+@utility container-page {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
 @utility pattern-imigongo {
   background-image:
     linear-gradient(135deg, oklch(1 0 0 / 5%) 25%, transparent 25%),
@@ -115,9 +132,18 @@
     linear-gradient(45deg, oklch(1 0 0 / 5%) 25%, transparent 25%),
     linear-gradient(315deg, oklch(1 0 0 / 5%) 25%, transparent 25%);
   background-size: 40px 40px;
-  background-position: 20px 0, 20px 0, 0 0, 0 0;
+  background-position:
+    20px 0,
+    20px 0,
+    0 0,
+    0 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

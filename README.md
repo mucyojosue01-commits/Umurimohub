@@ -7,6 +7,7 @@ Use a premium fintech + modern SaaS + African/Rwandan visual language: deep fore
 Build a complete responsive app with public, authentication/onboarding, worker, team, business, training, agriculture, messaging, notifications, payments architecture, admin, and economic-intelligence experiences.
 
 Core features:
+
 - Landing page with “Turn opportunity into work.”, opportunity search, nearby opportunities, trusted networks, teams, skills/training, business opportunities, agriculture, youth/apprenticeships, MSME growth, economic-impact placeholders sourced only from real data later.
 - Discover/search across workers, teams, jobs, projects, businesses, services, training and apprenticeships; filters for location, district, sector, skill, price, availability, experience, rating, verification, individual/team, remote/on-site, duration.
 - Worker profiles with skills, experience, projects, teams, recommendations, availability, rates, certifications, training, reviews and trust indicators.
