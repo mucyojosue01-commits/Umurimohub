@@ -1,16 +1,25 @@
 name: CI
 
 on:
-  push:
-    branches: ["main", "fix/**"]
   pull_request:
     branches: ["main"]
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    env:
+      VITE_SUPABASE_URL: https://ci-placeholder.invalid
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      SUPABASE_URL: https://ci-placeholder.invalid
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      VITE_SUPABASE_PROJECT_ID: ci-placeholder
+      SUPABASE_PROJECT_ID: ci-placeholder
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,15 +28,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-
-      - name: Use npm 11
-        run: npm install --global npm@11
+          cache: npm
 
       - name: Show tool versions
         run: node --version && npm --version
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
+
+      - name: Prettier check
+        run: npx prettier --check .
 
       - name: Lint
         run: npm run lint
