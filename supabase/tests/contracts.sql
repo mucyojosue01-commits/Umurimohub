@@ -26,7 +26,7 @@ begin
     values ('t_biz','Test Biz','Construction','Gasabo',false,0,'x','{}',false,biz);
   insert into business_members values ('t_biz', biz, 'owner');
   insert into opportunities(id,business_id,created_by,title,sector,district,type,pay_rwf,pay_unit,mode,duration,deadline,team_allowed,team_size,skills,summary,responsibilities,requirements,featured,status,is_demo)
-    values ('t_opp','t_biz',biz,'Test job','Construction','Gasabo','Contract',100000,'project','On-site','1 month',current_date+30,true,3,'{}','s','{}','{}',false,'open',false);
+    values ('t_opp','t_biz',biz,'Test job','Construction','Gasabo','Project',100000,'project','On-site','1 month',current_date+30,true,3,'{}','s','{}','{}',false,'open',false);
   insert into worker_profiles(id,user_id,name,title,district,sector,rate_rwf,rate_unit,available,years,bio,initials,verified,rating,reviews,rep,visibility,is_demo)
     values ('t_w',wk,'Test Worker','Mason','Gasabo','Construction',10000,'day',true,2,'b','TW',false,0,0,'{}'::jsonb,'public',false);
   insert into teams(id,name,lead_user_id,sector,areas,rating,projects,available,summary,skills,is_demo)
