@@ -67,11 +67,12 @@ function Page() {
   const { user, session, authReady, reloadUser } = useApp();
   const qc = useQueryClient();
   const nav = useNavigate();
+  const createMode = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("create") : null;
   const [f, setF] = useState({
     name: "",
     phone: "",
     district: "",
-    roles: ["worker"] as Role[],
+    roles: [(createMode === "business" ? "business" : createMode === "team" ? "team_lead" : "worker")] as Role[],
     title: "",
     sector: "Construction",
     skills: "",
@@ -137,6 +138,8 @@ function Page() {
       _skills: skills,
       _business_name: v.roles.includes("business") ? v.businessName : null,
       _team_name: v.roles.includes("team_lead") ? v.teamName : null,
+      _create_new_business: createMode === "business",
+      _create_new_team: createMode === "team",
     });
     if (error) {
       if (error.code === "42501") throw new Error("Your account is not authorized to complete onboarding.");
@@ -157,8 +160,8 @@ function Page() {
     <div className="container-page max-w-2xl py-10">
       <PageHeader
         eyebrow="Onboarding"
-        title="Set up your profile"
-        desc="You can hold more than one role — for example worker and team leader."
+        title={createMode === "business" ? "Create another business" : createMode === "team" ? "Create another team" : "Set up your profile"}
+        desc={createMode ? "Create a new entity while keeping your existing businesses and teams." : "You can hold more than one role — for example worker and team leader."}
       />
       <Card className="p-6">
         <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">

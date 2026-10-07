@@ -39,11 +39,12 @@ const sel = "h-10 rounded-full border bg-card px-3 text-sm";
 function Page() {
   const s = Route.useSearch();
   const nav = Route.useNavigate();
-  const { allOpps } = useApp();
+  const { allOpps, user } = useApp();
+  const ownBusinessIds = new Set(user?.businessIds ?? []);
   const set = (k: string, v: unknown) =>
     nav({ search: (p) => ({ ...p, [k]: v || undefined }), replace: true });
   const list = allOpps.filter(
-    (o) =>
+    (o) => !ownBusinessIds.has(o.businessId) &&
       (!s.q ||
         `${o.title} ${o.skills.join(" ")} ${o.summary}`
           .toLowerCase()

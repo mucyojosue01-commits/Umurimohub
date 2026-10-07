@@ -54,8 +54,8 @@ export function SiteHeader() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild><Link to="/opportunities/new">Post opportunity</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link to="/register">Create business</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link to="/register">Create team</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><a href="/register?create=business">Create business</a></DropdownMenuItem>
+                  <DropdownMenuItem asChild><a href="/register?create=team">Create team</a></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Link to="/messages" aria-label="Messages" className="rounded-full p-2 hover:bg-muted"><MessageSquare className="size-5" /></Link>
