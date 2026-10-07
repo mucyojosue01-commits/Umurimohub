@@ -317,7 +317,6 @@ revoke all on function public.is_business_member(text, text[]) from public, anon
 revoke all on function public.is_team_lead(text) from public, anon;
 revoke all on function public.are_connected(text,text) from public, anon;
 revoke all on function public.worker_network_count(text) from public, anon;
-revoke all on function public.notify_business(text,text,text,text) from public, anon;
 grant execute on function public.has_role(public.app_role, uuid) to authenticated;
 grant execute on function public.my_worker_id() to authenticated;
 grant execute on function public.is_business_member(text, text[]) to authenticated;
