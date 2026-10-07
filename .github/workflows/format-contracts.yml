@@ -1,6 +1,7 @@
 name: Format contracts implementation
 on:
-  workflow_dispatch:
+  push:
+    branches: ["feat/contracts-workflow-final"]
 jobs:
   format:
     runs-on: ubuntu-latest
