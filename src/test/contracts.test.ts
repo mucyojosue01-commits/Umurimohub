@@ -26,6 +26,6 @@ describe("contract proposal validation", () => {
 
   it("enforces scope and title limits", () => {
     expect(validateProposal({ ...base, title: "x" })).toContain("Title");
-    expect(validateProposal({ ...base, scope: "short" })).toContain("Scope");
+    expect(validateProposal({ ...base, scope: "short" })).toContain("scope");
   });
 });
