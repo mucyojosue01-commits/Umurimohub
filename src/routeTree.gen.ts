@@ -26,6 +26,8 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrainingRouteImport } from './routes/training'
+import { Route as GrowRouteImport } from './routes/grow'
+import { Route as CompanyRouteImport } from './routes/company'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as OpportunitiesNewRouteImport } from './routes/opportunities.new'
@@ -183,10 +185,6 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
-  '/grow': typeof GrowRoute
-  '/company': typeof CompanyRoute
-  '/grow': typeof GrowRoute
-  '/company': typeof CompanyRoute
   '/grow': typeof GrowRoute
   '/company': typeof CompanyRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
