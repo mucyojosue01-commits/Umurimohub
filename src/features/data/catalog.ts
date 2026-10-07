@@ -5,6 +5,15 @@ import type { Catalog } from "./mappers";
 
 // Demo fallback mirrors the seeded rows, so the UI renders identically if the
 // database is unreachable.
+export const emptyCatalog: Catalog = {
+  workers: [],
+  teams: [],
+  businesses: [],
+  opportunities: [],
+  workerUserIds: {},
+  source: "database",
+};
+
 export const demoCatalog: Catalog = {
   workers: WORKERS,
   teams: TEAMS,
@@ -38,6 +47,6 @@ export function withGetters(c: Catalog) {
 }
 
 export function useCatalog() {
-  const q = useQuery({ ...catalogQuery, placeholderData: demoCatalog });
+  const q = useQuery({ ...catalogQuery, placeholderData: emptyCatalog });
   return { ...withGetters(q.data ?? demoCatalog), refresh: q.refetch };
 }
