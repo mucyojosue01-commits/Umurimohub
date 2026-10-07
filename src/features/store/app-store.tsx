@@ -171,7 +171,7 @@ async function loadUser(session: Session): Promise<User> {
   const order: Role[] = ["admin", "institution", "business", "team_lead", "worker", "learner"];
   return {
     id: uid,
-    email: session.user.email ?? undefined,
+    ...(session.user.email ? { email: session.user.email } : {}),
     name:
       p.data?.display_name ??
       (session.user.user_metadata?.["full_name"] as string | undefined) ??
