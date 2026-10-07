@@ -34,6 +34,7 @@ declare
   member uuid := '00000000-0000-4000-a000-0000000000c2';
   outsider uuid := '00000000-0000-4000-a000-0000000000d1';
   app_id uuid;
+  gated_app uuid;
   team_app uuid;
   cid uuid;
   gated_cid uuid;
@@ -73,10 +74,11 @@ begin
 
   perform pg_temp.as_user(biz);
   cid := public.create_contract(app_id,'Direct Completion','Complete the construction scope',500000,current_date,current_date+10,null);
+  insert into applications(opportunity_id,applicant_user_id,kind,note,status)
+    values ('c_opp',worker,'Individual','gated','accepted')
+    returning id into gated_app;
   gated_cid := public.create_contract(
-    (insert into applications(opportunity_id,applicant_user_id,kind,note,status)
-      values ('c_opp',worker,'Individual','gated','accepted') returning id),
-    'Gated Completion','Complete the gated scope',500000,current_date,current_date+10,null
+    gated_app,'Gated Completion','Complete the gated scope',500000,current_date,current_date+10,null
   );
   team_cid := public.create_contract(team_app,'Team Completion','Complete the team scope',800000,current_date,current_date+10,null);
 
