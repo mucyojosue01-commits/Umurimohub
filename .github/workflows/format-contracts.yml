@@ -2,6 +2,9 @@ name: Format contracts implementation
 on:
   push:
     branches: ["feat/contracts-workflow-final"]
+permissions:
+  contents: write
+
 jobs:
   format:
     if: github.actor != 'github-actions[bot]'
