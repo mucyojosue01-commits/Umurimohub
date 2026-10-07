@@ -126,7 +126,9 @@ begin
     'on-time evidence'
   );
 
-  -- Finalized history is immutable to normal clients.
+  -- Finalized history is immutable to normal clients and protected by database triggers.
+  perform pg_temp.check((select request_note = 'Inspection completed' from contract_completions where id=completion_id), 'finalized completion snapshot preserved');
+  perform pg_temp.as_owner();
   perform pg_temp.check(pg_temp.fails(format($q$update contract_completions set request_note='tampered' where id=%L$q$, completion_id)), 'completion immutable after finalize');
   perform pg_temp.check(pg_temp.fails(format($q$delete from completion_events where completion_id=%L$q$, completion_id)), 'completion events immutable');
   perform pg_temp.check(pg_temp.fails(format($q$update verified_experiences set title='tampered' where contract_id=%L$q$, cid)), 'verified experience immutable');
