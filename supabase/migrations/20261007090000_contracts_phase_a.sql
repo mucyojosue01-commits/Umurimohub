@@ -433,10 +433,13 @@ declare
   recipient uuid;
 begin
   if new.status = 'accepted' and old.status is distinct from new.status then
-    select coalesce(
-      (select w.user_id from public.worker_profiles w where w.id = new.team_id),
-      new.applicant_user_id
-    ) into recipient;
+    if new.team_id is not null then
+      select t.lead_user_id into recipient
+      from public.teams t
+      where t.id = new.team_id;
+    else
+      recipient := new.applicant_user_id;
+    end if;
 
     if recipient is not null then
       insert into public.notifications(user_id, kind, text, link)
