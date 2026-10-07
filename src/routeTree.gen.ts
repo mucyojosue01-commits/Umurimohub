@@ -213,6 +213,8 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
+  '/grow': typeof GrowRoute
+  '/company': typeof CompanyRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -240,6 +242,8 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
+  '/grow': typeof GrowRoute
+  '/company': typeof CompanyRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -268,6 +272,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/terms'
     | '/training'
+    | '/grow'
+    | '/company'
     | '/opportunities/$id'
     | '/opportunities/new'
     | '/teams/$id'
@@ -347,6 +353,8 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   TermsRoute: typeof TermsRoute
   TrainingRoute: typeof TrainingRoute
+  GrowRoute: typeof GrowRoute
+  CompanyRoute: typeof CompanyRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   OpportunitiesNewRoute: typeof OpportunitiesNewRoute
   TeamsIdRoute: typeof TeamsIdRoute
@@ -468,6 +476,20 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grow': {
+      id: '/grow'
+      path: '/grow'
+      fullPath: '/grow'
+      preLoaderRoute: typeof GrowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/company': {
+      id: '/company'
+      path: '/company'
+      fullPath: '/company'
+      preLoaderRoute: typeof CompanyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/training': {
