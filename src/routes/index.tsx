@@ -17,7 +17,7 @@ import hero from "@/assets/hero.jpg";
 import { Button } from "@/components/ui/button";
 import { DISTRICTS } from "@/features/data/demo";
 import { useCatalog } from "@/features/data/catalog";
-import { Card, DemoNotice, OpportunityCard, TeamCard, WorkerCard } from "@/features/ui/kit";
+import { Card, OpportunityCard, TeamCard, WorkerCard } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -183,7 +183,6 @@ function Index() {
             View all
           </Link>
         </div>
-        <DemoNotice className="mt-3" />
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {opportunities.slice(0, 3).map((o) => (
             <OpportunityCard key={o.id} o={o} />
