@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCatalog } from "@/features/data/catalog";
-import { DemoNotice, PageHeader, TeamCard } from "@/features/ui/kit";
+import { PageHeader, TeamCard } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/teams/")({
   head: () => ({
@@ -26,8 +26,7 @@ function Page() {
         title="Teams"
         desc="Hire a crew that has already delivered together."
       />
-      <DemoNotice />
-      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{teams.length === 0 && <p className="col-span-full py-12 text-center text-sm text-muted-foreground">No teams have joined yet.</p>}
         {teams.map((t) => (
           <TeamCard key={t.id} t={t} />
         ))}
