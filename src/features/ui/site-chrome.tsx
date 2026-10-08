@@ -54,6 +54,7 @@ export function SiteHeader() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild><Link to="/opportunities/new">Post opportunity</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/training">Create training</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><a href="/register?create=business">Create business</a></DropdownMenuItem>
                   <DropdownMenuItem asChild><a href="/register?create=team">Create team</a></DropdownMenuItem>
                 </DropdownMenuContent>
