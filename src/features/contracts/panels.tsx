@@ -131,6 +131,7 @@ export function ContractsPanel() {
     }
   };
   return (
+    <>
     <Card className="mt-6">
       <h2 className="font-bold">Contracts</h2>
       {q.isLoading ? (
@@ -205,5 +206,6 @@ export function ContractsPanel() {
         </div>}
       </DialogContent>
     </Dialog>
+    </>
   );
 }
