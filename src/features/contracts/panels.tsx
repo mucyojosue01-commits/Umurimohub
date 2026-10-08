@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Info } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { rwf } from "@/features/data/demo";
@@ -114,6 +117,8 @@ export function ContractsPanel() {
   const { user } = useApp();
   const qc = useQueryClient();
   const q = useContracts();
+  const [infoContract, setInfoContract] = useState<Contract | null>(null);
+  const milestonesQ = useQuery({ queryKey: ["contract-overview-milestones", infoContract?.id], enabled: !!infoContract, queryFn: async () => { const { data, error } = await supabase.from("milestones").select("id,title,status,amount_rwf").eq("contract_id", infoContract!.id).order("sequence"); if(error) throw error; return data ?? []; }});
   if (!user) return null;
   const act = async (fn: () => Promise<unknown>, msg: string) => {
     try {
@@ -152,6 +157,7 @@ export function ContractsPanel() {
                 </div>
                 <span className="flex flex-wrap items-center gap-2">
                   <Pill tone={tone(c.status)}>{c.status}</Pill>
+                  <Button size="sm" variant="outline" onClick={() => setInfoContract(c)} title="Project overview"><Info className="size-4" /></Button>
                   {isParty && c.status === "proposed" && (
                     <>
                       <Button
@@ -187,5 +193,16 @@ export function ContractsPanel() {
         </ul>
       )}
     </Card>
+    <Dialog open={!!infoContract} onOpenChange={(open)=>{if(!open)setInfoContract(null)}}>
+      <DialogContent className="max-w-2xl rounded-3xl">
+        <DialogHeader><DialogTitle>Project overview</DialogTitle></DialogHeader>
+        {infoContract && <div className="space-y-4">
+          <div><p className="font-semibold">{infoContract.title}</p><p className="text-sm text-muted-foreground">{infoContract.scope}</p></div>
+          <div className="grid gap-3 sm:grid-cols-3"><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Status</p><p className="font-semibold">{infoContract.status}</p></div><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Amount</p><p className="font-semibold">{rwf(infoContract.amount_rwf)}</p></div><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Payments</p><p className="font-semibold">Payments not yet enabled</p></div></div>
+          <div><p className="font-semibold">Milestones</p>{milestonesQ.isLoading?<p className="text-sm text-muted-foreground">Loading milestones…</p>:milestonesQ.isError?<p className="text-sm text-destructive">Could not load milestones. Please try again.</p>:!milestonesQ.data?.length?<p className="text-sm text-muted-foreground">No milestones yet.</p>:<ul className="divide-y">{milestonesQ.data.map(m=><li key={m.id} className="flex justify-between py-2 text-sm"><span>{m.title}</span><span>{m.status} · {rwf(m.amount_rwf)}</span></li>)}</ul>}</div>
+          <div className="rounded-xl border bg-muted/30 p-3 text-sm">Users/teams: {infoContract.worker_id ? "Individual worker" : infoContract.team_id ? "Team" : "—"}. Payment status will appear here after the payment phase is enabled.</div>
+        </div>}
+      </DialogContent>
+    </Dialog>
   );
 }
