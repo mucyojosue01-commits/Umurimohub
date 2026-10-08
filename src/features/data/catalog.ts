@@ -1,5 +1,6 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 import {
   mapBusiness,
   mapOpportunity,
@@ -62,5 +63,18 @@ export function withGetters(c: Catalog) {
 
 export function useCatalog() {
   const q = useQuery({ ...catalogQuery, placeholderData: emptyCatalog });
+  const qc = useQueryClient();
+  useEffect(() => {
+    const channel = supabase
+      .channel("catalog-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "worker_profiles" }, () => void qc.invalidateQueries({ queryKey: ["catalog"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "worker_skills" }, () => void qc.invalidateQueries({ queryKey: ["catalog"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "teams" }, () => void qc.invalidateQueries({ queryKey: ["catalog"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "team_members" }, () => void qc.invalidateQueries({ queryKey: ["catalog"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "businesses" }, () => void qc.invalidateQueries({ queryKey: ["catalog"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "opportunities" }, () => void qc.invalidateQueries({ queryKey: ["catalog"] }))
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [qc]);
   return { ...withGetters(q.data ?? emptyCatalog), refresh: q.refetch, loading: q.isLoading, error: q.error };
 }
