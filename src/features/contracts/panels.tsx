@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Info } from "lucide-react";
+import { MoreVertical } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -174,9 +175,8 @@ export function ContractsPanel() {
   const { getBusiness, getTeam, getWorker } = useCatalog();
   const qc = useQueryClient();
   const q = useContracts();
-  const [infoContract, setInfoContract] = useState<Contract | null>(null);
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
-  const milestonesQ = useQuery({ queryKey: ["contract-overview-milestones", infoContract?.id], enabled: !!infoContract, queryFn: async () => { const { data, error } = await supabase.from("milestones").select("id,title,status,amount_rwf").eq("contract_id", infoContract!.id).order("sequence"); if(error) throw error; return data ?? []; }});
+  const [menuContract, setMenuContract] = useState<string | null>(null);
   if (!user) return null;
   const act = async (fn: () => Promise<unknown>, msg: string) => {
     try {
@@ -216,8 +216,17 @@ export function ContractsPanel() {
                 </div>
                 <span className="flex flex-wrap items-center gap-2">
                   <Pill tone={tone(c.status)}>{c.status}</Pill>
-                  <Button size="sm" variant="outline" onClick={() => setInfoContract(c)} title="Project overview"><Info className="size-4" /></Button>
-                  <Button size="sm" variant="outline" onClick={() => document.getElementById("milestones-" + c.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}>Milestones</Button>
+                  <Link to="/contracts/$id" params={{ id: c.id }} className="rounded-xl border px-3 py-2 text-sm hover:bg-muted">Open project</Link>
+                  <div className="relative">
+                    <Button size="icon" variant="outline" aria-label="Contract actions" onClick={() => setMenuContract(menuContract === c.id ? null : c.id)}><MoreVertical className="size-4" /></Button>
+                    {menuContract === c.id && (
+                      <div className="absolute right-0 top-11 z-30 w-48 rounded-2xl border bg-popover p-1 shadow-xl">
+                        <Link to="/contracts/$id" params={{ id: c.id }} className="block rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => setMenuContract(null)}>Info / project page</Link>
+                        {isBiz && c.status === "proposed" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setEditingContract(c); setMenuContract(null); }}>Edit</button>}
+                        {isBiz && c.status === "proposed" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => { setMenuContract(null); void act(async () => { await deleteContract(c.id); }, "Contract proposal deleted"); }}>Delete</button>}
+                      </div>
+                    )}
+                  </div>
                   {isParty && c.status === "proposed" && (
                     <>
                       <Button
@@ -269,32 +278,6 @@ export function ContractsPanel() {
       <DialogContent className="max-w-2xl rounded-3xl">
         <DialogHeader><DialogTitle>Edit contract proposal</DialogTitle></DialogHeader>
         {editingContract && <EditContractForm contract={editingContract} onDone={() => setEditingContract(null)} />}
-      </DialogContent>
-    </Dialog>
-    <Dialog open={!!infoContract} onOpenChange={(open)=>{if(!open)setInfoContract(null)}}>
-      <DialogContent className="max-w-2xl rounded-3xl">
-        <DialogHeader><DialogTitle>Project overview</DialogTitle></DialogHeader>
-        {infoContract && <div className="space-y-4">
-          <div><p className="font-semibold">{infoContract.title}</p><p className="text-sm text-muted-foreground">{infoContract.scope}</p></div>
-          <div className="grid gap-3 sm:grid-cols-3"><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Status</p><p className="font-semibold">{infoContract.status}</p></div><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Amount</p><p className="font-semibold">{rwf(infoContract.amount_rwf)}</p></div><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Payments</p><p className="font-semibold">Payments not yet enabled</p></div></div>
-          <div><p className="font-semibold">Milestones</p>{milestonesQ.isLoading?<p className="text-sm text-muted-foreground">Loading milestones…</p>:milestonesQ.isError?<p className="text-sm text-destructive">Could not load milestones. Please try again.</p>:!milestonesQ.data?.length?<p className="text-sm text-muted-foreground">No milestones yet.</p>:<ul className="divide-y">{milestonesQ.data.map(m=><li key={m.id} className="flex justify-between py-2 text-sm"><span>{m.title}</span><span>{m.status} · {rwf(m.amount_rwf)}</span></li>)}</ul>}</div>
-          {(() => {
-            const business = getBusiness(infoContract.business_id);
-            const worker = infoContract.worker_id ? getWorker(infoContract.worker_id) : undefined;
-            const team = infoContract.team_id ? getTeam(infoContract.team_id) : undefined;
-            const party = worker ?? team;
-            const partyName = worker?.name ?? team?.name ?? "Contract party";
-            const partyAvatar = worker?.avatarUrl ?? team?.avatarUrl;
-            return <div className="rounded-xl border bg-muted/30 p-3">
-              <p className="text-sm font-semibold">Project parties</p>
-              <div className="mt-3 flex flex-wrap gap-3">
-                {business && <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-sm"><Avatar initials={business.name.slice(0,2).toUpperCase()} src={business.avatarUrl} alt={business.name} size="sm" /><span><span className="block font-medium">{business.name}</span><span className="text-xs text-muted-foreground">Hiring business</span></span></div>}
-                {party && <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-sm"><Avatar initials={partyName.slice(0,2).toUpperCase()} src={partyAvatar} alt={partyName} size="sm" /><span><span className="block font-medium">{partyName}</span><span className="text-xs text-muted-foreground">{worker ? "Worker" : "Team"}</span></span></div>}
-              </div>
-              <p className="mt-3 text-xs text-muted-foreground">Payment status will appear here after the payment phase is enabled.</p>
-            </div>;
-          })()}
-        </div>}
       </DialogContent>
     </Dialog>
     </>
