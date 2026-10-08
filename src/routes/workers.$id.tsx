@@ -76,10 +76,15 @@ function Page() {
         teamIds.length ? supabase.from("teams").select("id,name,avatar_url").in("id", teamIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
       ]);
       const otherIds = (connections.data ?? []).map((x) => x.requester === uid ? x.addressee : x.requester);
-      const profiles = otherIds.length
-        ? await supabase.from("profiles").select("id,display_name,avatar_url").in("id", otherIds)
-        : { data: [] as { id: string; display_name: string; avatar_url: string | null }[] };
-      return { experiences: experiences.data ?? [], trainingExperiences: trainingExperiences.data ?? [], connections: connections.data ?? [], profiles: profiles.data ?? [], businesses: businessRows.data ?? [], teams: teamRows.data ?? [] };
+      const [profiles, connectionWorkers] = await Promise.all([
+        otherIds.length
+          ? supabase.from("profiles").select("id,display_name,avatar_url").in("id", otherIds)
+          : Promise.resolve({ data: [] as { id: string; display_name: string; avatar_url: string | null }[] }),
+        otherIds.length
+          ? supabase.from("worker_profiles").select("id,user_id,name,avatar_url").in("user_id", otherIds).eq("visibility", "public")
+          : Promise.resolve({ data: [] as { id: string; user_id: string | null; name: string; avatar_url: string | null }[] }),
+      ]);
+      return { experiences: experiences.data ?? [], trainingExperiences: trainingExperiences.data ?? [], connections: connections.data ?? [], profiles: profiles.data ?? [], connectionWorkers: connectionWorkers.data ?? [], businesses: businessRows.data ?? [], teams: teamRows.data ?? [] };
     },
   });
   return (
@@ -194,24 +199,32 @@ function Page() {
                   const other = detailQ.data?.profiles.find(
                     (p) => p.id === (x.requester === uid ? x.addressee : x.requester),
                   );
-                  const otherWorker = other
-                    ? detailQ.data?.profiles.find((p) => p.id === other.id)
-                    : undefined;
-                  return (
+                  const otherWorker = detailQ.data?.connectionWorkers.find((worker) => worker.user_id === other?.id);
+                  return otherWorker ? (
                     <Link
                       key={x.id}
                       to="/workers/$id"
-                      params={{ id: other?.id ?? "" }}
+                      params={{ id: otherWorker.id }}
                       className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-muted"
                     >
+                      <Avatar
+                        initials={(otherWorker.name ?? other?.display_name ?? "U").slice(0, 2).toUpperCase()}
+                        src={otherWorker.avatar_url ?? other?.avatar_url}
+                        alt={otherWorker.name ?? other?.display_name ?? "Connection"}
+                        size="sm"
+                      />
+                      {otherWorker.name ?? other?.display_name ?? "Connection"}
+                    </Link>
+                  ) : (
+                    <span key={x.id} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm">
                       <Avatar
                         initials={(other?.display_name ?? "U").slice(0, 2).toUpperCase()}
                         src={other?.avatar_url}
                         alt={other?.display_name ?? "Connection"}
                         size="sm"
                       />
-                      {otherWorker?.display_name ?? other?.display_name ?? "Connection"}
-                    </Link>
+                      {other?.display_name ?? "Connection"}
+                    </span>
                   );
                 })}
               </div>
