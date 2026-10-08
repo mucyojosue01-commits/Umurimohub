@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { rwf } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
-import { Card, Pill } from "@/features/ui/kit";
+import { Avatar, Card, Pill } from "@/features/ui/kit";
+import { useCatalog } from "@/features/data/catalog";
 import {
   cancelContract,
   contractsKey,
@@ -170,6 +171,7 @@ const tone = (s: string) =>
 
 export function ContractsPanel() {
   const { user } = useApp();
+  const { getBusiness, getTeam, getWorker } = useCatalog();
   const qc = useQueryClient();
   const q = useContracts();
   const [infoContract, setInfoContract] = useState<Contract | null>(null);
@@ -215,6 +217,7 @@ export function ContractsPanel() {
                 <span className="flex flex-wrap items-center gap-2">
                   <Pill tone={tone(c.status)}>{c.status}</Pill>
                   <Button size="sm" variant="outline" onClick={() => setInfoContract(c)} title="Project overview"><Info className="size-4" /></Button>
+                  <Button size="sm" variant="outline" onClick={() => document.getElementById("milestones-" + c.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}>Milestones</Button>
                   {isParty && c.status === "proposed" && (
                     <>
                       <Button
@@ -275,7 +278,22 @@ export function ContractsPanel() {
           <div><p className="font-semibold">{infoContract.title}</p><p className="text-sm text-muted-foreground">{infoContract.scope}</p></div>
           <div className="grid gap-3 sm:grid-cols-3"><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Status</p><p className="font-semibold">{infoContract.status}</p></div><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Amount</p><p className="font-semibold">{rwf(infoContract.amount_rwf)}</p></div><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Payments</p><p className="font-semibold">Payments not yet enabled</p></div></div>
           <div><p className="font-semibold">Milestones</p>{milestonesQ.isLoading?<p className="text-sm text-muted-foreground">Loading milestones…</p>:milestonesQ.isError?<p className="text-sm text-destructive">Could not load milestones. Please try again.</p>:!milestonesQ.data?.length?<p className="text-sm text-muted-foreground">No milestones yet.</p>:<ul className="divide-y">{milestonesQ.data.map(m=><li key={m.id} className="flex justify-between py-2 text-sm"><span>{m.title}</span><span>{m.status} · {rwf(m.amount_rwf)}</span></li>)}</ul>}</div>
-          <div className="rounded-xl border bg-muted/30 p-3 text-sm">Users/teams: {infoContract.worker_id ? "Individual worker" : infoContract.team_id ? "Team" : "—"}. Payment status will appear here after the payment phase is enabled.</div>
+          {(() => {
+            const business = getBusiness(infoContract.business_id);
+            const worker = infoContract.worker_id ? getWorker(infoContract.worker_id) : undefined;
+            const team = infoContract.team_id ? getTeam(infoContract.team_id) : undefined;
+            const party = worker ?? team;
+            const partyName = worker?.name ?? team?.name ?? "Contract party";
+            const partyAvatar = worker?.avatarUrl ?? team?.avatarUrl;
+            return <div className="rounded-xl border bg-muted/30 p-3">
+              <p className="text-sm font-semibold">Project parties</p>
+              <div className="mt-3 flex flex-wrap gap-3">
+                {business && <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-sm"><Avatar initials={business.name.slice(0,2).toUpperCase()} src={business.avatarUrl} alt={business.name} size="sm" /><span><span className="block font-medium">{business.name}</span><span className="text-xs text-muted-foreground">Hiring business</span></span></div>}
+                {party && <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-sm"><Avatar initials={partyName.slice(0,2).toUpperCase()} src={partyAvatar} alt={partyName} size="sm" /><span><span className="block font-medium">{partyName}</span><span className="text-xs text-muted-foreground">{worker ? "Worker" : "Team"}</span></span></div>}
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">Payment status will appear here after the payment phase is enabled.</p>
+            </div>;
+          })()}
         </div>}
       </DialogContent>
     </Dialog>
