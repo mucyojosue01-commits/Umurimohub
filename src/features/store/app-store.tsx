@@ -92,6 +92,19 @@ async function loadUser(session: Session): Promise<User> {
     supabase.from("teams").select("id").eq("lead_user_id", uid),
   ]);
   const roles = (r.data ?? []).map((x) => x.role as Role);
+  const metadata = session.user.user_metadata ?? {};
+  const metadataAvatar =
+    (typeof metadata["avatar_url"] === "string" && metadata["avatar_url"]) ||
+    (typeof metadata["picture"] === "string" && metadata["picture"]) ||
+    null;
+  if (!p.data?.avatar_url && metadataAvatar) {
+    await Promise.all([
+      supabase.from("profiles").update({ avatar_url: metadataAvatar } as never).eq("id", uid),
+      supabase.from("worker_profiles").update({ avatar_url: metadataAvatar }).eq("user_id", uid),
+      supabase.from("businesses").update({ avatar_url: metadataAvatar }).in("id", (bm.data ?? []).map((x) => x.business_id)),
+      supabase.from("teams").update({ avatar_url: metadataAvatar }).eq("lead_user_id", uid),
+    ]);
+  }
   let skills: string[] = [];
   if (w.data) {
     const result = await supabase.from("worker_skills").select("name").eq("worker_id", w.data.id);
@@ -153,6 +166,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .order("created_at", { ascending: false }),
     ]);
     setUser(u);
+    if (u.avatarUrl) {
+      void qc.invalidateQueries({ queryKey: ["catalog"] });
+    }
     const opportunityIds = (a.data ?? []).map((x) => x.opportunity_id);
     const opportunityVersions = opportunityIds.length
       ? await supabase.from("opportunities").select("id,terms_version").in("id", opportunityIds)
