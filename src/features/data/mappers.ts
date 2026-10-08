@@ -121,6 +121,7 @@ export function mapOpportunity(o: Tables<"opportunities">): Opportunity {
     businessId: o.business_id ?? "",
     authorType: o.author_type,
     createdBy: o.created_by ?? undefined,
+    eligibleActorTypes: o.eligible_actor_types as ("individual" | "team" | "business")[],
     sector: o.sector as Sector,
     district: o.district,
     type: o.type as Opportunity["type"],
