@@ -17,7 +17,7 @@ export async function listConversations(userId: string): Promise<Conversation[]>
     .select("conversation_id,user_id")
     .eq("user_id", userId);
   if (memberError) throw memberError;
-  const ids = (memberships ?? []).map((m) => m.conversation_id);
+  const ids = (memberships ?? []).map((m: any) => m.conversation_id);
   if (!ids.length) return [];
 
   const { data: conversations, error: conversationError } = await db
@@ -33,17 +33,17 @@ export async function listConversations(userId: string): Promise<Conversation[]>
     .in("conversation_id", ids);
   if (allMembersError) throw allMembersError;
 
-  const otherIds = [...new Set((allMembers ?? []).filter((m) => m.user_id !== userId).map((m) => m.user_id))];
+  const otherIds = [...new Set((allMembers ?? []).filter((m: any) => m.user_id !== userId).map((m: any) => m.user_id))];
   const { data: profiles, error: profilesError } = otherIds.length
     ? await db.from("profiles").select("id,display_name").in("id", otherIds)
     : { data: [], error: null };
   if (profilesError) throw profilesError;
 
-  const profileNames = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
+  const profileNames = new Map((profiles ?? []).map((p: any) => [p.id, p.display_name]));
   const result: Conversation[] = [];
   for (const conversation of conversations ?? []) {
     const other = (allMembers ?? []).find(
-      (m) => m.conversation_id === conversation.id && m.user_id !== userId,
+      ((m: any) => m.conversation_id === conversation.id && m.user_id !== userId,
     );
     if (!other) continue;
     const { data: last } = await db
@@ -58,7 +58,7 @@ export async function listConversations(userId: string): Promise<Conversation[]>
       .select("id")
       .eq("conversation_id", conversation.id)
       .neq("sender_id", userId);
-    const incomingIds = (incoming ?? []).map((m) => m.id);
+    const incomingIds = (incoming ?? []).map((m: any) => m.id);
     const { data: reads } = incomingIds.length
       ? await db
           .from("message_reads")
@@ -66,13 +66,13 @@ export async function listConversations(userId: string): Promise<Conversation[]>
           .eq("user_id", userId)
           .in("message_id", incomingIds)
       : { data: [] };
-    const readIds = new Set((reads ?? []).map((r) => r.message_id));
+    const readIds = new Set((reads ?? []).map((r: any) => r.message_id));
     result.push({
       ...conversation,
       otherUserId: other.user_id,
       otherName: profileNames.get(other.user_id) ?? "UmurimoHub member",
       lastMessage: last ?? undefined,
-      unreadCount: incomingIds.filter((id) => !readIds.has(id)).length,
+      unreadCount: incomingIds.filter((id: any) => !readIds.has(id)).length,
     });
   }
   return result;
@@ -85,7 +85,7 @@ export async function listMessages(conversationId: string, userId: string): Prom
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
   if (error) throw error;
-  const ids = (data ?? []).map((m) => m.id);
+  const ids = (data ?? []).map((m: any) => m.id);
   if (!ids.length) return [];
   const { data: reads, error: readsError } = await db
     .from("message_reads")
@@ -93,8 +93,8 @@ export async function listMessages(conversationId: string, userId: string): Prom
     .eq("user_id", userId)
     .in("message_id", ids);
   if (readsError) throw readsError;
-  const readIds = new Set((reads ?? []).map((r) => r.message_id));
-  return (data ?? []).map((m) => ({ ...m, read: readIds.has(m.id) }));
+  const readIds = new Set((reads ?? []).map((r: any) => r.message_id));
+  return (data ?? []).map((m: any) => ({ ...m, read: readIds.has(m.id) }));
 }
 
 export async function getOrCreateDirectConversation(otherUserId: string, opportunityId?: string, subject?: string) {

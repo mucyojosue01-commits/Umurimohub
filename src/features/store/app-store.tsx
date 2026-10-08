@@ -82,16 +82,16 @@ export function applicationErrorMessage(error: { code?: string; message?: string
 async function loadUser(session: Session): Promise<User> {
   const uid = session.user.id;
   const [p, r, w, bm, t] = await Promise.all([
-    db.from("profiles").select("*").eq("id", uid).maybeSingle(),
-    db.from("user_roles").select("role").eq("user_id", uid),
-    db.from("worker_profiles").select("id, district").eq("user_id", uid).maybeSingle(),
-    db.from("business_members").select("business_id").eq("user_id", uid),
-    db.from("teams").select("id").eq("lead_user_id", uid),
+    supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
+    supabase.from("user_roles").select("role").eq("user_id", uid),
+    supabase.from("worker_profiles").select("id, district").eq("user_id", uid).maybeSingle(),
+    supabase.from("business_members").select("business_id").eq("user_id", uid),
+    supabase.from("teams").select("id").eq("lead_user_id", uid),
   ]);
   const roles = (r.data ?? []).map((x) => x.role as Role);
   let skills: string[] = [];
   if (w.data) {
-    const result = await db.from("worker_skills").select("name").eq("worker_id", w.data.id);
+    const result = await supabase.from("worker_skills").select("name").eq("worker_id", w.data.id);
     skills = (result.data ?? []).map((s) => s.name);
   }
   const order: Role[] = ["admin", "institution", "business", "team_lead", "worker", "learner"];
@@ -142,7 +142,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .select("*")
         .eq("applicant_user_id", sess.user.id)
         .order("created_at", { ascending: false }),
-      db.from("saved_opportunities").select("opportunity_id").eq("user_id", sess.user.id),
+      supabase.from("saved_opportunities").select("opportunity_id").eq("user_id", sess.user.id),
       supabase
         .from("notifications")
         .select("id,text,created_at,read,kind,link")
@@ -231,7 +231,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (lookupError) return { ok: false, error: "We couldn't verify this opportunity. Please try again." };
       if (!opportunity || opportunity.status !== "open")
         return { ok: false, error: "This opportunity is no longer available." };
-      const { error } = await db.from("applications").insert({
+      const { error } = await supabase.from("applications").insert({
         opportunity_id: a.oppId,
         applicant_user_id: session.user.id,
         kind: a.kind,
@@ -244,7 +244,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     refer: async (oppId, workerId, note) => {
       if (!session) return { ok: false, error: "Sign in to refer someone." };
-      const { error } = await db.from("referrals").insert({
+      const { error } = await supabase.from("referrals").insert({
         referrer: session.user.id,
         referee_worker_id: workerId,
         opportunity_id: oppId,
@@ -307,8 +307,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const on = dbSaved.includes(id);
       setDbSaved((p) => (on ? p.filter((x) => x !== id) : [...p, id]));
       void (on
-        ? db.from("saved_opportunities").delete().eq("user_id", session.user.id).eq("opportunity_id", id)
-        : db.from("saved_opportunities").insert({ user_id: session.user.id, opportunity_id: id }));
+        ? supabase.from("saved_opportunities").delete().eq("user_id", session.user.id).eq("opportunity_id", id)
+        : supabase.from("saved_opportunities").insert({ user_id: session.user.id, opportunity_id: id }));
     },
     advanceMilestone: () => undefined,
   };
