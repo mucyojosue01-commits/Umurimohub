@@ -223,8 +223,9 @@ export function TrustMeter({ w }: { w: Worker }) {
 }
 
 export function OpportunityCard({ o }: { o: Opportunity }) {
-  const { getBusiness } = useCatalog();
+  const { getBusiness, workers, workerUserIds } = useCatalog();
   const b = getBusiness(o.businessId);
+  const author = o.authorType === "user" ? workers.find((w) => workerUserIds[w.id] === o.createdBy) : undefined;
   const { saved, toggleSave } = useApp();
   const isSaved = saved.includes(o.id);
   return (
@@ -255,10 +256,16 @@ export function OpportunityCard({ o }: { o: Opportunity }) {
       >
         {o.title}
       </Link>
-      <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-        {b?.name}
+      <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+        <Avatar
+          initials={(author?.initials ?? b?.name ?? "U").slice(0, 2).toUpperCase()}
+          src={author?.avatarUrl ?? b?.avatarUrl}
+          alt={author?.name ?? b?.name ?? "Publisher"}
+          size="sm"
+        />
+        <span>{author?.name ?? b?.name ?? "UmurimoHub member"}</span>
         {b?.verified && <BadgeCheck className="size-3.5 text-primary" />}
-      </p>
+      </div>
       <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{o.summary}</p>
       <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-4 text-sm">
         <span className="font-semibold">
