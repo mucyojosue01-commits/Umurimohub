@@ -78,6 +78,7 @@ export type Worker = {
   id: string;
   name: string;
   avatarUrl?: string | null;
+  trustScore?: number;
   title: string;
   district: string;
   sector: Sector;
@@ -339,6 +340,7 @@ export const WORKERS: Worker[] = [
 export type Team = {
   id: string;
   avatarUrl?: string | null;
+  trustScore?: number;
   name: string;
   leadId: string;
   memberIds: string[];
@@ -407,6 +409,7 @@ export const TEAMS: Team[] = [
 
 export type Business = {
   id: string;
+  trustScore?: number;
   name: string;
   sector: Sector;
   district: string;
