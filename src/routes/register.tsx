@@ -162,7 +162,7 @@ function Page() {
       if (!businessImage.type.startsWith("image/") || businessImage.size > 5_000_000) throw new Error("Business picture must be an image under 5 MB.");
       const { data: biz } = await supabase.from("businesses").select("id").eq("created_by", session.user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (biz?.id) {
-        const path = "businesses/" + biz.id + "/" + crypto.randomUUID() + "-" + businessImage.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = session.user.id + "/businesses/" + biz.id + "/" + crypto.randomUUID() + "-" + businessImage.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const upload = await supabase.storage.from("avatars").upload(path, businessImage, { upsert: false, contentType: businessImage.type });
         if (upload.error) throw new Error("Business was created, but its picture could not be uploaded.");
         const { data: url } = supabase.storage.from("avatars").getPublicUrl(upload.data.path);
