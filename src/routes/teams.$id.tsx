@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { catalogQuery, useCatalog } from "@/features/data/catalog";
 import { TeamInvite } from "@/features/network/team-invite";
-import { Card, DemoNotice, Pill, WorkerCard } from "@/features/ui/kit";
+import { Avatar, Card, DemoNotice, Pill, WorkerCard } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/teams/$id")({
   loader: async ({ params, context }) => {
@@ -48,9 +48,8 @@ function Page() {
       <Card className="p-6 md:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <Pill tone="primary">{t.sector}</Pill>
-            <h1 className="mt-2 text-3xl font-extrabold">{t.name}</h1>
-            <p className="mt-1 text-muted-foreground">{t.summary}</p>
+            <div className="flex items-center gap-3"><Avatar initials={t.name.slice(0,2).toUpperCase()} src={t.avatarUrl} alt={t.name} /><div><Pill tone="primary">{t.sector}</Pill><h1 className="mt-2 text-3xl font-extrabold">{t.name}</h1>
+            <p className="mt-1 text-muted-foreground">{t.summary}</p></div></div>
             <div className="mt-3 flex flex-wrap gap-4 text-sm">
               <span className="flex items-center gap-1">
                 <Star className="size-4 fill-accent text-accent" />
