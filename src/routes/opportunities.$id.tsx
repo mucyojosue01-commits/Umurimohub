@@ -71,6 +71,7 @@ function Page() {
   if (!o) throw notFound();
   const b = getBusiness(o.businessId);
   const applied = applications.filter((a) => a.oppId === o.id);
+  const audience = o.eligibleActorTypes ?? ["individual", "team", "business"];
 
   return (
     <div className="container-page py-10">
@@ -173,11 +174,11 @@ function Page() {
             )}
             {applied.length === 0 && (
               <div className="space-y-2">
-                {(!user || !applied.some((a) => a.kind === "Individual")) && <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>}
-                {o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
+                {audience.includes("individual") && (!user || !applied.some((a) => a.kind === "Individual")) && <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>}
+                {audience.includes("team") && o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
                   <Button className="w-full" variant="accent" size="lg" onClick={() => setKind("Team")}><Users />Apply as team</Button>
                 )}
-                {user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button> : null}
+                {audience.includes("business") && user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button> : null}
                 <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>
                   Refer someone you trust
                 </Button>
