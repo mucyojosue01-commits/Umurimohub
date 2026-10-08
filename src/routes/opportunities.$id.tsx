@@ -3,6 +3,7 @@ import { BadgeCheck, Calendar, Clock, MapPin, Users, Wallet, CheckCircle2 } from
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { SearchSelect } from "@/components/search-select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { rwf } from "@/features/data/demo";
 import { useCatalog } from "@/features/data/catalog";
@@ -227,20 +228,32 @@ function Page() {
             ) : (
               <label className="text-sm">
                 Team
-                <input list="my-teams" value={teamId} onChange={(e)=>setTeamId(e.target.value)} placeholder="Search your team…" className="mt-1 h-10 w-full rounded-xl border bg-card px-3" />
-                <datalist id="my-teams">{myTeams.map((t)=><option key={t.id} value={t.id}>{t.name}</option>)}</datalist>
+                <SearchSelect
+                  value={teamId}
+                  onChange={setTeamId}
+                  options={myTeams.map((t) => ({ value: t.id, label: t.name, description: t.areas.join(", "), avatarUrl: t.avatarUrl, initials: t.name.slice(0, 2).toUpperCase() }))}
+                  placeholder="Search your team…"
+                />
               </label>
             ))}
           {kind === "Business" && user && <label className="text-sm">Company
-            <input list="my-businesses" value={businessId} onChange={(e)=>setBusinessId(e.target.value)} placeholder="Search your company…" className="mt-1 h-10 w-full rounded-xl border bg-card px-3" />
-            <datalist id="my-businesses">{businesses.filter((b)=>user.businessIds.includes(b.id)).map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}</datalist>
+            <SearchSelect
+              value={businessId}
+              onChange={setBusinessId}
+              options={businesses.filter((b) => user.businessIds.includes(b.id)).map((b) => ({ value: b.id, label: b.name, description: b.district + " · " + b.sector, avatarUrl: b.avatarUrl, initials: b.name.slice(0, 2).toUpperCase() }))}
+              placeholder="Search your company…"
+            />
           </label>}
           {kind === "Referral" &&
             (user ? (
               <label className="text-sm">
                 Person you trust
-                <input list="ref-workers" value={refWorker} onChange={(e)=>setRefWorker(e.target.value)} placeholder="Search a registered worker…" className="mt-1 h-10 w-full rounded-xl border bg-card px-3" />
-                <datalist id="ref-workers">{workers.filter((w)=>workerUserIds[w.id] && w.id !== user.workerId).map((w)=><option key={w.id} value={w.id}>{w.name} — {w.district}</option>)}</datalist>
+                <SearchSelect
+                  value={refWorker}
+                  onChange={setRefWorker}
+                  options={workers.filter((w) => workerUserIds[w.id] && w.id !== user.workerId).map((w) => ({ value: w.id, label: w.name, description: w.title + " · " + w.district, avatarUrl: w.avatarUrl, initials: w.initials }))}
+                  placeholder="Search a registered worker…"
+                />
               </label>
             ) : (
               <p className="text-sm text-muted-foreground">
