@@ -14,25 +14,22 @@ export const Route = createFileRoute("/teams/$id")({
     const { data: raw, error } = await supabase.from("teams").select("*").eq("id", params.id).eq("is_demo", false).maybeSingle();
     if (error) throw new Error("Team data could not be loaded: " + error.message);
     if (!raw) throw notFound();
-    const { data: members, error: memberError } = await supabase.from("team_members").select("*").eq("team_id", params.id).eq("status", "active");
-    if (memberError) throw new Error("Team members could not be loaded: " + memberError.message);
-    const workerIds = [...new Set((members ?? []).map((m) => m.worker_id))];
-    if (!workerIds.length) return { t: mapTeam(raw, members ?? []), memberWorkers: [] };
+    const { data: members } = await supabase.from("team_members").select("*").eq("team_id", params.id).eq("status", "active");
+    const activeMembers = members ?? [];
+    const workerIds = [...new Set(activeMembers.map((m) => m.worker_id))];
+    if (!workerIds.length) return { t: mapTeam(raw, activeMembers), memberWorkers: [] };
     const [workersResult, skillsResult, profilesResult] = await Promise.all([
       supabase.from("worker_profiles").select("*").in("id", workerIds),
       supabase.from("worker_skills").select("*").in("worker_id", workerIds),
       supabase.from("profiles").select("id,avatar_url").limit(500),
     ]);
-    if (workersResult.error) throw new Error("Team member profiles could not be loaded: " + workersResult.error.message);
-    if (skillsResult.error) throw new Error("Team member skills could not be loaded: " + skillsResult.error.message);
-    if (profilesResult.error) throw new Error("Team member pictures could not be loaded: " + profilesResult.error.message);
     const profileAvatars = new Map((profilesResult.data ?? []).map((p) => [p.id, p.avatar_url]));
     const t = {
-      ...mapTeam(raw, members ?? []),
+      ...mapTeam(raw, activeMembers),
       avatarUrl: raw.avatar_url ?? (raw.lead_user_id ? profileAvatars.get(raw.lead_user_id) ?? null : null),
     };
     const memberWorkers = (workersResult.data ?? []).map((w) => {
-      const mapped = mapWorker(w, skillsResult.data ?? [], members ?? []);
+      const mapped = mapWorker(w, skillsResult.data ?? [], activeMembers);
       return { ...mapped, avatarUrl: mapped.avatarUrl ?? (w.user_id ? profileAvatars.get(w.user_id) ?? null : null) };
     });
     return { t, memberWorkers };
