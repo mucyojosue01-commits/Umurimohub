@@ -77,6 +77,8 @@ export type Rep = {
 export type Worker = {
   id: string;
   name: string;
+  avatarUrl?: string | null;
+  avatarUrl?: string | null;
   title: string;
   district: string;
   sector: Sector;
@@ -88,6 +90,7 @@ export type Worker = {
   reviews: number;
   verified: boolean;
   initials: string;
+  avatarUrl?: string | null;
   skills: { name: string; level: SkillLevel; verification: Verification }[];
   bio: string;
   rep: Rep;
@@ -465,6 +468,9 @@ export type Opportunity = {
   id: string;
   title: string;
   businessId: string;
+  authorType?: "user" | "business";
+  authorName?: string;
+  authorAvatarUrl?: string | null;
   sector: Sector;
   district: string;
   type: "Job" | "Project" | "Gig" | "Apprenticeship" | "Seasonal";
