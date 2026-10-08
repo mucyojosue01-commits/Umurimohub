@@ -93,7 +93,12 @@ function Page() {
             )}
           </div>
           <h1 className="mt-3 text-3xl font-extrabold md:text-4xl">{o.title}</h1>
-          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground"><Avatar initials={(author?.initials ?? b?.name ?? "U").slice(0, 2).toUpperCase()} src={author?.avatarUrl ?? b?.avatarUrl} alt={author?.name ?? b?.name ?? "Publisher"} size="sm" /><span>{author?.name ?? b?.name ?? "UmurimoHub member"}</span>{b?.verified && <BadgeCheck className="size-4 text-primary" />}{b && <span>· rated {b.rating}</span>}</div>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"><Avatar initials={(author?.initials ?? b?.name ?? "U").slice(0, 2).toUpperCase()} src={author?.avatarUrl ?? b?.avatarUrl} alt={author?.name ?? b?.name ?? "Publisher"} size="sm" /><span>{author?.name ?? b?.name ?? "UmurimoHub member"}</span>{b?.verified && <BadgeCheck className="size-4 text-primary" />}{b && <span>· rated {b.rating}</span>}</div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Allowed applicants</span>
+            {audience.map((type) => <Pill key={type}>{type === "individual" ? "Individuals" : type === "team" ? "Teams" : "Companies"}</Pill>)}
+            <span className="text-xs text-muted-foreground">· Posted {o.posted} ago</span>
+          </div>
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
             {[
               [Wallet, `${rwf(o.payRwf)} / ${o.payUnit}`],
@@ -171,26 +176,20 @@ function Page() {
                 <Button variant="outline" className="w-full" asChild><Link to="/dashboard">Track applications</Link></Button>
               </div>
             )}
-            {applied.length === 0 && (
-              <div className="space-y-2">
-                {audience.includes("individual") && (!user || !applied.some((a) => a.kind === "Individual")) && <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>}
-                {audience.includes("team") && o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
-                  <Button className="w-full" variant="accent" size="lg" onClick={() => setKind("Team")}><Users />Apply as team</Button>
-                )}
-                {audience.includes("business") && user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button> : null}
-                <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>
-                  Refer someone you trust
-                </Button>
-                {!user && (
-                  <p className="pt-1 text-center text-xs text-muted-foreground">
-                    <Link to="/login" className="text-primary">
-                      Sign in
-                    </Link>{" "}
-                    to apply for this opportunity.
-                  </p>
-                )}
-              </div>
-            )}
+            <div className="space-y-2">
+              {audience.includes("individual") && !applied.some((a) => a.kind === "Individual" || a.kind === "Business") && (
+                <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>
+              )}
+              {audience.includes("team") && o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
+                <Button className="w-full" variant="accent" size="lg" onClick={() => setKind("Team")}><Users />Apply as team</Button>
+              )}
+              {audience.includes("business") && user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? (
+                <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button>
+              ) : null}
+              {!audience.includes("individual") && !audience.includes("team") && !audience.includes("business") && <p className="text-sm text-muted-foreground">This opportunity has no eligible applicant type configured.</p>}
+              <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>Refer someone you trust</Button>
+              {!user && <p className="pt-1 text-center text-xs text-muted-foreground"><Link to="/login" className="text-primary">Sign in</Link> to apply for this opportunity.</p>}
+            </div>
           </Card>
           <Card>
             <h3 className="text-sm font-semibold">Your network here</h3>
