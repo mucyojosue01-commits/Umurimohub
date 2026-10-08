@@ -25,36 +25,36 @@ function Page() {
   if (!session || !user) return <div className="container-page py-16"><PageHeader title="Profile & settings" desc="Sign in to manage your account."/><Button asChild className="mt-4"><Link to="/login">Sign in</Link></Button></div>;
 
   const saveProfile = async () => {
-    if (name.trim().length < 2) return toast.error("Enter your full name.");
+    if (name.trim().length < 2) { toast.error("Enter your full name."); return; }
     setBusy(true);
     const { error } = await supabase.from("profiles").update({ display_name: name.trim(), updated_at: new Date().toISOString() }).eq("id", session.user.id);
     setBusy(false);
-    if (error) return toast.error("Couldn't save your profile.");
+    if (error) { toast.error("Couldn't save your profile."); return; }
     await reloadUser();
     toast.success("Profile updated.");
   };
 
   const changePassword = async () => {
-    if (password.length < 8) return toast.error("Password must be at least 8 characters.");
+    if (password.length < 8) { toast.error("Password must be at least 8 characters."); return; }
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setPassword("");
     toast.success("Password updated.");
   };
 
   const uploadAvatar = async (file: File) => {
-    if (!file.type.startsWith("image/")) return toast.error("Choose an image.");
-    if (file.size > 5_000_000) return toast.error("Image must be under 5 MB.");
+    if (!file.type.startsWith("image/")) { toast.error("Choose an image."); return; }
+    if (file.size > 5_000_000) { toast.error("Image must be under 5 MB."); return; }
     setAvatarBusy(true);
     const path = session.user.id + "/avatar-" + Date.now() + "." + (file.name.split(".").pop() || "jpg");
     const upload = await supabase.storage.from("avatars").upload(path, file, { upsert: false, contentType: file.type });
-    if (upload.error) { setAvatarBusy(false); return toast.error("Couldn't upload your profile picture."); }
+    if (upload.error) { setAvatarBusy(false); { toast.error("Couldn't upload your profile picture."); return; } }
     const { data } = supabase.storage.from("avatars").getPublicUrl(upload.data.path);
-    const { error } = await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", session.user.id);
+    const { error } = await supabase.from("profiles").update({ avatar_url: data.publicUrl } as never).eq("id", session.user.id);
     setAvatarBusy(false);
-    if (error) return toast.error("Picture uploaded but profile could not be updated.");
+    if (error) { toast.error("Picture uploaded but profile could not be updated."); return; }
     await reloadUser();
     toast.success("Profile picture updated.");
   };

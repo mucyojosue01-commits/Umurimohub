@@ -67,9 +67,9 @@ function MilestoneForm({
       dueDate: form.dueDate,
     };
     const error = validateMilestone(input);
-    if (error) return toast.error(error);
+    if (error) { toast.error(error); return; }
     if (!initial && input.amountRwf > remaining) {
-      return toast.error("This exceeds the remaining contract allocation.");
+      { toast.error("This exceeds the remaining contract allocation."); return; }
     }
 
     setBusy(true);

@@ -1,3 +1,4 @@
+import { db } from "@/lib/pending-db";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -24,7 +25,7 @@ function Page() {
     if (!session) return;
     setBusy(id);
     try {
-      const { error } = await supabase.rpc("mark_notification_read", { _notification_id: id });
+      const { error } = await db.rpc("mark_notification_read", { _notification_id: id });
       if (error) throw error;
     } catch (e) {
       toast.error((e as Error).message || "Couldn't mark notification as read.");

@@ -1,3 +1,4 @@
+import { db } from "@/lib/pending-db";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -69,7 +70,7 @@ function Page() {
   useEffect(() => {
     if (!activeId || !session) return;
     void reloadMessages();
-    const channel = supabase
+    const channel = db
       .channel("conversation-" + activeId)
       .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: "conversation_id=eq." + activeId }, () => void reloadMessages())
       .on("postgres_changes", { event: "*", schema: "public", table: "message_reads" }, () => void reloadMessages())

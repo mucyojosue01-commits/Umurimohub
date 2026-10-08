@@ -42,7 +42,7 @@ export function CreateContractForm({
       ...(f.terms ? { terms: f.terms } : {}),
     };
     const err = validateProposal(p);
-    if (err) return toast.error(err);
+    if (err) { toast.error(err); return; }
     setBusy(true);
     try {
       await createContract(p);

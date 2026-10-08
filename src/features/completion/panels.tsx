@@ -62,7 +62,7 @@ function CompletionCard({
   sessionUserId,
 }: {
   contract: Contract;
-  completion?: Completion;
+  completion?: Completion | undefined;
   milestones: Milestone[];
   sessionUserId: string;
 }) {

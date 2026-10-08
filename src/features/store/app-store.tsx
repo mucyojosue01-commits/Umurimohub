@@ -1,3 +1,4 @@
+import { db } from "@/lib/pending-db";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
@@ -103,7 +104,7 @@ async function loadUser(session: Session): Promise<User> {
       session.user.email?.split("@")[0] ??
       "Member",
     phone: p.data?.phone ?? "",
-    avatarUrl: p.data?.avatar_url ?? null,
+    avatarUrl: (p.data as { avatar_url?: string | null } | null)?.avatar_url ?? null,
     district: p.data?.district ?? w.data?.district ?? "",
     verifiedPhone: !!p.data?.phone_verified,
     roles,
@@ -262,7 +263,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Keeping this compatibility hook prevents older UI consumers from crashing.
     },
     markAllRead: () => {
-      if (session) void supabase.rpc("mark_all_notifications_read").then(() => loadPersonal(session));
+      if (session) void db.rpc("mark_all_notifications_read").then(() => loadPersonal(session));
     },
     createOpp: async (o) => {
       if (!session || !user) return { error: "Sign in with a business account to publish." };
