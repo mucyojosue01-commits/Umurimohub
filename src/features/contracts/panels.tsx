@@ -14,6 +14,8 @@ import {
   cancelContract,
   contractsKey,
   createContract,
+  deleteContract,
+  updateContract,
   listMyContracts,
   respondContract,
   validateProposal,
@@ -110,6 +112,58 @@ export function CreateContractForm({
   );
 }
 
+export function EditContractForm({ contract, onDone }: { contract: Contract; onDone: () => void }) {
+  const qc = useQueryClient();
+  const [f, setF] = useState({
+    title: contract.title,
+    scope: contract.scope,
+    amount: String(contract.amount_rwf),
+    start: contract.start_date ?? "",
+    end: contract.end_date ?? "",
+    terms: contract.terms ?? "",
+  });
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    const p = {
+      title: f.title,
+      scope: f.scope,
+      amountRwf: Number(f.amount),
+      ...(f.start ? { startDate: f.start } : {}),
+      ...(f.end ? { endDate: f.end } : {}),
+      ...(f.terms ? { terms: f.terms } : {}),
+    };
+    const err = validateProposal({ applicationId: contract.application_id, ...p });
+    if (err) { toast.error(err); return; }
+    setBusy(true);
+    try {
+      await updateContract(contract.id, p);
+      toast.success("Contract proposal updated");
+      await qc.invalidateQueries({ queryKey: contractsKey });
+      onDone();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="mt-3 grid gap-2 rounded-2xl border bg-muted/30 p-4">
+      <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="Contract title" />
+      <Textarea value={f.scope} onChange={(e) => setF({ ...f, scope: e.target.value })} placeholder="Scope of work" />
+      <Input type="number" min={1} step={1} value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} placeholder="Amount (RWF)" />
+      <div className="grid grid-cols-2 gap-2">
+        <Input type="date" value={f.start} onChange={(e) => setF({ ...f, start: e.target.value })} aria-label="Start date" />
+        <Input type="date" value={f.end} onChange={(e) => setF({ ...f, end: e.target.value })} aria-label="End date" />
+      </div>
+      <Textarea value={f.terms} onChange={(e) => setF({ ...f, terms: e.target.value })} placeholder="Terms" />
+      <div className="flex gap-2">
+        <Button size="sm" disabled={busy} onClick={submit}>{busy ? "Saving…" : "Save contract"}</Button>
+        <Button size="sm" variant="ghost" onClick={onDone}>Cancel</Button>
+      </div>
+    </div>
+  );
+}
+
 const tone = (s: string) =>
   (s === "active" ? "success" : s === "proposed" ? "primary" : "muted") as
     "success" | "primary" | "muted";
@@ -119,6 +173,7 @@ export function ContractsPanel() {
   const qc = useQueryClient();
   const q = useContracts();
   const [infoContract, setInfoContract] = useState<Contract | null>(null);
+  const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const milestonesQ = useQuery({ queryKey: ["contract-overview-milestones", infoContract?.id], enabled: !!infoContract, queryFn: async () => { const { data, error } = await supabase.from("milestones").select("id,title,status,amount_rwf").eq("contract_id", infoContract!.id).order("sequence"); if(error) throw error; return data ?? []; }});
   if (!user) return null;
   const act = async (fn: () => Promise<unknown>, msg: string) => {
@@ -179,6 +234,18 @@ export function ContractsPanel() {
                       </Button>
                     </>
                   )}
+                  {isBiz && c.status === "proposed" && (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => setEditingContract(c)}>Edit</Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => act(async () => { await deleteContract(c.id); }, "Contract proposal deleted")}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  )}
                   {isBiz && (c.status === "proposed" || c.status === "active") && (
                     <Button
                       size="sm"
@@ -195,6 +262,12 @@ export function ContractsPanel() {
         </ul>
       )}
     </Card>
+    <Dialog open={!!editingContract} onOpenChange={(open)=>{if(!open)setEditingContract(null)}}>
+      <DialogContent className="max-w-2xl rounded-3xl">
+        <DialogHeader><DialogTitle>Edit contract proposal</DialogTitle></DialogHeader>
+        {editingContract && <EditContractForm contract={editingContract} onDone={() => setEditingContract(null)} />}
+      </DialogContent>
+    </Dialog>
     <Dialog open={!!infoContract} onOpenChange={(open)=>{if(!open)setInfoContract(null)}}>
       <DialogContent className="max-w-2xl rounded-3xl">
         <DialogHeader><DialogTitle>Project overview</DialogTitle></DialogHeader>
