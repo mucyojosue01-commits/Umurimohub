@@ -80,9 +80,9 @@ function Page() {
         ) : (
           <ul className="mt-3 divide-y">
             {cons.map((connection) => {
-              const otherProfile = profileMap.get(
-                connection.requester === me ? connection.addressee : connection.requester,
-              );
+              const otherId = connection.requester === me ? connection.addressee : connection.requester;
+              const otherProfile = profileMap.get(otherId);
+              const otherWorker = workerMap.get(otherId);
               return (
                 <li key={connection.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                   <div className="flex min-w-0 items-center gap-3 text-sm">
@@ -93,10 +93,10 @@ function Page() {
                       size="md"
                     />
                     <div className="min-w-0">
-                      {workerMap.get(connection.requester === me ? connection.addressee : connection.requester) ? (
+                      {otherWorker ? (
                         <Link
                           to="/workers/$id"
-                          params={{ id: workerMap.get(connection.requester === me ? connection.addressee : connection.requester)!.id }}
+                          params={{ id: otherWorker.id }}
                           className="font-medium hover:text-primary"
                         >
                           {otherProfile?.display_name ?? "Member"}
