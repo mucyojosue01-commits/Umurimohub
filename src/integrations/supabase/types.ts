@@ -186,6 +186,7 @@ export type Database = {
           rating: number
           sector: string
           services: string[]
+          trust_score: number
           verified: boolean
         }
         Insert: {
@@ -200,6 +201,7 @@ export type Database = {
           rating?: number
           sector: string
           services?: string[]
+          trust_score?: number
           verified?: boolean
         }
         Update: {
@@ -214,6 +216,7 @@ export type Database = {
           rating?: number
           sector?: string
           services?: string[]
+          trust_score?: number
           verified?: boolean
         }
         Relationships: []
@@ -389,6 +392,127 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contract_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_payments: {
+        Row: {
+          amount_rwf: number
+          confirmed_at: string | null
+          contract_id: string
+          created_at: string
+          id: string
+          note: string
+          paid_at: string | null
+          payer_business_id: string
+          payment_reference: string | null
+          recipient_team_id: string | null
+          recipient_worker_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_rwf: number
+          confirmed_at?: string | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          note?: string
+          paid_at?: string | null
+          payer_business_id: string
+          payment_reference?: string | null
+          recipient_team_id?: string | null
+          recipient_worker_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_rwf?: number
+          confirmed_at?: string | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          paid_at?: string | null
+          payer_business_id?: string
+          payment_reference?: string | null
+          recipient_team_id?: string | null
+          recipient_worker_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_payments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_payments_payer_business_id_fkey"
+            columns: ["payer_business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_payments_recipient_team_id_fkey"
+            columns: ["recipient_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_payments_recipient_worker_id_fkey"
+            columns: ["recipient_worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_ratings: {
+        Row: {
+          contract_id: string
+          created_at: string
+          id: string
+          rater_user_id: string
+          review: string
+          score: number
+          subject_id: string
+          subject_type: string
+          updated_at: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          id?: string
+          rater_user_id: string
+          review?: string
+          score: number
+          subject_id: string
+          subject_type: string
+          updated_at?: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          id?: string
+          rater_user_id?: string
+          review?: string
+          score?: number
+          subject_id?: string
+          subject_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_ratings_contract_id_fkey"
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
@@ -1270,6 +1394,7 @@ export type Database = {
           sector: string
           skills: string[]
           summary: string
+          trust_score: number
         }
         Insert: {
           areas?: string[]
@@ -1286,6 +1411,7 @@ export type Database = {
           sector: string
           skills?: string[]
           summary?: string
+          trust_score?: number
         }
         Update: {
           areas?: string[]
@@ -1302,6 +1428,7 @@ export type Database = {
           sector?: string
           skills?: string[]
           summary?: string
+          trust_score?: number
         }
         Relationships: [
           {
@@ -1631,6 +1758,7 @@ export type Database = {
           reviews: number
           sector: string
           title: string
+          trust_score: number
           user_id: string | null
           verified: boolean
           visibility: string
@@ -1653,6 +1781,7 @@ export type Database = {
           reviews?: number
           sector: string
           title?: string
+          trust_score?: number
           user_id?: string | null
           verified?: boolean
           visibility?: string
@@ -1675,6 +1804,7 @@ export type Database = {
           reviews?: number
           sector?: string
           title?: string
+          trust_score?: number
           user_id?: string | null
           verified?: boolean
           visibility?: string
@@ -1787,6 +1917,10 @@ export type Database = {
         Args: { _contract_id: string; _note?: string }
         Returns: Database["public"]["Enums"]["completion_status"]
       }
+      confirm_contract_payment_received: {
+        Args: { _payment_id: string }
+        Returns: string
+      }
       confirm_opportunity_change: {
         Args: { _application_id: string; _decision: string }
         Returns: undefined
@@ -1802,6 +1936,10 @@ export type Database = {
           _terms?: string
           _title: string
         }
+        Returns: string
+      }
+      create_contract_payment: {
+        Args: { _contract_id: string }
         Returns: string
       }
       create_milestone: {
@@ -1864,11 +2002,27 @@ export type Database = {
         Returns: boolean
       }
       mark_all_notifications_read: { Args: never; Returns: number }
+      mark_contract_payment_paid: {
+        Args: { _payment_id: string; _reference?: string }
+        Returns: string
+      }
       mark_notification_read: {
         Args: { _notification_id: string }
         Returns: boolean
       }
       my_worker_id: { Args: never; Returns: string }
+      rate_completed_contract: {
+        Args: { _contract_id: string; _review?: string; _score: number }
+        Returns: string
+      }
+      reaccept_cancelled_contract: {
+        Args: { _contract_id: string }
+        Returns: Database["public"]["Enums"]["contract_status"]
+      }
+      recalculate_actor_trust: {
+        Args: { _subject_id: string; _subject_type: string }
+        Returns: number
+      }
       reject_completion: {
         Args: { _contract_id: string; _note?: string }
         Returns: Database["public"]["Enums"]["completion_status"]
@@ -1884,6 +2038,10 @@ export type Database = {
       respond_contract: {
         Args: { _accept: boolean; _contract_id: string; _note?: string }
         Returns: Database["public"]["Enums"]["contract_status"]
+      }
+      respond_referral: {
+        Args: { _accept: boolean; _referral_id: string }
+        Returns: string
       }
       respond_to_opportunity_change: {
         Args: { _accept: boolean; _application_id: string }
