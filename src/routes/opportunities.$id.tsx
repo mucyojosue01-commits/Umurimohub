@@ -51,9 +51,10 @@ export const Route = createFileRoute("/opportunities/$id")({
 function Page() {
   const { id } = Route.useParams();
   const { allOpps, apply, refer, applications, user } = useApp();
-  const { getBusiness, teams, workers, workerUserIds } = useCatalog();
+  const { getBusiness, teams, workers, workerUserIds, businesses } = useCatalog();
   const o = allOpps.find((x) => x.id === id);
   const [teamId, setTeamId] = useState("");
+  const [businessId, setBusinessId] = useState("");
   const [refWorker, setRefWorker] = useState("");
   const [busy, setBusy] = useState(false);
   const [attachments, setAttachments] = useState<Array<{ id: string; file_name: string; storage_path: string }>>([]);
@@ -179,16 +180,9 @@ function Page() {
                   Apply
                 </Button>
                 {o.teamAllowed && (
-                  <Button
-                    className="w-full"
-                    variant="accent"
-                    size="lg"
-                    onClick={() => setKind("Team")}
-                  >
-                    <Users />
-                    Apply as team
-                  </Button>
+                  <Button className="w-full" variant="accent" size="lg" onClick={() => setKind("Team")}><Users />Apply as team</Button>
                 )}
+                {user?.businessIds.length ? <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button> : null}
                 <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>
                   Refer someone you trust
                 </Button>
@@ -221,7 +215,9 @@ function Page() {
             <DialogTitle>
               {kind === "Team"
                 ? "Apply as a team"
-                : kind === "Referral"
+                : kind === "Business"
+                  ? "Apply as company"
+                  : kind === "Referral"
                   ? "Refer a trusted person"
                   : "Apply"}
             </DialogTitle>
@@ -251,6 +247,10 @@ function Page() {
                 </select>
               </label>
             ))}
+          {kind === "Business" && user && <label className="text-sm">Company
+            <input list="my-businesses" value={businessId} onChange={(e)=>setBusinessId(e.target.value)} placeholder="Search your company…" className="mt-1 h-10 w-full rounded-xl border bg-card px-3" />
+            <datalist id="my-businesses">{businesses.filter((b)=>user.businessIds.includes(b.id)).map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}</datalist>
+          </label>}
           {kind === "Referral" &&
             (user ? (
               <label className="text-sm">
@@ -306,6 +306,7 @@ function Page() {
                       kind: kind!,
                       note,
                       teamId: kind === "Team" && user ? teamId : null,
+                      businessId: kind === "Business" && user ? businessId : null,
                     });
               setBusy(false);
               if (!r.ok) {
@@ -323,6 +324,7 @@ function Page() {
               setNote("");
               setRefWorker("");
               setTeamId("");
+              setBusinessId("");
             }}
           >
             {busy ? "Sending…" : "Submit"}
