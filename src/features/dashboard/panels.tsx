@@ -23,7 +23,8 @@ export function MyApplications() {
         actorIds.length ? supabase.from("teams").select("id,name,avatar_url").in("id", actorIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
         session ? supabase.from("profiles").select("id,display_name,avatar_url").eq("id", session.user.id).maybeSingle() : Promise.resolve({ data: null }),
       ]);
-      return { businesses: businesses.data ?? [], teams: teams.data ?? [], profile: profile.data ?? null };
+      const worker = session ? await supabase.from("worker_profiles").select("id,user_id,name,avatar_url").eq("user_id", session.user.id).maybeSingle() : { data: null };
+      return { businesses: businesses.data ?? [], teams: teams.data ?? [], profile: profile.data ?? null, worker: worker.data ?? null };
     },
   });
   const title = (id: string) => allOpps.find((o) => o.id === id)?.title ?? "Opportunity";
@@ -43,7 +44,7 @@ export function MyApplications() {
             const business = actorsQ.data?.businesses.find((x) => x.id === a.businessId);
             const team = actorsQ.data?.teams.find((x) => x.id === a.teamId);
             const displayName = business?.name ?? team?.name ?? actorsQ.data?.profile?.display_name ?? "Applicant";
-            const avatar = business?.avatar_url ?? team?.avatar_url ?? actorsQ.data?.profile?.avatar_url;
+            const avatar = business?.avatar_url ?? team?.avatar_url ?? actorsQ.data?.worker?.avatar_url ?? actorsQ.data?.profile?.avatar_url;
             return (
             <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
               <div className="flex min-w-0 items-center gap-3">
