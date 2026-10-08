@@ -66,9 +66,9 @@ export async function cancelContract(id: string) {
   return data;
 }
 
-export async function updateContract(p: ContractProposal) {
+export async function updateContract(id: string, p: Omit<ContractProposal, "applicationId">) {
   const { data, error } = await supabase.rpc("update_contract", {
-    _contract_id: p.applicationId,
+    _contract_id: id,
     _title: p.title,
     _scope: p.scope,
     _amount_rwf: p.amountRwf,
