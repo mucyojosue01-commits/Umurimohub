@@ -5,13 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MoreVertical } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { rwf } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
-import { Avatar, Card, Pill } from "@/features/ui/kit";
-import { useCatalog } from "@/features/data/catalog";
+import { Card, Pill } from "@/features/ui/kit";
 import {
   cancelContract,
   contractsKey,
@@ -172,7 +170,6 @@ const tone = (s: string) =>
 
 export function ContractsPanel() {
   const { user } = useApp();
-  const { getBusiness, getTeam, getWorker } = useCatalog();
   const qc = useQueryClient();
   const q = useContracts();
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
