@@ -81,7 +81,7 @@ function Page() {
           ? supabase.from("profiles").select("id,display_name,avatar_url").in("id", otherIds)
           : Promise.resolve({ data: [] as { id: string; display_name: string; avatar_url: string | null }[] }),
         otherIds.length
-          ? supabase.from("worker_profiles").select("id,user_id,name,avatar_url").in("user_id", otherIds).eq("visibility", "public")
+          ? supabase.from("worker_profiles").select("id,user_id,name,avatar_url").in("user_id", otherIds)
           : Promise.resolve({ data: [] as { id: string; user_id: string | null; name: string; avatar_url: string | null }[] }),
       ]);
       return { experiences: experiences.data ?? [], trainingExperiences: trainingExperiences.data ?? [], connections: connections.data ?? [], profiles: profiles.data ?? [], connectionWorkers: connectionWorkers.data ?? [], businesses: businessRows.data ?? [], teams: teamRows.data ?? [] };
