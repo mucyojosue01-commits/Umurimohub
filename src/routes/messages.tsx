@@ -69,7 +69,7 @@ function Page() {
   useEffect(() => {
     if (!activeId || !session) return;
     void reloadMessages();
-    const channel = db
+    const channel = supabase
       .channel("conversation-" + activeId)
       .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: "conversation_id=eq." + activeId }, () => void reloadMessages())
       .on("postgres_changes", { event: "*", schema: "public", table: "message_reads" }, () => void reloadMessages())
