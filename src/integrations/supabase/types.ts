@@ -31,7 +31,7 @@ export type Database = {
           applicant_user_id: string
           created_at?: string
           id?: string
-          kind: string
+          kind?: string
           note?: string
           opportunity_id: string
           referred_by?: string | null
@@ -83,7 +83,7 @@ export type Database = {
           at?: string
           entity: string
           entity_id?: string | null
-          id?: number
+          id?: never
         }
         Update: {
           action?: string
@@ -91,7 +91,7 @@ export type Database = {
           at?: string
           entity?: string
           entity_id?: string | null
-          id?: number
+          id?: never
         }
         Relationships: []
       }
@@ -163,6 +163,57 @@ export type Database = {
         }
         Relationships: []
       }
+      completion_events: {
+        Row: {
+          actor: string | null
+          at: string
+          completion_id: string
+          contract_id: string
+          event_type: string
+          from_status: Database["public"]["Enums"]["completion_status"] | null
+          id: number
+          note: string | null
+          to_status: Database["public"]["Enums"]["completion_status"]
+        }
+        Insert: {
+          actor?: string | null
+          at?: string
+          completion_id: string
+          contract_id: string
+          event_type: string
+          from_status?: Database["public"]["Enums"]["completion_status"] | null
+          id?: never
+          note?: string | null
+          to_status: Database["public"]["Enums"]["completion_status"]
+        }
+        Update: {
+          actor?: string | null
+          at?: string
+          completion_id?: string
+          contract_id?: string
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["completion_status"] | null
+          id?: never
+          note?: string | null
+          to_status?: Database["public"]["Enums"]["completion_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "completion_events_completion_id_fkey"
+            columns: ["completion_id"]
+            isOneToOne: false
+            referencedRelation: "contract_completions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completion_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connections: {
         Row: {
           addressee: string
@@ -189,6 +240,65 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      contract_completions: {
+        Row: {
+          completed_at: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          contract_id: string
+          created_at: string
+          id: string
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_note: string | null
+          request_note: string | null
+          requested_at: string
+          requested_by: string
+          status: Database["public"]["Enums"]["completion_status"]
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_note?: string | null
+          request_note?: string | null
+          requested_at?: string
+          requested_by: string
+          status?: Database["public"]["Enums"]["completion_status"]
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_note?: string | null
+          request_note?: string | null
+          requested_at?: string
+          requested_by?: string
+          status?: Database["public"]["Enums"]["completion_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_completions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contract_events: {
         Row: {
@@ -348,6 +458,232 @@ export type Database = {
           },
         ]
       }
+      conversation_members: {
+        Row: {
+          conversation_id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_members_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          opportunity_id: string | null
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          opportunity_id?: string | null
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          opportunity_id?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_reads: {
+        Row: {
+          message_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          message_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          message_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reads_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestone_events: {
+        Row: {
+          actor: string | null
+          at: string
+          contract_id: string
+          event_type: string
+          from_status: Database["public"]["Enums"]["milestone_status"] | null
+          id: number
+          milestone_id: string
+          note: string | null
+          to_status: Database["public"]["Enums"]["milestone_status"]
+        }
+        Insert: {
+          actor?: string | null
+          at?: string
+          contract_id: string
+          event_type: string
+          from_status?: Database["public"]["Enums"]["milestone_status"] | null
+          id?: never
+          milestone_id: string
+          note?: string | null
+          to_status: Database["public"]["Enums"]["milestone_status"]
+        }
+        Update: {
+          actor?: string | null
+          at?: string
+          contract_id?: string
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["milestone_status"] | null
+          id?: never
+          milestone_id?: string
+          note?: string | null
+          to_status?: Database["public"]["Enums"]["milestone_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestone_events_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestones: {
+        Row: {
+          amount_rwf: number
+          approved_at: string | null
+          contract_id: string
+          created_at: string
+          description: string
+          disputed_at: string | null
+          due_date: string
+          id: string
+          sequence: number
+          status: Database["public"]["Enums"]["milestone_status"]
+          submission_note: string | null
+          submitted_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount_rwf: number
+          approved_at?: string | null
+          contract_id: string
+          created_at?: string
+          description: string
+          disputed_at?: string | null
+          due_date: string
+          id?: string
+          sequence: number
+          status?: Database["public"]["Enums"]["milestone_status"]
+          submission_note?: string | null
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount_rwf?: number
+          approved_at?: string | null
+          contract_id?: string
+          created_at?: string
+          description?: string
+          disputed_at?: string | null
+          due_date?: string
+          id?: string
+          sequence?: number
+          status?: Database["public"]["Enums"]["milestone_status"]
+          submission_note?: string | null
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -463,6 +799,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           display_name: string
           district: string | null
@@ -473,6 +810,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           display_name: string
           district?: string | null
@@ -483,6 +821,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           display_name?: string
           district?: string | null
@@ -562,6 +901,60 @@ export type Database = {
             columns: ["referee_worker_id"]
             isOneToOne: false
             referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reputation_evidence: {
+        Row: {
+          created_at: string
+          evidence_type: string
+          id: string
+          metadata: Json
+          occurred_at: string
+          source_contract_id: string | null
+          source_event_id: number | null
+          source_experience_id: string | null
+          subject_id: string
+          subject_type: string
+        }
+        Insert: {
+          created_at?: string
+          evidence_type: string
+          id?: string
+          metadata?: Json
+          occurred_at: string
+          source_contract_id?: string | null
+          source_event_id?: number | null
+          source_experience_id?: string | null
+          subject_id: string
+          subject_type: string
+        }
+        Update: {
+          created_at?: string
+          evidence_type?: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          source_contract_id?: string | null
+          source_event_id?: number | null
+          source_experience_id?: string | null
+          subject_id?: string
+          subject_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reputation_evidence_source_contract_id_fkey"
+            columns: ["source_contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reputation_evidence_source_experience_id_fkey"
+            columns: ["source_experience_id"]
+            isOneToOne: false
+            referencedRelation: "verified_experiences"
             referencedColumns: ["id"]
           },
         ]
@@ -708,6 +1101,112 @@ export type Database = {
         }
         Relationships: []
       }
+      verified_experiences: {
+        Row: {
+          amount_rwf: number
+          approved_milestone_count: number
+          business_id: string
+          completed_at: string
+          completion_id: string
+          contract_id: string
+          created_at: string
+          currency: string
+          end_date: string | null
+          id: string
+          milestone_count: number
+          opportunity_id: string
+          scope: string
+          start_date: string | null
+          team_id: string | null
+          title: string
+          verified_at: string
+          worker_id: string | null
+        }
+        Insert: {
+          amount_rwf: number
+          approved_milestone_count?: number
+          business_id: string
+          completed_at: string
+          completion_id: string
+          contract_id: string
+          created_at?: string
+          currency?: string
+          end_date?: string | null
+          id?: string
+          milestone_count?: number
+          opportunity_id: string
+          scope: string
+          start_date?: string | null
+          team_id?: string | null
+          title: string
+          verified_at?: string
+          worker_id?: string | null
+        }
+        Update: {
+          amount_rwf?: number
+          approved_milestone_count?: number
+          business_id?: string
+          completed_at?: string
+          completion_id?: string
+          contract_id?: string
+          created_at?: string
+          currency?: string
+          end_date?: string | null
+          id?: string
+          milestone_count?: number
+          opportunity_id?: string
+          scope?: string
+          start_date?: string | null
+          team_id?: string | null
+          title?: string
+          verified_at?: string
+          worker_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verified_experiences_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verified_experiences_completion_id_fkey"
+            columns: ["completion_id"]
+            isOneToOne: true
+            referencedRelation: "contract_completions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verified_experiences_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verified_experiences_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verified_experiences_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verified_experiences_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       worker_profiles: {
         Row: {
           available: boolean
@@ -811,10 +1310,51 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_milestone: {
+        Args: { _milestone_id: string }
+        Returns: Database["public"]["Enums"]["milestone_status"]
+      }
       are_connected: { Args: { _a: string; _b: string }; Returns: boolean }
       cancel_contract: {
         Args: { _contract_id: string; _note?: string }
         Returns: Database["public"]["Enums"]["contract_status"]
+      }
+      complete_onboarding:
+        | {
+            Args: {
+              _business_name?: string
+              _display_name: string
+              _district: string
+              _phone: string
+              _rate_rwf?: number
+              _roles: Database["public"]["Enums"]["app_role"][]
+              _sector?: string
+              _skills?: string[]
+              _team_name?: string
+              _title?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _business_name?: string
+              _create_new_business?: boolean
+              _create_new_team?: boolean
+              _display_name: string
+              _district: string
+              _phone: string
+              _rate_rwf?: number
+              _roles: Database["public"]["Enums"]["app_role"][]
+              _sector?: string
+              _skills?: string[]
+              _team_name?: string
+              _title?: string
+            }
+            Returns: Json
+          }
+      confirm_completion: {
+        Args: { _contract_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["completion_status"]
       }
       contract_counterparty_user: { Args: { _cid: string }; Returns: string }
       create_contract: {
@@ -826,6 +1366,33 @@ export type Database = {
           _start_date?: string
           _terms?: string
           _title: string
+        }
+        Returns: string
+      }
+      create_milestone: {
+        Args: {
+          _amount_rwf: number
+          _contract_id: string
+          _description: string
+          _due_date: string
+          _sequence: number
+          _title: string
+        }
+        Returns: string
+      }
+      delete_pending_milestone: {
+        Args: { _milestone_id: string }
+        Returns: undefined
+      }
+      dispute_milestone: {
+        Args: { _milestone_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["milestone_status"]
+      }
+      get_or_create_direct_conversation: {
+        Args: {
+          _opportunity_id?: string
+          _other_user: string
+          _subject?: string
         }
         Returns: string
       }
@@ -841,15 +1408,53 @@ export type Database = {
         Returns: boolean
       }
       is_contract_party: { Args: { _cid: string }; Returns: boolean }
-      is_team_lead: { Args: { _tid: string }; Returns: boolean }
+      is_conversation_member: {
+        Args: { _conversation_id: string; _user_id?: string }
+        Returns: boolean
+      }
+      is_team_lead:
+        | { Args: { _team_id: string; _user_id?: string }; Returns: boolean }
+        | { Args: { _tid: string }; Returns: boolean }
+      is_team_member: {
+        Args: { _team_id: string; _user_id?: string }
+        Returns: boolean
+      }
+      mark_all_notifications_read: { Args: never; Returns: number }
+      mark_notification_read: {
+        Args: { _notification_id: string }
+        Returns: boolean
+      }
       my_worker_id: { Args: never; Returns: string }
-      notify_business: {
-        Args: { _bid: string; _kind: string; _link: string; _text: string }
-        Returns: undefined
+      reject_completion: {
+        Args: { _contract_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["completion_status"]
+      }
+      request_completion: {
+        Args: { _contract_id: string; _request_note?: string }
+        Returns: string
       }
       respond_contract: {
         Args: { _accept: boolean; _contract_id: string; _note?: string }
         Returns: Database["public"]["Enums"]["contract_status"]
+      }
+      submit_milestone: {
+        Args: { _milestone_id: string; _submission_note?: string }
+        Returns: Database["public"]["Enums"]["milestone_status"]
+      }
+      update_pending_milestone: {
+        Args: {
+          _amount_rwf: number
+          _description: string
+          _due_date: string
+          _milestone_id: string
+          _sequence: number
+          _title: string
+        }
+        Returns: undefined
+      }
+      withdraw_completion_request: {
+        Args: { _contract_id: string; _note?: string }
+        Returns: Database["public"]["Enums"]["completion_status"]
       }
       worker_network_count: { Args: { _worker_id: string }; Returns: number }
     }
@@ -868,12 +1473,14 @@ export type Database = {
         | "rejected"
         | "accepted"
         | "withdrawn"
+      completion_status: "requested" | "rejected" | "confirmed" | "withdrawn"
       contract_status:
         | "proposed"
         | "active"
         | "declined"
         | "cancelled"
         | "completed"
+      milestone_status: "pending" | "submitted" | "disputed" | "approved"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1017,6 +1624,7 @@ export const Constants = {
         "accepted",
         "withdrawn",
       ],
+      completion_status: ["requested", "rejected", "confirmed", "withdrawn"],
       contract_status: [
         "proposed",
         "active",
@@ -1024,6 +1632,7 @@ export const Constants = {
         "cancelled",
         "completed",
       ],
+      milestone_status: ["pending", "submitted", "disputed", "approved"],
     },
   },
 } as const
