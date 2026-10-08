@@ -82,6 +82,7 @@ function Page() {
   });
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [businessImage, setBusinessImage] = useState<File | null>(null);
   useEffect(() => {
     if (user)
       setF((p) => ({
@@ -145,7 +146,19 @@ function Page() {
       if (error.code === "42501") throw new Error("Your account is not authorized to complete onboarding.");
       throw new Error("We couldn't save your profile. Please check your details and try again.");
     }
-      await reloadUser();
+    if (businessImage && v.roles.includes("business")) {
+      if (!businessImage.type.startsWith("image/") || businessImage.size > 5_000_000) throw new Error("Business picture must be an image under 5 MB.");
+      const { data: biz } = await supabase.from("businesses").select("id").eq("created_by", session.user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (biz?.id) {
+        const path = "businesses/" + biz.id + "/" + crypto.randomUUID() + "-" + businessImage.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const upload = await supabase.storage.from("avatars").upload(path, businessImage, { upsert: false, contentType: businessImage.type });
+        if (upload.error) throw new Error("Business was created, but its picture could not be uploaded.");
+        const { data: url } = supabase.storage.from("avatars").getPublicUrl(upload.data.path);
+        const update = await supabase.from("businesses").update({ avatar_url: url.publicUrl }).eq("id", biz.id);
+        if (update.error) throw new Error("Business was created, but its picture could not be saved.");
+      }
+    }
+    await reloadUser();
       await qc.invalidateQueries({ queryKey: ["catalog"] });
       toast.success("Profile saved");
       nav({ to: "/dashboard" });
@@ -268,6 +281,7 @@ function Page() {
             </>
           )}
           {f.roles.includes("business") && (
+            <>
             <label className="text-sm md:col-span-2">
               Business name
               <input
@@ -277,6 +291,12 @@ function Page() {
                 className={inp}
               />
             </label>
+            <label className="text-sm md:col-span-2">
+              Business picture (optional)
+              <input type="file" accept="image/*" className="mt-1 block w-full rounded-xl border bg-card p-2 text-sm" onChange={(e)=>setBusinessImage(e.target.files?.[0] ?? null)} />
+              <span className="mt-1 block text-xs text-muted-foreground">If you skip this, the business uses its initials.</span>
+            </label>
+            </>
           )}
           {f.roles.includes("team_lead") && (
             <label className="text-sm md:col-span-2">
