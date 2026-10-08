@@ -80,7 +80,7 @@ function Page() {
           onClick={async () => {
             const r = await supabase.auth.signInWithOAuth({
               provider: "google",
-              options: { redirectTo: window.location.origin + "/login" },
+              options: { redirectTo: window.location.origin + "/register" },
             });
             if (r.error) setErr(r.error.message ?? "Google sign-in failed");
           }}
