@@ -1,12 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Briefcase, CheckCircle2, Wallet } from "lucide-react";
+import { Briefcase, CheckCircle2, Wallet, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
 import { IncomingApplications, MyApplications, TeamInvites } from "@/features/dashboard/panels";
 import { ContractsPanel, useContracts } from "@/features/contracts/panels";
 import { MilestonesPanel } from "@/features/milestones/panels";
 import { CompletionPanel } from "@/features/completion/panels";
-import { OpportunityCard, PageHeader, Stat } from "@/features/ui/kit";
+import { Avatar, Card, OpportunityCard, PageHeader, Stat } from "@/features/ui/kit";
+import { useCatalog } from "@/features/data/catalog";
+import { toast } from "sonner";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -23,6 +27,8 @@ export const Route = createFileRoute("/dashboard")({
 function Page() {
   const { user, applications, allOpps, authReady } = useApp();
   const contractsQuery = useContracts();
+  const { businesses, teams } = useCatalog();
+  const [menu, setMenu] = useState<string | null>(null);
   if (!authReady)
     return <div className="container-page py-20 text-center text-muted-foreground">Loading…</div>;
   if (!user)
@@ -51,6 +57,44 @@ function Page() {
         <Stat icon={CheckCircle2} label="Contracts & projects" value={String(contractsQuery.data?.length ?? 0)} />
         <Stat icon={Wallet} label="Payment status" value="Not enabled yet" hint="Payments come after project verification." />
       </div>
+      <Card className="mt-6">
+        <div className="flex items-center justify-between gap-3">
+          <div><h2 className="font-bold">My businesses & teams</h2><p className="mt-1 text-sm text-muted-foreground">Manage the entities you own from one place.</p></div>
+          <div className="flex gap-2"><Button size="sm" variant="outline" asChild><Link to="/register?create=business">+ Business</Link></Button><Button size="sm" variant="outline" asChild><Link to="/register?create=team">+ Team</Link></Button></div>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Businesses</p>
+            {businesses.filter((b) => user.businessIds.includes(b.id)).length ? businesses.filter((b) => user.businessIds.includes(b.id)).map((b) => (
+              <div key={b.id} className="relative flex items-center gap-3 rounded-xl border p-3">
+                <Avatar initials={b.name.slice(0,2).toUpperCase()} src={b.avatarUrl} alt={b.name} size="sm" />
+                <Link to="/businesses/$id" params={{ id: b.id }} className="min-w-0 flex-1"><p className="truncate font-medium">{b.name}</p><p className="text-xs text-muted-foreground">{b.district} · {b.sector}</p></Link>
+                <Button size="icon" variant="ghost" aria-label="Business actions" onClick={() => setMenu(menu === "b:" + b.id ? null : "b:" + b.id)}><MoreVertical className="size-4" /></Button>
+                {menu === "b:" + b.id && <div className="absolute right-2 top-12 z-30 w-40 rounded-2xl border bg-popover p-1 shadow-xl">
+                  <Link to="/businesses/$id" params={{ id: b.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Info</Link>
+                  <Link to="/businesses/$id" params={{ id: b.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Edit</Link>
+                  <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={async () => { setMenu(null); if (!window.confirm("Delete this business?")) return; const { error } = await supabase.from("businesses").delete().eq("id", b.id); if (error) toast.error("This business cannot be deleted while it has dependent work."); else { toast.success("Business deleted"); await contractsQuery.refetch(); window.location.reload(); } }}>Delete</button>
+                </div>}
+              </div>
+            )) : <p className="text-sm text-muted-foreground">No businesses yet.</p>}
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Teams</p>
+            {teams.filter((t) => user.leadTeamIds.includes(t.id)).length ? teams.filter((t) => user.leadTeamIds.includes(t.id)).map((t) => (
+              <div key={t.id} className="relative flex items-center gap-3 rounded-xl border p-3">
+                <Avatar initials={t.name.slice(0,2).toUpperCase()} src={t.avatarUrl} alt={t.name} size="sm" />
+                <Link to="/teams/$id" params={{ id: t.id }} className="min-w-0 flex-1"><p className="truncate font-medium">{t.name}</p><p className="text-xs text-muted-foreground">{t.sector} · {t.memberIds.length} members</p></Link>
+                <Button size="icon" variant="ghost" aria-label="Team actions" onClick={() => setMenu(menu === "t:" + t.id ? null : "t:" + t.id)}><MoreVertical className="size-4" /></Button>
+                {menu === "t:" + t.id && <div className="absolute right-2 top-12 z-30 w-40 rounded-2xl border bg-popover p-1 shadow-xl">
+                  <Link to="/teams/$id" params={{ id: t.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Info</Link>
+                  <Link to="/teams/$id" params={{ id: t.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Edit</Link>
+                  <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={async () => { setMenu(null); if (!window.confirm("Delete this team?")) return; const { error } = await supabase.from("teams").delete().eq("id", t.id); if (error) toast.error("This team cannot be deleted while it has dependent work or members."); else { toast.success("Team deleted"); window.location.reload(); } }}>Delete</button>
+                </div>}
+              </div>
+            )) : <p className="text-sm text-muted-foreground">No teams yet.</p>}
+          </div>
+        </div>
+      </Card>
       <TeamInvites />
       <IncomingApplications />
       <MyApplications />
