@@ -50,6 +50,7 @@ export function mapWorker(
 ): Worker {
   return {
     id: w.id,
+    trustScore: Number(w.trust_score ?? 0),
     name: w.name,
     title: w.title,
     district: w.district,
@@ -88,6 +89,7 @@ export function mapWorker(
 export function mapTeam(t: Tables<"teams">, members: Tables<"team_members">[]): Team {
   return {
     id: t.id,
+    trustScore: Number(t.trust_score ?? 0),
     name: t.name,
     avatarUrl: t.avatar_url,
     leadId: t.lead_worker_id ?? "",
@@ -107,6 +109,7 @@ export function mapTeam(t: Tables<"teams">, members: Tables<"team_members">[]): 
 export function mapBusiness(b: Tables<"businesses">, opps: Tables<"opportunities">[]): Business {
   return {
     id: b.id,
+    trustScore: Number(b.trust_score ?? 0),
     name: b.name,
     avatarUrl: b.avatar_url,
     sector: b.sector as Sector,
