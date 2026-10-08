@@ -63,15 +63,25 @@ function Page() {
     enabled: !!workerUserIds[w.id],
     queryFn: async () => {
       const uid = workerUserIds[w.id]!;
-      const [experiences, connections] = await Promise.all([
-        supabase.from("verified_experiences").select("id,title,scope,completed_at,amount_rwf").eq("worker_id", w.id).order("completed_at", { ascending: false }),
+      const [experiences, connections, businesses, teams] = await Promise.all([
+        supabase.from("verified_experiences").select("id,title,scope,completed_at,amount_rwf,business_id,team_id").eq("worker_id", w.id).order("completed_at", { ascending: false }),
         supabase.from("connections").select("*").or("requester.eq." + uid + ",addressee.eq." + uid).eq("status", "accepted"),
+        supabase.from("business_members").select("business_id,role").eq("user_id", uid),
+        supabase.from("team_members").select("team_id,role,status").eq("worker_id", w.id).eq("status", "active"),
+      ]);
+      const businessIds = (businesses.data ?? []).map((x) => x.business_id);
+      const teamIds = [...new Set([...(teams.data ?? []).map((x) => x.team_id), ...(experiences.data ?? []).map((x) => x.team_id).filter(Boolean)])];
+      const experienceBusinessIds = [...new Set((experiences.data ?? []).map((x) => x.business_id).filter(Boolean))];
+      const allBusinessIds = [...new Set([...businessIds, ...experienceBusinessIds])];
+      const [businessRows, teamRows] = await Promise.all([
+        allBusinessIds.length ? supabase.from("businesses").select("id,name,avatar_url").in("id", allBusinessIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
+        teamIds.length ? supabase.from("teams").select("id,name,avatar_url").in("id", teamIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
       ]);
       const otherIds = (connections.data ?? []).map((x) => x.requester === uid ? x.addressee : x.requester);
       const profiles = otherIds.length
         ? await supabase.from("profiles").select("id,display_name,avatar_url").in("id", otherIds)
         : { data: [] as { id: string; display_name: string; avatar_url: string | null }[] };
-      return { experiences: experiences.data ?? [], connections: connections.data ?? [], profiles: profiles.data ?? [] };
+      return { experiences: experiences.data ?? [], connections: connections.data ?? [], profiles: profiles.data ?? [], businesses: businessRows.data ?? [], teams: teamRows.data ?? [] };
     },
   });
   return (
@@ -148,30 +158,24 @@ function Page() {
           </Card>
           <Card>
             <h2 className="font-bold">Past verified projects</h2>
-            {detailQ.isLoading ? <p className="mt-2 text-sm text-muted-foreground">Loading projects…</p> : detailQ.isError ? <p className="mt-2 text-sm text-destructive">Could not load projects. Please try again.</p> : !detailQ.data?.experiences.length ? <p className="mt-2 text-sm text-muted-foreground">No verified projects yet.</p> : <ul className="mt-3 divide-y">{detailQ.data.experiences.map((x) => <li key={x.id} className="py-3"><p className="font-medium">{x.title}</p><p className="text-sm text-muted-foreground">{x.scope}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(x.completed_at).toLocaleDateString()} · {rwf(x.amount_rwf)}</p></li>)}</ul>}
+            {detailQ.isLoading ? <p className="mt-2 text-sm text-muted-foreground">Loading projects…</p> : detailQ.isError ? <p className="mt-2 text-sm text-destructive">Could not load projects. Please try again.</p> : !detailQ.data?.experiences.length ? <p className="mt-2 text-sm text-muted-foreground">No verified projects yet.</p> : <ul className="mt-3 divide-y">{detailQ.data.experiences.map((x) => { const business = detailQ.data?.businesses.find((b) => b.id === x.business_id); const team = x.team_id ? detailQ.data?.teams.find((t) => t.id === x.team_id) : undefined; return <li key={x.id} className="py-3"><p className="font-medium">{x.title}</p><p className="text-sm text-muted-foreground">{x.scope}</p><div className="mt-2 flex flex-wrap gap-2">{business && <Link to="/businesses/$id" params={{ id: business.id }} className="inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs hover:bg-muted"><Avatar initials={business.name.slice(0,2).toUpperCase()} src={business.avatar_url} alt={business.name} size="sm" />{business.name}</Link>}{team && <Link to="/teams/$id" params={{ id: team.id }} className="inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs hover:bg-muted"><Avatar initials={team.name.slice(0,2).toUpperCase()} src={team.avatar_url} alt={team.name} size="sm" />{team.name}</Link>}</div><p className="mt-1 text-xs text-muted-foreground">{new Date(x.completed_at).toLocaleDateString()} · {rwf(x.amount_rwf)}</p></li>; })}</ul>}
           </Card>
           <Card>
             <h2 className="flex items-center gap-2 font-bold"><Users className="size-4" />Connections</h2>
             {detailQ.isLoading ? <p className="mt-2 text-sm text-muted-foreground">Loading connections…</p> : !detailQ.data?.connections.length ? <p className="mt-2 text-sm text-muted-foreground">No accepted connections yet.</p> : <div className="mt-3 flex flex-wrap gap-3">{detailQ.data.connections.map((x) => { const uid = workerUserIds[w.id]; const other = detailQ.data?.profiles.find((p) => p.id === (x.requester === uid ? x.addressee : x.requester)); return <div key={x.id} className="flex items-center gap-2 rounded-xl border px-3 py-2 text-sm"><Avatar initials={(other?.display_name ?? "U").slice(0,2).toUpperCase()} src={other?.avatar_url} alt={other?.display_name ?? "Connection"} size="sm" />{other?.display_name ?? "Connection"}</div>; })}</div>}
           </Card>
           <Card>
-            <h2 className="font-bold">Teams</h2>
-            {w.teamIds.length ? (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {w.teamIds.map((id) => {
-                  const t = getTeam(id);
-                  return (
-                    t && (
-                      <Link key={id} to="/teams/$id" params={{ id }}>
-                        <Pill tone="primary">{t.name}</Pill>
-                      </Link>
-                    )
-                  );
-                })}
+            <h2 className="font-bold">Teams & companies</h2>
+            <div className="mt-3 space-y-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Teams</p>
+                <div className="mt-2 flex flex-wrap gap-2">{(detailQ.data?.teams ?? []).length ? detailQ.data?.teams.map((t) => <Link key={t.id} to="/teams/$id" params={{ id: t.id }} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-muted"><Avatar initials={t.name.slice(0,2).toUpperCase()} src={t.avatar_url} alt={t.name} size="sm" />{t.name}</Link>) : <span className="text-sm text-muted-foreground">No team history yet.</span>}</div>
               </div>
-            ) : (
-              <p className="mt-2 text-sm text-muted-foreground">Not part of a team yet.</p>
-            )}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Companies worked with</p>
+                <div className="mt-2 flex flex-wrap gap-2">{(detailQ.data?.businesses ?? []).length ? detailQ.data?.businesses.map((b) => <Link key={b.id} to="/businesses/$id" params={{ id: b.id }} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-muted"><Avatar initials={b.name.slice(0,2).toUpperCase()} src={b.avatar_url} alt={b.name} size="sm" />{b.name}</Link>) : <span className="text-sm text-muted-foreground">No company history yet.</span>}</div>
+              </div>
+            </div>
           </Card>
           <DemoNotice />
         </div>
