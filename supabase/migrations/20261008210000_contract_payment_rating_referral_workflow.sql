@@ -113,7 +113,7 @@ begin
   if not (
     public.is_business_member(c.business_id)
     or (c.worker_id is not null and c.worker_id=public.my_worker_id())
-    or (c.team_id is not null and public.is_team_lead(c.team_id))
+    or (c.team_id is not null and public.is_team_lead(c.team_id,uid))
   ) then raise exception 'Only a contracting party can re-accept this contract' using errcode='42501'; end if;
   update public.contracts set status='active',cancelled_at=null,accepted_at=coalesce(accepted_at,now()),activated_at=coalesce(activated_at,now()),updated_at=now() where id=c.id;
   insert into public.contract_events(contract_id,actor,event_type,from_status,to_status,note)
@@ -204,7 +204,7 @@ declare p record; c record;
 begin
   select * into p from public.contract_payments where id=_payment_id for update;
   if not found then raise exception 'Payment not found'; end if;
-  if not ((p.recipient_worker_id is not null and p.recipient_worker_id=public.my_worker_id()) or (p.recipient_team_id is not null and public.is_team_lead(p.recipient_team_id))) then raise exception 'Only the recipient can confirm payment' using errcode='42501'; end if;
+  if not ((p.recipient_worker_id is not null and p.recipient_worker_id=public.my_worker_id()) or (p.recipient_team_id is not null and public.is_team_lead(p.recipient_team_id,auth.uid()))) then raise exception 'Only the recipient can confirm payment' using errcode='42501'; end if;
   if p.status<>'paid' then raise exception 'Payment must be marked paid first'; end if;
   update public.contract_payments set status='confirmed',confirmed_at=now(),updated_at=now() where id=p.id;
   select * into c from public.contracts where id=p.contract_id;
@@ -225,7 +225,7 @@ begin
   if public.is_business_member(c.business_id) and c.worker_id is not null then subject_type:='worker'; subject_id:=c.worker_id;
   elsif public.is_business_member(c.business_id) and c.team_id is not null then subject_type:='team'; subject_id:=c.team_id;
   elsif c.worker_id is not null and c.worker_id=public.my_worker_id() then subject_type:='business'; subject_id:=c.business_id;
-  elsif c.team_id is not null and public.is_team_lead(c.team_id) then subject_type:='business'; subject_id:=c.business_id;
+  elsif c.team_id is not null and public.is_team_lead(c.team_id,uid) then subject_type:='business'; subject_id:=c.business_id;
   else raise exception 'Only contracting parties can rate this contract' using errcode='42501'; end if;
   insert into public.contract_ratings(contract_id,rater_user_id,subject_type,subject_id,score,review)
   values(c.id,auth.uid(),subject_type,subject_id,_score,left(btrim(coalesce(_review,'')),2000))
