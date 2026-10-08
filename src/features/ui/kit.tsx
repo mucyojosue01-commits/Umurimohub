@@ -76,7 +76,7 @@ export function DemoNotice({ className }: { className?: string }) {
   );
 }
 
-export function Avatar({ initials, size = "md" }: { initials: string; size?: "sm" | "md" | "lg" }) {
+export function Avatar({ initials, src, alt = "", size = "md" }: { initials: string; src?: string | null; alt?: string; size?: "sm" | "md" | "lg" }) {
   const s = { sm: "size-8 text-xs", md: "size-11 text-sm", lg: "size-20 text-2xl" }[size];
   return (
     <div
@@ -85,7 +85,7 @@ export function Avatar({ initials, size = "md" }: { initials: string; size?: "sm
         s,
       )}
     >
-      {initials}
+      {src ? <img src={src} alt={alt} className="size-full object-cover" /> : initials}
     </div>
   );
 }
@@ -283,7 +283,7 @@ export function WorkerCard({ w }: { w: Worker }) {
     <Link to="/workers/$id" params={{ id: w.id }} className="block">
       <Card className="h-full transition hover:-translate-y-0.5 hover:shadow-lift">
         <div className="flex items-start gap-3">
-          <Avatar initials={w.initials} />
+          <Avatar initials={w.initials} src={w.avatarUrl} alt={w.name} />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1 font-semibold">
               {w.name}
