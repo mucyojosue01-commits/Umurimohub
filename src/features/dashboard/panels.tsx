@@ -124,14 +124,18 @@ export function IncomingApplications() {
       const userIds = [...new Set(rows.map((a) => a.applicant_user_id).filter(Boolean))];
       const businessIds = [...new Set(rows.map((a) => a.applicant_business_id).filter(Boolean))];
       const teamIds = [...new Set(rows.map((a) => a.applicant_team_id).filter(Boolean))];
-      const [profiles, workers, businesses, teams, contracts] = await Promise.all([
+      const referrerIds = [...new Set(rows.map((a) => a.referred_by).filter(Boolean))];
+      const [profiles, workers, businesses, teams, contracts, referrerProfiles, referrerWorkers, connections] = await Promise.all([
         userIds.length ? supabase.from("profiles").select("id,display_name,avatar_url").in("id", userIds) : Promise.resolve({ data: [] as { id: string; display_name: string; avatar_url: string | null }[] }),
         userIds.length ? supabase.from("worker_profiles").select("id,user_id,name,avatar_url").in("user_id", userIds) : Promise.resolve({ data: [] as { id: string; user_id: string | null; name: string; avatar_url: string | null }[] }),
         businessIds.length ? supabase.from("businesses").select("id,name,avatar_url").in("id", businessIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
         teamIds.length ? supabase.from("teams").select("id,name,avatar_url").in("id", teamIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
         supabase.from("contracts").select("id,application_id,opportunity_id").in("opportunity_id", oppIds),
+        referrerIds.length ? supabase.from("profiles").select("id,display_name,avatar_url").in("id", referrerIds) : Promise.resolve({ data: [] as { id: string; display_name: string | null; avatar_url: string | null }[] }),
+        referrerIds.length ? supabase.from("worker_profiles").select("id,user_id,name,avatar_url").in("user_id", referrerIds) : Promise.resolve({ data: [] as { id: string; user_id: string | null; name: string; avatar_url: string | null }[] }),
+        supabase.from("connections").select("id,requester,addressee,status").or("requester.eq." + user.id + ",addressee.eq." + user.id),
       ]);
-      return { opps: opps ?? [], apps: rows, profiles: profiles.data ?? [], workers: workers.data ?? [], businesses: businesses.data ?? [], teams: teams.data ?? [], contracts: contracts.data ?? [] };
+      return { opps: opps ?? [], apps: rows, profiles: profiles.data ?? [], workers: workers.data ?? [], businesses: businesses.data ?? [], teams: teams.data ?? [], contracts: contracts.data ?? [], referrerProfiles: referrerProfiles.data ?? [], referrerWorkers: referrerWorkers.data ?? [], connections: connections.data ?? [] };
     },
   });
   const [contractApplication, setContractApplication] = useState<string | null>(null);
@@ -189,7 +193,22 @@ export function IncomingApplications() {
                           return (
                             <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 p-3">
                               <div className="flex min-w-0 items-center gap-3">
-                                <Avatar initials={displayName.slice(0, 2).toUpperCase()} src={avatar} alt={displayName} size="md" />
+                                <div className="relative">
+                                  <Avatar initials={displayName.slice(0, 2).toUpperCase()} src={avatar} alt={displayName} size="md" />
+                                  {a.referred_by && (() => {
+                                    const rp = q.data.referrerProfiles.find((x) => x.id === a.referred_by);
+                                    const rw = q.data.referrerWorkers.find((x) => x.user_id === a.referred_by);
+                                    const connected = q.data.connections.some((x) => x.status === "accepted" && ((x.requester === user?.id && x.addressee === a.referred_by) || (x.addressee === user?.id && x.requester === a.referred_by)));
+                                    return (
+                                      <span
+                                        title={(connected ? "Connected with " : "Not connected with ") + (rw?.name ?? rp?.display_name ?? "referrer")}
+                                        className={"absolute -bottom-1 -right-1 grid size-5 place-items-center rounded-full border-2 border-card text-[9px] font-bold " + (connected ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground")}
+                                      >
+                                        {connected ? "↔" : "?"}
+                                      </span>
+                                    );
+                                  })()}
+                                </div>
                                 <div className="min-w-0">
                                   <p className="font-medium">{displayName}</p>
                                   <p className="text-xs text-muted-foreground">{a.applicant_type ?? a.kind} · {a.status}</p>
