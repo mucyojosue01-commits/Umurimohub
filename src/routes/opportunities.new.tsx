@@ -43,7 +43,7 @@ const schema = z.object({
   teamAllowed: z.boolean(),
   teamSize: z.coerce.number().min(0).max(500).optional(),
   businessId: z.string().optional(),
-  audience: z.enum(["individual","team","business","any"]),
+  audience: z.enum(["individual", "team", "business", "any"]),
 });
 type F = z.infer<typeof schema>;
 const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
@@ -82,7 +82,7 @@ function Page() {
       businessId: f.businessId,
       ...(f.teamAllowed && teamSize ? { teamSize } : {}),
       sector: f.sector as Opportunity["sector"],
-      responsibilities: f.responsibilities.split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 20),
+      responsibilities: f.responsibilities\n        .split("\n")\n        .map((s) => s.trim())\n        .filter(Boolean)\n        .slice(0, 20),
       requirements: f.requirements.split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 20),
       skills: f.skills
         .split(",")
@@ -98,11 +98,11 @@ function Page() {
     }
     if (media.length) {
       for (const file of media) {
-        if (file.size > 10_000_000) { toast.error(`${file.name} is larger than 10 MB.`); continue; }
+        if (file.size > 10_000_000) {\n          toast.error(`${file.name} is larger than 10 MB.`);\n          continue;\n        }
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const path = `${r.id}/${crypto.randomUUID()}-${safeName}`;
         const upload = await supabase.storage.from("opportunity-attachments").upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
-        if (upload.error) { toast.error(`Couldn't upload ${file.name}.`); continue; }
+        if (upload.error) {\n          toast.error(`Couldn't upload ${file.name}.`);\n          continue;\n        }
         const { error: rowError } = await supabase.from("opportunity_attachments").insert({
           opportunity_id: r.id, uploaded_by: user!.id, storage_path: upload.data.path,
           file_name: file.name, mime_type: file.type || "application/octet-stream", size_bytes: file.size,
@@ -113,8 +113,7 @@ function Page() {
     toast.success(media.length ? "Opportunity published with media" : "Opportunity published");
     nav({ to: "/opportunities/$id", params: { id: r.id } });
   };
-  if (authReady && !user)
-    return <div className="container-page max-w-xl py-16 text-center"><PageHeader eyebrow="Sign in" title="Post an opportunity" desc="Sign in to publish a real opportunity." /><Button asChild size="lg"><Link to="/login">Sign in to post</Link></Button></div>;
+  if (authReady && !user) {\n    return (\n      <div className="container-page max-w-xl py-16 text-center">\n        <PageHeader\n          eyebrow="Sign in"\n          title="Post an opportunity"\n          desc="Sign in to publish a real opportunity."\n        />\n        <Button asChild size="lg">\n          <Link to="/login">Sign in to post</Link>\n        </Button>\n      </div>\n    );\n  }
   const Err = ({ k }: { k: keyof F }) =>
     errors[k] ? (
       <span className="mt-1 block text-xs text-destructive">{String(errors[k]?.message)}</span>
