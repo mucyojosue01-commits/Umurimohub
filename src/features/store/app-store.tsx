@@ -59,6 +59,7 @@ type Ctx = {
     kind: Application["kind"];
     note: string;
     teamId?: string | null;
+    businessId?: string | null;
   }) => Promise<{ ok: boolean; error?: string }>;
   refer: (oppId: string, workerId: string, note: string) => Promise<{ ok: boolean; error?: string }>;
   send: (thread: string, text: string) => void;
@@ -235,7 +236,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         _applicant_type: a.kind === "Team" ? "team" : a.kind === "Referral" ? "individual" : a.kind === "Business" ? "business" : "individual",
         _note: a.note.slice(0, 2000),
         _team_id: a.teamId ?? null,
-        _business_id: null,
+        _business_id: a.businessId ?? null,
       });
       if (error) return { ok: false, error: applicationErrorMessage(error) };
       await loadPersonal(session);
