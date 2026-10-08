@@ -90,12 +90,9 @@ export function IncomingApplications() {
         .in("business_id", ids);
       const oppIds = (opps ?? []).map((o) => o.id);
       if (!oppIds.length) return { opps: opps ?? [], apps: [] };
-      const { data: apps } = await supabase
-        .from("applications")
-        .select("*")
-        .in("opportunity_id", oppIds)
-        .order("created_at", { ascending: false });
-      return { opps: opps ?? [], apps: apps ?? [] };
+      const { data: apps } = await supabase.from("applications").select("*").in("opportunity_id", oppIds).order("created_at", { ascending: false });
+      const { data: contracts } = await supabase.from("contracts").select("id,application_id,opportunity_id").in("opportunity_id", oppIds);
+      return { opps: opps ?? [], apps: apps ?? [], contracts: contracts ?? [] };
     },
   });
   const [contractApplication, setContractApplication] = useState<string | null>(null);
@@ -151,8 +148,14 @@ export function IncomingApplications() {
               {a.note && <p className="mt-1 text-sm text-muted-foreground">“{a.note}”</p>}
               {a.status === "accepted" && (
                 <div className="mt-2">
-                  <Button size="sm" onClick={() => setContractApplication(a.id)}>
-                    Create contract
+                  <Button size="sm" onClick={() => {
+                    const existing = q.data?.contracts.find((c) => c.opportunity_id === a.opportunity_id);
+                    if (existing) {
+                      if (!window.confirm("Are you sure you want to make this other contract?")) return;
+                    }
+                    setContractApplication(a.id);
+                  }}>
+                    {q.data?.contracts.some((c) => c.opportunity_id === a.opportunity_id) ? "Create another contract" : "Create contract"}
                   </Button>
                   {contractApplication === a.id && (
                     <CreateContractForm
