@@ -69,7 +69,7 @@ export const verifiedExperienceKey = ["verified-experiences"] as const;
 export const reputationEvidenceKey = ["reputation-evidence"] as const;
 
 export async function listMyCompletions(): Promise<Completion[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("contract_completions")
     .select("*")
     .order("updated_at", { ascending: false });
@@ -78,7 +78,7 @@ export async function listMyCompletions(): Promise<Completion[]> {
 }
 
 export async function listMyCompletionEvents(completionId: string): Promise<CompletionEvent[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("completion_events")
     .select("*")
     .eq("completion_id", completionId)
@@ -88,7 +88,7 @@ export async function listMyCompletionEvents(completionId: string): Promise<Comp
 }
 
 export async function listVerifiedExperiences(): Promise<VerifiedExperience[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("verified_experiences")
     .select("*")
     .order("completed_at", { ascending: false });
@@ -97,7 +97,7 @@ export async function listVerifiedExperiences(): Promise<VerifiedExperience[]> {
 }
 
 export async function listReputationEvidence(): Promise<ReputationEvidence[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("reputation_evidence")
     .select("*")
     .order("occurred_at", { ascending: false });

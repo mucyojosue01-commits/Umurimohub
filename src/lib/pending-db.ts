@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
  * once those migrations are applied and types regenerate.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const db = supabase as unknown as SupabaseClient<any, "public", any>;
+export const db = supabase as any;
 
 export type MilestoneStatus = "pending" | "submitted" | "disputed" | "approved";
 export type CompletionStatus = "requested" | "rejected" | "confirmed";
@@ -46,6 +46,7 @@ export type CompletionRow = {
   requested_by: string | null;
   requested_at: string | null;
   request_note: string | null;
+  rejection_note: string | null;
   rejected_by: string | null;
   rejected_at: string | null;
   confirmed_by: string | null;
@@ -67,6 +68,8 @@ export type VerifiedExperienceRow = {
   id: string;
   contract_id: string;
   title: string;
+  scope: string;
+  amount_rwf: number;
   completed_at: string;
   [k: string]: unknown;
 };

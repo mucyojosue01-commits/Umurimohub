@@ -47,7 +47,7 @@ export function milestoneEventsKey(milestoneId: string) {
 }
 
 export async function listMyMilestones(): Promise<Milestone[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("milestones")
     .select("*")
     .order("contract_id", { ascending: true })
@@ -57,7 +57,7 @@ export async function listMyMilestones(): Promise<Milestone[]> {
 }
 
 export async function listMilestoneEvents(milestoneId: string): Promise<MilestoneEvent[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("milestone_events")
     .select("*")
     .eq("milestone_id", milestoneId)

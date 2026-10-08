@@ -12,7 +12,7 @@ export type Conversation = import("@/lib/pending-db").ConversationRow & {
 export type Message = import("@/lib/pending-db").MessageRow & { read: boolean };
 
 export async function listConversations(userId: string): Promise<Conversation[]> {
-  const { data: memberships, error: memberError } = await supabase
+  const { data: memberships, error: memberError } = await db
     .from("conversation_members")
     .select("conversation_id,user_id")
     .eq("user_id", userId);
@@ -20,14 +20,14 @@ export async function listConversations(userId: string): Promise<Conversation[]>
   const ids = (memberships ?? []).map((m) => m.conversation_id);
   if (!ids.length) return [];
 
-  const { data: conversations, error: conversationError } = await supabase
+  const { data: conversations, error: conversationError } = await db
     .from("conversations")
     .select("*")
     .in("id", ids)
     .order("created_at", { ascending: false });
   if (conversationError) throw conversationError;
 
-  const { data: allMembers, error: allMembersError } = await supabase
+  const { data: allMembers, error: allMembersError } = await db
     .from("conversation_members")
     .select("conversation_id,user_id")
     .in("conversation_id", ids);
@@ -46,21 +46,21 @@ export async function listConversations(userId: string): Promise<Conversation[]>
       (m) => m.conversation_id === conversation.id && m.user_id !== userId,
     );
     if (!other) continue;
-    const { data: last } = await supabase
+    const { data: last } = await db
       .from("messages")
       .select("*")
       .eq("conversation_id", conversation.id)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    const { data: incoming } = await supabase
+    const { data: incoming } = await db
       .from("messages")
       .select("id")
       .eq("conversation_id", conversation.id)
       .neq("sender_id", userId);
     const incomingIds = (incoming ?? []).map((m) => m.id);
     const { data: reads } = incomingIds.length
-      ? await supabase
+      ? await db
           .from("message_reads")
           .select("message_id")
           .eq("user_id", userId)
@@ -79,7 +79,7 @@ export async function listConversations(userId: string): Promise<Conversation[]>
 }
 
 export async function listMessages(conversationId: string, userId: string): Promise<Message[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("messages")
     .select("*")
     .eq("conversation_id", conversationId)
@@ -87,7 +87,7 @@ export async function listMessages(conversationId: string, userId: string): Prom
   if (error) throw error;
   const ids = (data ?? []).map((m) => m.id);
   if (!ids.length) return [];
-  const { data: reads, error: readsError } = await supabase
+  const { data: reads, error: readsError } = await db
     .from("message_reads")
     .select("message_id")
     .eq("user_id", userId)
@@ -111,7 +111,7 @@ export async function sendMessage(conversationId: string, senderId: string, body
   const clean = body.trim();
   if (!clean) throw new Error("Message cannot be empty.");
   if (clean.length > 5000) throw new Error("Message is too long.");
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("messages")
     .insert({ conversation_id: conversationId, sender_id: senderId, body: clean })
     .select("*")
