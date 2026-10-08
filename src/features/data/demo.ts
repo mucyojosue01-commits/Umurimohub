@@ -338,6 +338,7 @@ export const WORKERS: Worker[] = [
 
 export type Team = {
   id: string;
+  avatarUrl?: string | null;
   name: string;
   leadId: string;
   memberIds: string[];
@@ -487,6 +488,7 @@ export type Opportunity = {
   requirements: string[];
   featured?: boolean;
   posted: string;
+  postedAt: string;
 };
 
 export const OPPORTUNITIES: Opportunity[] = [
