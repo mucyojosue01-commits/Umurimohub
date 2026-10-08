@@ -75,6 +75,16 @@ function Page() {
           <div className="flex flex-wrap gap-2">{isLead && <><Button size="sm" variant="outline" onClick={() => setEditing((v) => !v)}>{editing ? "Cancel edit" : "Edit team"}</Button><Button size="sm" variant="outline" onClick={remove} disabled={busy}>Delete</Button></>}<Button size="lg" onClick={() => toast.success("Hire request sent to " + t.name)} disabled={!t.available}>{t.available ? "Hire team" : "Currently booked"}</Button></div>
         </div>
       </Card>
+      {editing && isLead && (
+        <Card className="mt-4">
+          <div className="grid gap-3">
+            <label className="text-sm">Team name<input className="mt-1 h-10 w-full rounded-xl border bg-card px-3" value={name} onChange={(e) => setName(e.target.value)} /></label>
+            <label className="text-sm">Summary<textarea className="mt-1 w-full rounded-xl border bg-card p-3" rows={4} value={summary} onChange={(e) => setSummary(e.target.value)} /></label>
+            <label className="text-sm">Service areas<input className="mt-1 h-10 w-full rounded-xl border bg-card px-3" value={areas} onChange={(e) => setAreas(e.target.value)} /></label>
+            <Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
+          </div>
+        </Card>
+      )}
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <Card>
           <h2 className="font-bold">Combined skills</h2>
