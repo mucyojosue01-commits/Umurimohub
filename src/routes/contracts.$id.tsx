@@ -14,6 +14,7 @@ import { cancelContract, deleteContract, contractsKey, reacceptCancelledContract
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { rwf } from "@/features/data/demo";
+import { supabase } from "@/integrations/supabase/client";
 import { Star, CreditCard } from "lucide-react";
 
 export const Route = createFileRoute("/contracts/$id")({
