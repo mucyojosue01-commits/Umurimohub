@@ -52,6 +52,7 @@ function Page() {
   const [areas, setAreas] = useState(t.areas.join(", "));
   const [busy, setBusy] = useState(false);
   const save = async () => { setBusy(true); const { error } = await supabase.from("teams").update({ name: name.trim(), summary: summary.trim(), areas: areas.split(",").map((x) => x.trim()).filter(Boolean) }).eq("id", t.id); setBusy(false); if (error) toast.error(error.message); else { toast.success("Team updated"); setEditing(false); window.location.reload(); } };
+  const removeMember = async (workerId: string, workerName: string) => { const reason = window.prompt("Reason for removing " + workerName + " from the team:"); if (!reason?.trim()) return; const { error } = await supabase.rpc("remove_team_member", { _team_id: t.id, _worker_id: workerId, _reason: reason.trim() }); if (error) toast.error(error.message); else { toast.success(workerName + " was removed and notified."); window.location.reload(); } };
   const remove = async () => { if (!window.confirm("Delete this team? This cannot be undone.")) return; setBusy(true); const { error } = await supabase.from("teams").delete().eq("id", t.id); setBusy(false); if (error) toast.error("This team cannot be deleted while it has dependent work or members."); else window.location.href = "/teams"; };
   return (
     <div className="container-page py-10">
@@ -109,7 +110,12 @@ function Page() {
       <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {t.memberIds.map((id) => {
           const w = getWorker(id);
-          return w && <WorkerCard key={id} w={w} />;
+          return w ? (
+            <div key={id} className="space-y-2">
+              <WorkerCard w={w} />
+              {isLead && id !== t.leadId && <Button size="sm" variant="outline" onClick={() => void removeMember(id, w.name)}>Remove from team</Button>}
+            </div>
+          ) : null;
         })}
       </div>
       <TeamInvite teamId={t.id} memberIds={t.memberIds} />
