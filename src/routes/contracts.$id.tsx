@@ -58,7 +58,6 @@ function Page() {
     }
   };
 
-  const [payment, setPayment] = useState<{ id: string; amount_rwf: number; status: string; payment_reference: string | null } | null>(null);
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const [financeBusy, setFinanceBusy] = useState(false);
