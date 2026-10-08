@@ -65,3 +65,22 @@ export async function cancelContract(id: string) {
   if (error) throw new Error(error.message);
   return data;
 }
+
+export async function updateContract(p: ContractProposal) {
+  const { data, error } = await supabase.rpc("update_contract", {
+    _contract_id: p.applicationId,
+    _title: p.title,
+    _scope: p.scope,
+    _amount_rwf: p.amountRwf,
+    _start_date: p.startDate ?? null,
+    _end_date: p.endDate ?? null,
+    _terms: p.terms ?? null,
+  });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function deleteContract(id: string) {
+  const { error } = await supabase.rpc("delete_contract", { _contract_id: id });
+  if (error) throw new Error(error.message);
+}
