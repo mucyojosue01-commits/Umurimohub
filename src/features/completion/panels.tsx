@@ -168,10 +168,10 @@ function CompletionCard({
                 size="sm"
                 disabled={busy}
                 onClick={() =>
-                  act(() => requestCompletion(contract.id, note), "Completion requested")
+                  act(() => requestCompletion(contract.id, note), "Completion request sent")
                 }
               >
-                Request completion
+                Complete project
               </Button>
             )}
             {pending && requestedByMe && (
