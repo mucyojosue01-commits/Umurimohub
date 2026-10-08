@@ -66,10 +66,9 @@ function Page() {
       const [experiences, connections, businesses, teams] = await Promise.all([
         supabase.from("verified_experiences").select("id,title,scope,completed_at,amount_rwf,business_id,team_id").eq("worker_id", w.id).order("completed_at", { ascending: false }),
         supabase.from("connections").select("*").or("requester.eq." + uid + ",addressee.eq." + uid).eq("status", "accepted"),
-        supabase.from("business_members").select("business_id,role").eq("user_id", uid),
         supabase.from("team_members").select("team_id,role,status").eq("worker_id", w.id).eq("status", "active"),
       ]);
-      const businessIds = (businesses.data ?? []).map((x) => x.business_id);
+      const businessIds = [] as string[];
       const teamIds = [...new Set([...(teams.data ?? []).map((x) => x.team_id), ...(experiences.data ?? []).map((x) => x.team_id).filter(Boolean)])];
       const experienceBusinessIds = [...new Set((experiences.data ?? []).map((x) => x.business_id).filter(Boolean))];
       const allBusinessIds = [...new Set([...businessIds, ...experienceBusinessIds])];
