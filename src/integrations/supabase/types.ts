@@ -1699,6 +1699,15 @@ export type Database = {
         }
         Returns: string
       }
+      create_referral: {
+        Args: {
+          _note?: string
+          _opportunity_id: string
+          _referee_worker_id: string
+        }
+        Returns: string
+      }
+      delete_contract: { Args: { _contract_id: string }; Returns: undefined }
       delete_pending_milestone: {
         Args: { _milestone_id: string }
         Returns: undefined
@@ -1767,6 +1776,18 @@ export type Database = {
       submit_milestone: {
         Args: { _milestone_id: string; _submission_note?: string }
         Returns: Database["public"]["Enums"]["milestone_status"]
+      }
+      update_contract: {
+        Args: {
+          _amount_rwf: number
+          _contract_id: string
+          _end_date?: string
+          _scope: string
+          _start_date?: string
+          _terms?: string
+          _title: string
+        }
+        Returns: Database["public"]["Enums"]["contract_status"]
       }
       update_pending_milestone: {
         Args: {
