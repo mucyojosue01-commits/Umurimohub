@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -172,6 +172,7 @@ export function IncomingApplications() {
 
 export function TeamInvites() {
   const { user, reloadUser } = useApp();
+  const navigate = useNavigate();
   const { getTeam, refresh } = useCatalog();
   const qc = useQueryClient();
   const wid = user?.workerId;
@@ -190,11 +191,7 @@ export function TeamInvites() {
   if (!q.data?.length) return null;
   const respond = async (teamId: string, accept: boolean) => {
     const r = accept
-      ? await supabase
-          .from("team_members")
-          .update({ status: "active" })
-          .eq("team_id", teamId)
-          .eq("worker_id", wid!)
+      ? await supabase.rpc("accept_team_invitation", { _team_id: teamId, _worker_id: wid! })
       : await supabase.from("team_members").delete().eq("team_id", teamId).eq("worker_id", wid!);
     if (r.error) toast.error(r.error.message);
     else {
@@ -202,10 +199,11 @@ export function TeamInvites() {
       void qc.invalidateQueries({ queryKey: ["invites"] });
       void refresh();
       void reloadUser();
+      if (accept) navigate({ to: "/dashboard", hash: "invitations" });
     }
   };
   return (
-    <Card className="mt-6">
+    <Card id="invitations" className="mt-6">
       <h2 className="font-bold">Team invitations</h2>
       <ul className="mt-3 divide-y">
         {q.data.map((m) => (
