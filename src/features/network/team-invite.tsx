@@ -11,10 +11,10 @@ export function TeamInvite({ teamId, memberIds }: { teamId: string; memberIds: s
   const { user } = useApp();
   const { workers, workerUserIds } = useCatalog();
   const [pick, setPick] = useState("");
+  const [query, setQuery] = useState("");
   if (!user?.leadTeamIds.includes(teamId)) return null;
-  const candidates = workers.filter(
-    (w) => workerUserIds[w.id] && !memberIds.includes(w.id) && w.id !== user.workerId,
-  );
+  const candidates = workers.filter((w) => workerUserIds[w.id] && !memberIds.includes(w.id) && w.id !== user.workerId);
+  const matches = candidates.filter((w) => (w.name + " " + w.title + " " + w.sector).toLowerCase().includes(query.toLowerCase())).slice(0, 20);
   return (
     <Card className="mt-6">
       <h2 className="font-bold">Invite a member</h2>
@@ -22,21 +22,10 @@ export function TeamInvite({ teamId, memberIds }: { teamId: string; memberIds: s
         They'll see the invite on their dashboard and can accept or decline.
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-        <select
-          aria-label="Worker"
-          value={pick}
-          onChange={(e) => setPick(e.target.value)}
-          className="h-11 flex-1 rounded-xl border bg-card px-3"
-        >
-          <option value="">
-            {candidates.length ? "Choose a worker…" : "No registered workers to invite yet"}
-          </option>
-          {candidates.map((w) => (
-            <option key={w.id} value={w.id}>
-              {w.name} — {w.title || w.sector}
-            </option>
-          ))}
-        </select>
+        <div className="relative flex-1">
+          <input aria-label="Search worker" value={query} onChange={(e) => { setQuery(e.target.value); const exact = candidates.find((w) => w.name.toLowerCase() === e.target.value.toLowerCase()); setPick(exact?.id ?? ""); }} placeholder={candidates.length ? "Search a worker by name or skill…" : "No registered workers to invite yet"} className="h-11 w-full rounded-xl border bg-card px-3" />
+          {query && !pick && matches.length > 0 && <div className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border bg-card p-1 shadow-lg">{matches.map((w) => <button type="button" key={w.id} className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setQuery(w.name); setPick(w.id); }}>{w.name} · {w.title || w.sector}</button>)}</div>}
+        </div>
         <Button
           disabled={!pick}
           onClick={async () => {
@@ -47,6 +36,7 @@ export function TeamInvite({ teamId, memberIds }: { teamId: string; memberIds: s
             else {
               toast.success("Invite sent");
               setPick("");
+              setQuery("");
             }
           }}
         >
