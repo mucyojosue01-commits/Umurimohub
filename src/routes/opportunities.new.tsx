@@ -42,7 +42,8 @@ const schema = z.object({
   requirements: z.string().trim().min(2, "Add at least one requirement").max(3000),
   teamAllowed: z.boolean(),
   teamSize: z.coerce.number().min(0).max(500).optional(),
-  businessId: z.string().min(1, "Choose the business publishing this opportunity"),
+  businessId: z.string().optional(),
+  audience: z.enum(["individual","team","business","any"]),
 });
 type F = z.infer<typeof schema>;
 const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
@@ -67,6 +68,7 @@ function Page() {
       sector: "Construction",
       district: "",
       businessId: "",
+      audience: "any",
     },
   });
   const onSubmit = async (f: F) => {
@@ -74,7 +76,7 @@ function Page() {
       toast.error("Deadline must be in the future");
       return;
     }
-    const { teamSize, ...rest } = f;
+    const { teamSize, audience, ...rest } = f;
     const o: NewOpportunity = {
       ...rest,
       businessId: f.businessId,
@@ -111,21 +113,8 @@ function Page() {
     toast.success(media.length ? "Opportunity published with media" : "Opportunity published");
     nav({ to: "/opportunities/$id", params: { id: r.id } });
   };
-  if (authReady && !user?.businessIds.length)
-    return (
-      <div className="container-page max-w-xl py-16 text-center">
-        <PageHeader
-          eyebrow="Business"
-          title="Post an opportunity"
-          desc="Publishing needs a business account so applicants know who is hiring."
-        />
-        <Button asChild size="lg">
-          <Link to={user ? "/register" : "/login"}>
-            {user ? "Add a business profile" : "Sign in to post"}
-          </Link>
-        </Button>
-      </div>
-    );
+  if (authReady && !user)
+    return <div className="container-page max-w-xl py-16 text-center"><PageHeader eyebrow="Sign in" title="Post an opportunity" desc="Sign in to publish a real opportunity." /><Button asChild size="lg"><Link to="/login">Sign in to post</Link></Button></div>;
   const Err = ({ k }: { k: keyof F }) =>
     errors[k] ? (
       <span className="mt-1 block text-xs text-destructive">{String(errors[k]?.message)}</span>
@@ -153,14 +142,20 @@ function Page() {
             </select>
           </label>
           <label className="text-sm">
-            Business
+            Publisher business <span className="text-muted-foreground">(optional)</span>
             <select {...register("businessId")} className={inp} defaultValue={user?.businessIds[0] ?? ""}>
-              <option value="">Select business…</option>
-              {businesses.filter((b) => user?.businessIds.includes(b.id)).map((b) => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
+              <option value="">Post as me</option>
+              {businesses.filter((b) => user?.businessIds.includes(b.id)).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
-            <Err k="businessId" />
+          </label>
+          <label className="text-sm">
+            Who can apply
+            <select {...register("audience")} className={inp}>
+              <option value="any">Users, teams and businesses</option>
+              <option value="individual">Users only</option>
+              <option value="team">Teams only</option>
+              <option value="business">Businesses only</option>
+            </select>
           </label>
           <label className="text-sm">
             Sector
