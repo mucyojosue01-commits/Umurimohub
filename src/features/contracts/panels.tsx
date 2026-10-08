@@ -18,6 +18,7 @@ import {
   updateContract,
   listMyContracts,
   respondContract,
+  reacceptCancelledContract,
   validateProposal,
   type Contract,
 } from "./service";
@@ -254,6 +255,14 @@ export function ContractsPanel() {
                         Delete
                       </Button>
                     </>
+                  )}
+                  {(isBiz || isParty) && c.status === "cancelled" && (
+                    <Button
+                      size="sm"
+                      onClick={() => act(() => reacceptCancelledContract(c.id), "Cancelled contract re-accepted and active")}
+                    >
+                      Re-accept
+                    </Button>
                   )}
                   {isBiz && (c.status === "proposed" || c.status === "active") && (
                     <Button
