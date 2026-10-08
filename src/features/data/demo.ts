@@ -78,7 +78,6 @@ export type Worker = {
   id: string;
   name: string;
   avatarUrl?: string | null;
-  avatarUrl?: string | null;
   title: string;
   district: string;
   sector: Sector;
@@ -90,7 +89,6 @@ export type Worker = {
   reviews: number;
   verified: boolean;
   initials: string;
-  avatarUrl?: string | null;
   skills: { name: string; level: SkillLevel; verification: Verification }[];
   bio: string;
   rep: Rep;
