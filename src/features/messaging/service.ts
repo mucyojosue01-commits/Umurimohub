@@ -4,6 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 export type Conversation = Tables<"conversations"> & {
   otherUserId: string;
   otherName: string;
+  otherAvatarUrl?: string | null;
   lastMessage?: Tables<"messages"> | undefined;
   unreadCount: number;
 };
@@ -34,11 +35,12 @@ export async function listConversations(userId: string): Promise<Conversation[]>
 
   const otherIds = [...new Set((allMembers ?? []).filter((m) => m.user_id !== userId).map((m) => m.user_id))];
   const { data: profiles, error: profilesError } = otherIds.length
-    ? await supabase.from("profiles").select("id,display_name").in("id", otherIds)
+    ? await supabase.from("profiles").select("id,display_name,avatar_url").in("id", otherIds)
     : { data: [], error: null };
   if (profilesError) throw profilesError;
 
   const profileNames = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
+  const profileAvatars = new Map((profiles ?? []).map((p) => [p.id, p.avatar_url]));
   const result: Conversation[] = [];
   for (const conversation of conversations ?? []) {
     const other = (allMembers ?? []).find(
@@ -70,6 +72,7 @@ export async function listConversations(userId: string): Promise<Conversation[]>
       ...conversation,
       otherUserId: other.user_id,
       otherName: profileNames.get(other.user_id) ?? "UmurimoHub member",
+      otherAvatarUrl: profileAvatars.get(other.user_id) ?? null,
       lastMessage: last ?? undefined,
       unreadCount: incomingIds.filter((id) => !readIds.has(id)).length,
     });
