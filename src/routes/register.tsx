@@ -1,4 +1,3 @@
-import { db } from "@/lib/pending-db";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -128,7 +127,7 @@ function Page() {
     try {
     const roles = v.roles as Array<"worker" | "team_lead" | "business" | "learner">;
     const skills = [...new Set(v.skills.split(",").map((s) => s.trim()).filter(Boolean))].slice(0, 15);
-    const { error } = await db.rpc("complete_onboarding", {
+    const { error } = await supabase.rpc("complete_onboarding", {
       _display_name: v.name,
       _phone: v.phone ?? null,
       _district: v.district,
