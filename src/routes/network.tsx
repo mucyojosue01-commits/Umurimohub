@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/features/store/app-store";
-import { Card, PageHeader, Pill } from "@/features/ui/kit";
+import { Avatar, Card, PageHeader, Pill } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/network")({
   head: () => ({
@@ -29,12 +29,13 @@ function Page() {
     queryKey: ["network", me],
     enabled: !!me,
     queryFn: async () => {
-      const [c, r, p] = await Promise.all([
+      const [c, r, p, workers] = await Promise.all([
         supabase.from("connections").select("*").order("created_at", { ascending: false }),
         supabase.from("referrals").select("*").order("created_at", { ascending: false }),
         supabase.from("profiles").select("id,display_name,avatar_url"),
+        supabase.from("worker_profiles").select("id,user_id,name,avatar_url").eq("visibility", "public"),
       ]);
-      return { connections: c.data ?? [], referrals: r.data ?? [], profiles: p.data ?? [] };
+      return { connections: c.data ?? [], referrals: r.data ?? [], profiles: p.data ?? [], workers: workers.data ?? [] };
     },
   });
   if (!authReady)
@@ -58,6 +59,7 @@ function Page() {
   };
   const cons = q.data?.connections ?? [];
   const profileMap = new Map((q.data?.profiles ?? []).map((p) => [p.id, p]));
+  const workerMap = new Map((q.data?.workers ?? []).map((w) => [w.user_id, w]));
   return (
     <div className="container-page max-w-3xl py-10">
       <PageHeader
@@ -83,15 +85,27 @@ function Page() {
               );
               return (
                 <li key={connection.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="grid size-10 place-items-center overflow-hidden rounded-full bg-secondary font-semibold">
-                      {otherProfile?.avatar_url ? (
-                        <img src={otherProfile.avatar_url} className="size-full object-cover" />
+                  <div className="flex min-w-0 items-center gap-3 text-sm">
+                    <Avatar
+                      initials={(otherProfile?.display_name ?? "U").slice(0, 2).toUpperCase()}
+                      src={otherProfile?.avatar_url}
+                      alt={otherProfile?.display_name ?? "Member"}
+                      size="md"
+                    />
+                    <div className="min-w-0">
+                      {workerMap.get(connection.requester === me ? connection.addressee : connection.requester) ? (
+                        <Link
+                          to="/workers/$id"
+                          params={{ id: workerMap.get(connection.requester === me ? connection.addressee : connection.requester)!.id }}
+                          className="font-medium hover:text-primary"
+                        >
+                          {otherProfile?.display_name ?? "Member"}
+                        </Link>
                       ) : (
-                        (otherProfile?.display_name ?? "U").slice(0, 2).toUpperCase()
+                        <span className="font-medium">{otherProfile?.display_name ?? "Member"}</span>
                       )}
+                      <p className="text-xs text-muted-foreground">{connection.relation.replace("_", " ")}</p>
                     </div>
-                    <span>{otherProfile?.display_name ?? "Member"} · {connection.relation.replace("_", " ")}</span>
                   </div>
                   <span className="flex gap-2">
                     <Pill tone={connection.status === "accepted" ? "success" : "muted"}>
