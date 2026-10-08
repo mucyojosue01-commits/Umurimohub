@@ -19,8 +19,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/messages")({
-  validateSearch: z.object({ user: z.string().optional().catch(""), conversation: z.string().optional().catch("") }),
-  head: () => ({ meta: [{ title: "Messages — UmurimoHub" }, { name: "description", content: "Live conversations on UmurimoHub." }] }),
+  validateSearch: z.object({
+    user: z.string().optional().catch(""),
+    conversation: z.string().optional().catch(""),
+  }),
+  head: () => ({
+    meta: [
+      { title: "Messages — UmurimoHub" },
+      { name: "description", content: "Live conversations on UmurimoHub." },
+    ],
+  }),
   component: Page,
 });
 
@@ -35,7 +43,9 @@ function Page() {
   const [loading, setLoading] = useState(true);
 
   const active = conversations.find((c) => c.id === activeId);
-  const activeWorker = active ? workers.find((w) => workerUserIds[w.id] === active.otherUserId) : undefined;
+  const activeWorker = active
+    ? workers.find((w) => workerUserIds[w.id] === active.otherUserId)
+    : undefined;
   const availableWorkers = useMemo(
     () => workers.filter((w) => workerUserIds[w.id] && workerUserIds[w.id] !== session?.user.id),
     [workers, workerUserIds, session?.user.id],
@@ -52,15 +62,29 @@ function Page() {
     if (!session || !activeId) return;
     const data = await listMessages(activeId, session.user.id);
     setMessages(data);
-    const unread = data.filter((m) => m.sender_id !== session.user.id && !m.read).map((m) => m.id);
+    const unread = data
+      .filter((m) => m.sender_id !== session.user.id && !m.read)
+      .map((m) => m.id);
     if (unread.length) {
       await markMessagesRead(unread);
-      setMessages((current) => current.map((m) => (unread.includes(m.id) ? { ...m, read: true } : m)));
+      setMessages((current) =>
+        current.map((m) => (unread.includes(m.id) ? { ...m, read: true } : m)),
+      );
     }
   };
 
   useEffect(() => {
-    useEffect(() => {
+    if (!session) {
+      setConversations([]);
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    void reloadConversations().finally(() => setLoading(false));
+  }, [session]);
+
+  useEffect(() => {
     if (!session) return;
     if (search.conversation) {
       setActiveId(search.conversation);
@@ -75,23 +99,21 @@ function Page() {
       .catch((e) => toast.error((e as Error).message || "Couldn't start conversation."));
   }, [search.conversation, search.user, session]);
 
-  if (!session) {
-      setConversations([]);
-      setMessages([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    void reloadConversations().finally(() => setLoading(false));
-  }, [session]);
-
   useEffect(() => {
     if (!activeId || !session) return;
     void reloadMessages();
     const channel = supabase
       .channel("conversation-" + activeId)
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: "conversation_id=eq." + activeId }, () => void reloadMessages())
-      .on("postgres_changes", { event: "*", schema: "public", table: "message_reads" }, () => void reloadMessages())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages", filter: "conversation_id=eq." + activeId },
+        () => void reloadMessages(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "message_reads" },
+        () => void reloadMessages(),
+      )
       .subscribe();
     return () => void supabase.removeChannel(channel);
   }, [activeId, session]);
@@ -100,7 +122,9 @@ function Page() {
     return (
       <div className="container-page py-20 text-center">
         <PageHeader title="Messages" desc="Sign in to use live messaging." />
-        <Button asChild className="mt-4"><Link to="/login">Sign in</Link></Button>
+        <Button asChild className="mt-4">
+          <Link to="/login">Sign in</Link>
+        </Button>
       </div>
     );
   }
@@ -126,20 +150,35 @@ function Page() {
       toast.error((e as Error).message || "Couldn't send message.");
     }
   };
+
   return (
     <div className="container-page py-10">
-      <PageHeader title="Messages" desc="Persistent, real-time conversations with UmurimoHub members." />
+      <PageHeader
+        title="Messages"
+        desc="Persistent, real-time conversations with UmurimoHub members."
+      />
       <div className="grid gap-4 md:grid-cols-[300px_1fr]">
         <Card className="p-3">
           <div className="mb-3">
             <p className="text-sm font-semibold">Start a conversation</p>
             <div className="mt-2 flex max-h-32 flex-wrap gap-2 overflow-auto">
-              {availableWorkers.slice(0, 20).map((worker) => (
-                <Button key={worker.id} size="sm" variant="outline" onClick={() => void startConversation(workerUserIds[worker.id]!)}>
-                  {worker.name}
-                </Button>
-              ))}
-              {!availableWorkers.length && <p className="text-xs text-muted-foreground">No other registered workers yet.</p>}
+              {availableWorkers.slice(0, 20).map((worker) => {
+                const userId = workerUserIds[worker.id];
+                if (!userId) return null;
+                return (
+                  <Button
+                    key={worker.id}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void startConversation(userId)}
+                  >
+                    {worker.name}
+                  </Button>
+                );
+              })}
+              {!availableWorkers.length && (
+                <p className="text-xs text-muted-foreground">No other registered workers yet.</p>
+              )}
             </div>
           </div>
           <div className="space-y-1">
@@ -147,40 +186,104 @@ function Page() {
               <button
                 key={conversation.id}
                 onClick={() => setActiveId(conversation.id)}
-                className={cn("w-full rounded-xl px-3 py-3 text-left", activeId === conversation.id ? "bg-secondary" : "hover:bg-muted")}
+                className={cn(
+                  "w-full rounded-xl px-3 py-3 text-left",
+                  activeId === conversation.id ? "bg-secondary" : "hover:bg-muted",
+                )}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">{conversation.otherName}</span>
-                  {conversation.unreadCount > 0 && <span className="rounded-full bg-accent px-2 py-0.5 text-xs">{conversation.unreadCount}</span>}
+                  {conversation.unreadCount > 0 && (
+                    <span className="rounded-full bg-accent px-2 py-0.5 text-xs">
+                      {conversation.unreadCount}
+                    </span>
+                  )}
                 </div>
-                <p className="mt-1 truncate text-xs text-muted-foreground">{conversation.lastMessage?.body ?? "No messages yet"}</p>
+                <p className="mt-1 truncate text-xs text-muted-foreground">
+                  {conversation.lastMessage?.body ?? "No messages yet"}
+                </p>
               </button>
             ))}
-            {!conversations.length && !loading && <p className="py-8 text-center text-sm text-muted-foreground">No conversations yet.</p>}
+            {!conversations.length && !loading && (
+              <p className="py-8 text-center text-sm text-muted-foreground">No conversations yet.</p>
+            )}
           </div>
         </Card>
 
         <Card className="flex min-h-[28rem] flex-col">
           {!active ? (
-            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">Choose a conversation to begin.</div>
+            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+              Choose a conversation to begin.
+            </div>
           ) : (
             <>
-              <div className="border-b pb-3 font-semibold">{activeWorker ? <Link to="/workers/$id" params={{id:activeWorker.id}} className="inline-flex items-center gap-2 hover:text-primary"><span className="grid size-8 place-items-center overflow-hidden rounded-full bg-secondary text-xs">{activeWorker.avatarUrl ? <img src={activeWorker.avatarUrl} className="size-full object-cover" /> : activeWorker.initials}</span>{active.otherName}</Link> : <span>{active.otherName}</span>}</div>
+              <div className="border-b pb-3 font-semibold">
+                {activeWorker ? (
+                  <Link
+                    to="/workers/$id"
+                    params={{ id: activeWorker.id }}
+                    className="inline-flex items-center gap-2 hover:text-primary"
+                  >
+                    <span className="grid size-8 place-items-center overflow-hidden rounded-full bg-secondary text-xs">
+                      {activeWorker.avatarUrl ? (
+                        <img
+                          src={activeWorker.avatarUrl}
+                          alt=""
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        activeWorker.initials
+                      )}
+                    </span>
+                    {active.otherName}
+                  </Link>
+                ) : (
+                  <span>{active.otherName}</span>
+                )}
+              </div>
               <div className="flex-1 space-y-2 overflow-y-auto py-4">
                 {messages.map((message) => (
-                  <div key={message.id} className={cn("max-w-[80%] rounded-2xl px-3 py-2 text-sm", message.sender_id === session.user.id ? "ml-auto bg-primary text-primary-foreground" : "bg-muted")}>
+                  <div
+                    key={message.id}
+                    className={cn(
+                      "max-w-[80%] rounded-2xl px-3 py-2 text-sm",
+                      message.sender_id === session.user.id
+                        ? "ml-auto bg-primary text-primary-foreground"
+                        : "bg-muted",
+                    )}
+                  >
                     {message.body}
                     <div className="mt-1 text-[10px] opacity-70">
                       {new Date(message.created_at).toLocaleString()}
-                      {message.sender_id === session.user.id && " · " + (message.read ? "Read" : "Sent")}
+                      {message.sender_id === session.user.id &&
+                        " · " + (message.read ? "Read" : "Sent")}
                     </div>
                   </div>
                 ))}
-                {!messages.length && <p className="text-center text-sm text-muted-foreground">No messages yet. Say hello.</p>}
+                {!messages.length && (
+                  <p className="text-center text-sm text-muted-foreground">
+                    No messages yet. Say hello.
+                  </p>
+                )}
               </div>
-              <form className="flex gap-2 border-t pt-3" onSubmit={(e) => { e.preventDefault(); void send(); }}>
-                <input aria-label="Message" value={text} onChange={(e) => setText(e.target.value)} maxLength={5000} className="h-10 flex-1 rounded-full border bg-card px-4" placeholder="Write a message" />
-                <Button type="submit" disabled={!text.trim()}>Send</Button>
+              <form
+                className="flex gap-2 border-t pt-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void send();
+                }}
+              >
+                <input
+                  aria-label="Message"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  maxLength={5000}
+                  className="h-10 flex-1 rounded-full border bg-card px-4"
+                  placeholder="Write a message"
+                />
+                <Button type="submit" disabled={!text.trim()}>
+                  Send
+                </Button>
               </form>
             </>
           )}
