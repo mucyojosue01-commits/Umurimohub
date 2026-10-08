@@ -1,0 +1,10 @@
+alter table public.opportunities alter column business_id drop not null;
+alter table public.opportunities add column if not exists author_type text not null default 'business' check(author_type in('user','business'));
+create index if not exists opportunities_created_by_idx on public.opportunities(created_by);
+create index if not exists opportunities_author_type_idx on public.opportunities(author_type);
+drop policy if exists "opportunities public read" on public.opportunities;
+create policy "opportunities public read" on public.opportunities for select to anon,authenticated using(status <> 'draft' or created_by=auth.uid());
+drop policy if exists "opportunities creator insert" on public.opportunities;
+create policy "opportunities creator insert" on public.opportunities for insert to authenticated with check(created_by=auth.uid() and (business_id is null or public.is_business_member(business_id)));
+drop policy if exists "opportunities creator update" on public.opportunities;
+create policy "opportunities creator update" on public.opportunities for update to authenticated using(created_by=auth.uid() or (business_id is not null and public.is_business_member(business_id))) with check(created_by=auth.uid() or (business_id is not null and public.is_business_member(business_id)));
