@@ -33,6 +33,7 @@ export type Application = {
   businessId?: string | null;
   acceptedTermsVersion?: number;
   termsVersion?: number;
+  referredBy?: string | null;
 };
 export type Msg = {
   id: string;
@@ -186,6 +187,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         businessId: x.applicant_business_id,
         acceptedTermsVersion: x.accepted_terms_version,
         termsVersion: termsByOpportunity.get(x.opportunity_id) ?? x.accepted_terms_version ?? 1,
+        referredBy: x.referred_by,
       })),
     );
     setDbSaved((sv.data ?? []).map((x) => x.opportunity_id));
