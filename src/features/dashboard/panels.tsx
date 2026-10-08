@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useCatalog } from "@/features/data/catalog";
 import { useApp } from "@/features/store/app-store";
-import { Card, Pill } from "@/features/ui/kit";
+import { Avatar, Card, Pill } from "@/features/ui/kit";
 import { CreateContractForm } from "@/features/contracts/panels";
 
 type Status = "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" | "withdrawn";
@@ -98,8 +98,18 @@ export function IncomingApplications() {
       const oppIds = (opps ?? []).map((o) => o.id);
       if (!oppIds.length) return { opps: opps ?? [], apps: [] };
       const { data: apps } = await supabase.from("applications").select("*").in("opportunity_id", oppIds).order("created_at", { ascending: false });
-      const { data: contracts } = await supabase.from("contracts").select("id,application_id,opportunity_id").in("opportunity_id", oppIds);
-      return { opps: opps ?? [], apps: apps ?? [], contracts: contracts ?? [] };
+      const rows = apps ?? [];
+      const userIds = [...new Set(rows.map((a) => a.applicant_user_id).filter(Boolean))];
+      const businessIds = [...new Set(rows.map((a) => a.applicant_business_id).filter(Boolean))];
+      const teamIds = [...new Set(rows.map((a) => a.applicant_team_id).filter(Boolean))];
+      const [profiles, workers, businesses, teams, contracts] = await Promise.all([
+        userIds.length ? supabase.from("profiles").select("id,display_name,avatar_url").in("id", userIds) : Promise.resolve({ data: [] as { id: string; display_name: string; avatar_url: string | null }[] }),
+        userIds.length ? supabase.from("worker_profiles").select("id,user_id,name,avatar_url").in("user_id", userIds) : Promise.resolve({ data: [] as { id: string; user_id: string | null; name: string; avatar_url: string | null }[] }),
+        businessIds.length ? supabase.from("businesses").select("id,name,avatar_url").in("id", businessIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
+        teamIds.length ? supabase.from("teams").select("id,name,avatar_url").in("id", teamIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
+        supabase.from("contracts").select("id,application_id,opportunity_id").in("opportunity_id", oppIds),
+      ]);
+      return { opps: opps ?? [], apps: rows, profiles: profiles.data ?? [], workers: workers.data ?? [], businesses: businesses.data ?? [], teams: teams.data ?? [], contracts: contracts.data ?? [] };
     },
   });
   const [contractApplication, setContractApplication] = useState<string | null>(null);
@@ -127,54 +137,74 @@ export function IncomingApplications() {
           No applicants yet. You have {q.data?.opps.length ?? 0} posted opportunities.
         </p>
       ) : (
-        <ul className="mt-3 divide-y">
-          {q.data.apps.map((a) => (
-            <li key={a.id} className="py-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-medium">
-                  {q.data.opps.find((o) => o.id === a.opportunity_id)?.title}
-                </span>
-                <span className="flex flex-wrap items-center gap-2">
-                  <Pill>{a.kind}</Pill>
-                  <Pill tone="primary">{a.status}</Pill>
-                  {a.status !== "withdrawn" &&
-                    (["viewed", "shortlisted", "accepted", "rejected"] as Status[])
-                      .filter((s) => s !== a.status)
-                      .map((s) => (
-                        <Button
-                          key={s}
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setStatus(a.id, s)}
-                        >
-                          {s}
-                        </Button>
-                      ))}
-                </span>
-              </div>
-              {a.note && <p className="mt-1 text-sm text-muted-foreground">“{a.note}”</p>}
-              {a.status === "accepted" && (
-                <div className="mt-2">
-                  <Button size="sm" onClick={() => {
-                    const existing = q.data?.contracts.find((c) => c.opportunity_id === a.opportunity_id);
-                    if (existing) {
-                      if (!window.confirm("Are you sure you want to make this other contract?")) return;
-                    }
-                    setContractApplication(a.id);
-                  }}>
-                    {q.data?.contracts.some((c) => c.opportunity_id === a.opportunity_id) ? "Create another contract" : "Create contract"}
-                  </Button>
-                  {contractApplication === a.id && (
-                    <CreateContractForm
-                      applicationId={a.id}
-                      onDone={() => setContractApplication(null)}
-                    />
-                  )}
+        <div className="mt-4 space-y-5">
+          {(q.data.opps ?? []).map((opp) => {
+            const apps = q.data.apps.filter((a) => a.opportunity_id === opp.id);
+            if (!apps.length) return null;
+            const groups = [
+              ["business", "Businesses", apps.filter((a) => a.applicant_type === "business")],
+              ["team", "Teams", apps.filter((a) => a.applicant_type === "team")],
+              ["individual", "Users", apps.filter((a) => a.applicant_type === "individual" || !a.applicant_type)],
+            ] as const;
+            return (
+              <section key={opp.id} className="rounded-2xl border p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <Link to="/opportunities/$id" params={{ id: opp.id }} className="font-semibold hover:text-primary">{opp.title}</Link>
+                  <Pill>{apps.length} applicant{apps.length === 1 ? "" : "s"}</Pill>
                 </div>
-              )}
-            </li>
-          ))}
-        </ul>
+                <div className="mt-4 space-y-4">
+                  {groups.map(([kind, label, group]) => group.length ? (
+                    <div key={kind}>
+                      <h3 className="mb-2 text-sm font-semibold text-muted-foreground">{label}</h3>
+                      <ul className="divide-y rounded-xl border">
+                        {group.map((a) => {
+                          const profile = q.data.profiles.find((x) => x.id === a.applicant_user_id);
+                          const worker = q.data.workers.find((x) => x.user_id === a.applicant_user_id);
+                          const business = a.applicant_business_id ? q.data.businesses.find((x) => x.id === a.applicant_business_id) : undefined;
+                          const team = a.applicant_team_id ? q.data.teams.find((x) => x.id === a.applicant_team_id) : undefined;
+                          const displayName = business?.name ?? team?.name ?? worker?.name ?? profile?.display_name ?? "Applicant";
+                          const avatar = business?.avatar_url ?? team?.avatar_url ?? worker?.avatar_url ?? profile?.avatar_url;
+                          return (
+                            <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 p-3">
+                              <div className="flex min-w-0 items-center gap-3">
+                                <Avatar initials={displayName.slice(0, 2).toUpperCase()} src={avatar} alt={displayName} size="md" />
+                                <div className="min-w-0">
+                                  <p className="font-medium">{displayName}</p>
+                                  <p className="text-xs text-muted-foreground">{a.applicant_type ?? a.kind} · {a.status}</p>
+                                  {a.note && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{a.note}</p>}
+                                </div>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Pill tone={a.status === "accepted" ? "success" : a.status === "shortlisted" ? "primary" : "muted"}>{a.status}</Pill>
+                                {a.status !== "withdrawn" && (["viewed", "shortlisted", "accepted", "rejected"] as Status[]).filter((s) => s !== a.status).map((s) => (
+                                  <Button key={s} size="sm" variant="outline" onClick={() => setStatus(a.id, s)}>{s}</Button>
+                                ))}
+                                {a.status === "accepted" && (
+                                  <Button size="sm" onClick={() => {
+                                    const existing = q.data.contracts.find((contract) => contract.opportunity_id === a.opportunity_id);
+                                    if (existing && !window.confirm("Are you sure you want to make this other contract?")) return;
+                                    setContractApplication(a.id);
+                                  }}>
+                                    {q.data.contracts.some((contract) => contract.opportunity_id === a.opportunity_id) ? "Create another contract" : "Create contract"}
+                                  </Button>
+                                )}
+                              </div>
+                              {a.status === "accepted" && contractApplication === a.id && (
+                                <div className="w-full">
+                                  <CreateContractForm applicationId={a.id} onDone={() => setContractApplication(null)} />
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ) : null)}
+                </div>
+              </section>
+            );
+          })}
+        </div>
       )}
     </Card>
   );
