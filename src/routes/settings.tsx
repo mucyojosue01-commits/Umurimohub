@@ -53,10 +53,21 @@ function Page() {
     if (upload.error) { setAvatarBusy(false); { toast.error("Couldn't upload your profile picture."); return; } }
     const { data } = supabase.storage.from("avatars").getPublicUrl(upload.data.path);
     const { error } = await supabase.from("profiles").update({ avatar_url: data.publicUrl } as never).eq("id", session.user.id);
+    if (error) { setAvatarBusy(false); toast.error("Picture uploaded but profile could not be updated."); return; }
+    const [workerUpdate, businessUpdate, teamUpdate] = await Promise.all([
+      supabase.from("worker_profiles").update({ avatar_url: data.publicUrl }).eq("user_id", session.user.id),
+      supabase.from("businesses").update({ avatar_url: data.publicUrl }).in("id", user.businessIds),
+      supabase.from("teams").update({ avatar_url: data.publicUrl }).eq("lead_user_id", session.user.id),
+    ]);
+    if (workerUpdate.error || businessUpdate.error || teamUpdate.error) {
+      setAvatarBusy(false);
+      toast.error("Profile picture saved, but one of your public profiles could not be synchronized.");
+      await reloadUser();
+      return;
+    }
     setAvatarBusy(false);
-    if (error) { toast.error("Picture uploaded but profile could not be updated."); return; }
     await reloadUser();
-    toast.success("Profile picture updated.");
+    toast.success("Profile picture updated everywhere.");
   };
 
   return <div className="container-page max-w-2xl py-10">
