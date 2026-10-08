@@ -467,6 +467,7 @@ export type Opportunity = {
   title: string;
   businessId: string;
   authorType?: "user" | "business";
+  eligibleActorTypes?: ("individual" | "team" | "business")[];
   createdBy?: string;
   authorName?: string;
   authorAvatarUrl?: string | null;
