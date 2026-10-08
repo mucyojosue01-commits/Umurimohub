@@ -96,7 +96,8 @@ export function MyApplications() {
                 )}
               </span>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </Card>
