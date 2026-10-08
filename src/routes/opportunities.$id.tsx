@@ -233,18 +233,8 @@ function Page() {
             ) : (
               <label className="text-sm">
                 Team
-                <select
-                  value={teamId}
-                  onChange={(e) => setTeamId(e.target.value)}
-                  className="mt-1 h-10 w-full rounded-xl border bg-card px-3"
-                >
-                  <option value="">Choose team…</option>
-                  {myTeams.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
+                <input list="my-teams" value={teamId} onChange={(e)=>setTeamId(e.target.value)} placeholder="Search your team…" className="mt-1 h-10 w-full rounded-xl border bg-card px-3" />
+                <datalist id="my-teams">{myTeams.map((t)=><option key={t.id} value={t.id}>{t.name}</option>)}</datalist>
               </label>
             ))}
           {kind === "Business" && user && <label className="text-sm">Company
@@ -255,20 +245,8 @@ function Page() {
             (user ? (
               <label className="text-sm">
                 Person you trust
-                <select
-                  value={refWorker}
-                  onChange={(e) => setRefWorker(e.target.value)}
-                  className="mt-1 h-10 w-full rounded-xl border bg-card px-3"
-                >
-                  <option value="">Choose a registered worker…</option>
-                  {workers
-                    .filter((w) => workerUserIds[w.id] && w.id !== user.workerId)
-                    .map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {w.name} — {w.district}
-                      </option>
-                    ))}
-                </select>
+                <input list="ref-workers" value={refWorker} onChange={(e)=>setRefWorker(e.target.value)} placeholder="Search a registered worker…" className="mt-1 h-10 w-full rounded-xl border bg-card px-3" />
+                <datalist id="ref-workers">{workers.filter((w)=>workerUserIds[w.id] && w.id !== user.workerId).map((w)=><option key={w.id} value={w.id}>{w.name} — {w.district}</option>)}</datalist>
               </label>
             ) : (
               <p className="text-sm text-muted-foreground">
