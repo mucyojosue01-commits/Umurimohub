@@ -48,7 +48,6 @@ function Page() {
   const ratingQ = useQuery({
     queryKey: ["contract-rating", contract?.id, user?.id],
     enabled: !!user && !!contract,
-    enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase.from("contract_ratings").select("score,review,subject_type,subject_id") .eq("contract_id", contract!.id).eq("rater_user_id", user!.id).maybeSingle();
       if (error) throw error;
@@ -131,8 +130,8 @@ function Page() {
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Start</p><p className="font-medium">{contract.start_date ?? "Not set"}</p></div>
           <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">End</p><p className="font-medium">{contract.end_date ?? "Not set"}</p></div>
-          <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Payments</p><p className="font-medium">Not enabled yet</p></div>
-          <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Project process</p><p className="font-medium">Milestones → completion</p></div>
+          <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Payment</p><p className="font-medium">{paymentQ.isLoading ? "Loading…" : paymentQ.data ? paymentQ.data.status : contract.status === "completed" ? "Not created" : "Unlocks on completion"}</p></div>
+          <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Project process</p><p className="font-medium">Milestones → completion → payment → rating</p></div>
         </div>
       </Card>
 
