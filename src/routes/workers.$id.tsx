@@ -61,8 +61,9 @@ function Page() {
     enabled: !!workerUserIds[w.id],
     queryFn: async () => {
       const uid = workerUserIds[w.id]!;
-      const [experiences, connections, teams] = await Promise.all([
+      const [experiences, trainingExperiences, connections, teams] = await Promise.all([
         supabase.from("verified_experiences").select("id,title,scope,completed_at,amount_rwf,business_id,team_id").eq("worker_id", w.id).order("completed_at", { ascending: false }),
+        supabase.from("training_experiences").select("id,training_id,title,description,completed_at,provider_user_id").eq("worker_id", w.id).order("completed_at", { ascending: false }),
         supabase.from("connections").select("*").or("requester.eq." + uid + ",addressee.eq." + uid).eq("status", "accepted"),
         supabase.from("team_members").select("team_id,role,status").eq("worker_id", w.id).eq("status", "active"),
       ]);
@@ -78,7 +79,7 @@ function Page() {
       const profiles = otherIds.length
         ? await supabase.from("profiles").select("id,display_name,avatar_url").in("id", otherIds)
         : { data: [] as { id: string; display_name: string; avatar_url: string | null }[] };
-      return { experiences: experiences.data ?? [], connections: connections.data ?? [], profiles: profiles.data ?? [], businesses: businessRows.data ?? [], teams: teamRows.data ?? [] };
+      return { experiences: experiences.data ?? [], trainingExperiences: trainingExperiences.data ?? [], connections: connections.data ?? [], profiles: profiles.data ?? [], businesses: businessRows.data ?? [], teams: teamRows.data ?? [] };
     },
   });
   return (
@@ -156,6 +157,22 @@ function Page() {
                 </li>
               ))}
             </ul>
+          </Card>
+          <Card>
+            <h2 className="font-bold">Training experience</h2>
+            {!detailQ.data?.trainingExperiences.length ? (
+              <p className="mt-2 text-sm text-muted-foreground">No completed training recorded yet.</p>
+            ) : (
+              <ul className="mt-3 divide-y">
+                {detailQ.data.trainingExperiences.map((x) => (
+                  <li key={x.id} className="py-3">
+                    <p className="font-medium">{x.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{x.description}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Completed {new Date(x.completed_at).toLocaleDateString()}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
           <Card>
             <h2 className="font-bold">Past verified projects</h2>
