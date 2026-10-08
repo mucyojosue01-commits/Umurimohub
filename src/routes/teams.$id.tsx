@@ -12,19 +12,29 @@ import { Avatar, Card, DemoNotice, Pill, WorkerCard } from "@/features/ui/kit";
 export const Route = createFileRoute("/teams/$id")({
   loader: async ({ params }) => {
     const { data: raw, error } = await supabase.from("teams").select("*").eq("id", params.id).eq("is_demo", false).maybeSingle();
-    if (error) throw error;
+    if (error) throw new Error("Team data could not be loaded: " + error.message);
     if (!raw) throw notFound();
     const { data: members, error: memberError } = await supabase.from("team_members").select("*").eq("team_id", params.id).eq("status", "active");
-    if (memberError) throw memberError;
-    const workerIds = (members ?? []).map((m) => m.worker_id);
-    const [workers, skills] = await Promise.all([
-      workerIds.length ? supabase.from("worker_profiles").select("*").in("id", workerIds) : Promise.resolve({ data: [] }),
-      workerIds.length ? supabase.from("worker_skills").select("*").in("worker_id", workerIds) : Promise.resolve({ data: [] }),
+    if (memberError) throw new Error("Team members could not be loaded: " + memberError.message);
+    const workerIds = [...new Set((members ?? []).map((m) => m.worker_id))];
+    if (!workerIds.length) return { t: mapTeam(raw, members ?? []), memberWorkers: [] };
+    const [workersResult, skillsResult, profilesResult] = await Promise.all([
+      supabase.from("worker_profiles").select("*").in("id", workerIds),
+      supabase.from("worker_skills").select("*").in("worker_id", workerIds),
+      supabase.from("profiles").select("id,avatar_url").limit(500),
     ]);
-    if (workers.error) throw workers.error;
-    if (skills.error) throw skills.error;
-    const t = mapTeam(raw, members ?? []);
-    const memberWorkers = (workers.data ?? []).map((w) => mapWorker(w, skills.data ?? [], members ?? []));
+    if (workersResult.error) throw new Error("Team member profiles could not be loaded: " + workersResult.error.message);
+    if (skillsResult.error) throw new Error("Team member skills could not be loaded: " + skillsResult.error.message);
+    if (profilesResult.error) throw new Error("Team member pictures could not be loaded: " + profilesResult.error.message);
+    const profileAvatars = new Map((profilesResult.data ?? []).map((p) => [p.id, p.avatar_url]));
+    const t = {
+      ...mapTeam(raw, members ?? []),
+      avatarUrl: raw.avatar_url ?? (raw.lead_user_id ? profileAvatars.get(raw.lead_user_id) ?? null : null),
+    };
+    const memberWorkers = (workersResult.data ?? []).map((w) => {
+      const mapped = mapWorker(w, skillsResult.data ?? [], members ?? []);
+      return { ...mapped, avatarUrl: mapped.avatarUrl ?? (w.user_id ? profileAvatars.get(w.user_id) ?? null : null) };
+    });
     return { t, memberWorkers };
   },
   head: ({ loaderData }) => {
