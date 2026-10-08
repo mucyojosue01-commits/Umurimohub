@@ -30,6 +30,8 @@ export type Application = {
   note: string;
   at: string;
   teamId?: string | null;
+  acceptedTermsVersion?: number;
+  termsVersion?: number;
 };
 export type Msg = {
   id: string;
@@ -150,6 +152,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .order("created_at", { ascending: false }),
     ]);
     setUser(u);
+    const opportunityIds = (a.data ?? []).map((x) => x.opportunity_id);
+    const opportunityVersions = opportunityIds.length
+      ? await supabase.from("opportunities").select("id,terms_version").in("id", opportunityIds)
+      : { data: [] as { id: string; terms_version: number }[] };
+    const termsByOpportunity = new Map((opportunityVersions.data ?? []).map((x) => [x.id, x.terms_version]));
     setDbApps(
       (a.data ?? []).map((x) => ({
         id: x.id,
@@ -159,6 +166,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         note: x.note,
         at: new Date(x.created_at).toLocaleDateString(),
         teamId: x.team_id,
+        acceptedTermsVersion: x.accepted_terms_version,
+        termsVersion: termsByOpportunity.get(x.opportunity_id) ?? x.accepted_terms_version ?? 1,
       })),
     );
     setDbSaved((sv.data ?? []).map((x) => x.opportunity_id));
@@ -266,7 +275,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (session) void supabase.rpc("mark_all_notifications_read").then(() => loadPersonal(session));
     },
     createOpp: async (o) => {
-      if (!session || !user) return { error: "Sign in with a business account to publish." };
+      if (!session || !user) return { error: "Sign in to publish an opportunity." };
       const businessId = o.businessId ?? user.businessIds[0] ?? null;
       const { data, error } = await supabase
         .from("opportunities")
