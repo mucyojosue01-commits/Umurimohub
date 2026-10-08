@@ -4,7 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 export type Conversation = Tables<"conversations"> & {
   otherUserId: string;
   otherName: string;
-  lastMessage?: Tables<"messages">;
+  lastMessage?: Tables<"messages"> | undefined;
   unreadCount: number;
 };
 
@@ -99,8 +99,8 @@ export async function listMessages(conversationId: string, userId: string): Prom
 export async function getOrCreateDirectConversation(otherUserId: string, opportunityId?: string, subject?: string) {
   const { data, error } = await supabase.rpc("get_or_create_direct_conversation", {
     _other_user: otherUserId,
-    _opportunity_id: opportunityId ?? null,
-    _subject: subject ?? null,
+    ...(opportunityId ? { _opportunity_id: opportunityId } : {}),
+    ...(subject ? { _subject: subject } : {}),
   });
   if (error) throw error;
   return data as string;

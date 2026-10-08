@@ -107,7 +107,7 @@ export async function listReputationEvidence(): Promise<ReputationEvidence[]> {
 export async function requestCompletion(contractId: string, note?: string) {
   const { data, error } = await supabase.rpc("request_completion", {
     _contract_id: contractId,
-    _request_note: note?.trim() || null,
+    ...(note?.trim() ? { _request_note: note.trim() } : {}),
   });
   if (error) throw new Error(error.message);
   return data;
@@ -116,7 +116,7 @@ export async function requestCompletion(contractId: string, note?: string) {
 export async function withdrawCompletionRequest(contractId: string, note?: string) {
   const { data, error } = await supabase.rpc("withdraw_completion_request", {
     _contract_id: contractId,
-    _note: note?.trim() || null,
+    ...(note?.trim() ? { _note: note.trim() } : {}),
   });
   if (error) throw new Error(error.message);
   return data;
@@ -125,7 +125,7 @@ export async function withdrawCompletionRequest(contractId: string, note?: strin
 export async function rejectCompletion(contractId: string, note?: string) {
   const { data, error } = await supabase.rpc("reject_completion", {
     _contract_id: contractId,
-    _note: note?.trim() || undefined,
+    ...(note?.trim() ? { _note: note.trim() } : {}),
   });
   if (error) throw new Error(error.message);
   return data;
@@ -134,7 +134,7 @@ export async function rejectCompletion(contractId: string, note?: string) {
 export async function confirmCompletion(contractId: string, note?: string) {
   const { data, error } = await supabase.rpc("confirm_completion", {
     _contract_id: contractId,
-    _note: note?.trim() || undefined,
+    ...(note?.trim() ? { _note: note.trim() } : {}),
   });
   if (error) throw new Error(error.message);
   return data;

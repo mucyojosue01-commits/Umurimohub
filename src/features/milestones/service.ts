@@ -105,7 +105,7 @@ export async function deletePendingMilestone(id: string) {
 export async function submitMilestone(id: string, submissionNote?: string) {
   const { data, error } = await supabase.rpc("submit_milestone", {
     _milestone_id: id,
-    _submission_note: submissionNote?.trim() || null,
+    ...(submissionNote?.trim() ? { _submission_note: submissionNote.trim() } : {}),
   });
   if (error) throw new Error(error.message);
   return data;
@@ -114,7 +114,7 @@ export async function submitMilestone(id: string, submissionNote?: string) {
 export async function disputeMilestone(id: string, note?: string) {
   const { data, error } = await supabase.rpc("dispute_milestone", {
     _milestone_id: id,
-    _note: note?.trim() || null,
+    ...(note?.trim() ? { _note: note.trim() } : {}),
   });
   if (error) throw new Error(error.message);
   return data;

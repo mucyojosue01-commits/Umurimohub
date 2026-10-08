@@ -103,7 +103,7 @@ async function loadUser(session: Session): Promise<User> {
       session.user.email?.split("@")[0] ??
       "Member",
     phone: p.data?.phone ?? "",
-    avatarUrl: p.data?.avatar_url ?? null,
+    avatarUrl: (p.data as { avatar_url?: string | null } | null)?.avatar_url ?? null,
     district: p.data?.district ?? w.data?.district ?? "",
     verifiedPhone: !!p.data?.phone_verified,
     roles,

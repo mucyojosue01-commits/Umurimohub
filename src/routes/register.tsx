@@ -127,7 +127,7 @@ function Page() {
     try {
     const roles = v.roles as Array<"worker" | "team_lead" | "business" | "learner">;
     const skills = [...new Set(v.skills.split(",").map((s) => s.trim()).filter(Boolean))].slice(0, 15);
-    const { error } = await supabase.rpc("complete_onboarding", {
+    const { error } = await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ error: Error | null }>)("complete_onboarding", {
       _display_name: v.name,
       _phone: v.phone ?? null,
       _district: v.district,
