@@ -38,32 +38,33 @@ export function SearchSelect({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return options.slice(0, 12);
+    if (!q) return options.slice(0, 20);
     return options
-      .filter((option) =>
-        [option.label, option.description ?? ""].join(" ").toLowerCase().includes(q),
-      )
-      .slice(0, 12);
+      .filter((option) => [option.label, option.description ?? ""].join(" ").toLowerCase().includes(q))
+      .slice(0, 20);
   }, [options, query]);
+
+  const choose = (option: SearchSelectOption) => {
+    onChange(option.value);
+    setQuery(option.label);
+    setOpen(false);
+  };
 
   return (
     <div className={cn("relative", className)}>
       <div className="relative">
         {selected?.avatarUrl || selected?.initials ? (
           <div className="absolute left-2 top-1/2 z-10 -translate-y-1/2">
-            <Avatar
-              initials={selected.initials ?? selected.label.slice(0, 2).toUpperCase()}
-              src={selected.avatarUrl}
-              alt={selected.label}
-              size="sm"
-            />
+            <Avatar initials={selected.initials ?? selected.label.slice(0, 2).toUpperCase()} src={selected.avatarUrl} alt={selected.label} size="sm" />
           </div>
         ) : null}
         <input
           value={query}
           disabled={disabled}
           placeholder={placeholder}
+          autoComplete="off"
           onFocus={() => setOpen(true)}
+          onBlur={() => window.setTimeout(() => setOpen(false), 150)}
           onChange={(event) => {
             setQuery(event.target.value);
             setOpen(true);
@@ -91,56 +92,39 @@ export function SearchSelect({
         )}
         <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       </div>
+
       {open && !disabled && (
-        <>
-          <button
-            type="button"
-            aria-label="Close options"
-            className="fixed inset-0 z-30 cursor-default"
-            onMouseDown={() => setOpen(false)}
-          />
-          <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-40 max-h-72 overflow-auto rounded-2xl border bg-popover p-1 shadow-xl">
-            {filtered.length ? (
-              filtered.map((option) => (
-                <button
-                  type="button"
-                  key={option.value}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-muted"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => {
-                    onChange(option.value);
-                    setQuery(option.label);
-                    setOpen(false);
-                  }}
-                >
-                  {option.avatarUrl || option.initials ? (
-                    <Avatar
-                      initials={option.initials ?? option.label.slice(0, 2).toUpperCase()}
-                      src={option.avatarUrl}
-                      alt={option.label}
-                      size="sm"
-                    />
-                  ) : (
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-semibold">
-                      {option.label.slice(0, 2).toUpperCase()}
-                    </span>
-                  )}
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">{option.label}</span>
-                    {option.description && (
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {option.description}
-                      </span>
-                    )}
-                  </span>
-                  {value === option.value && <Check className="size-4 text-primary" />}
-                </button>
-              ))
-            ) : (
-              <p className="px-3 py-4 text-center text-sm text-muted-foreground">{emptyText}</p>
-            )}
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-72 overflow-auto rounded-2xl border bg-popover p-1 shadow-xl">
+          <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            {query.trim() ? "Matching options" : "Available options"}
           </div>
-        </>
+          {filtered.length ? (
+            filtered.map((option) => (
+              <button
+                type="button"
+                key={option.value}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-muted"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => choose(option)}
+              >
+                {option.avatarUrl || option.initials ? (
+                  <Avatar initials={option.initials ?? option.label.slice(0, 2).toUpperCase()} src={option.avatarUrl} alt={option.label} size="sm" />
+                ) : (
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-semibold">
+                    {option.label.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{option.label}</span>
+                  {option.description && <span className="block truncate text-xs text-muted-foreground">{option.description}</span>}
+                </span>
+                {value === option.value && <Check className="size-4 text-primary" />}
+              </button>
+            ))
+          ) : (
+            <p className="px-3 py-4 text-center text-sm text-muted-foreground">{emptyText}</p>
+          )}
+        </div>
       )}
     </div>
   );
