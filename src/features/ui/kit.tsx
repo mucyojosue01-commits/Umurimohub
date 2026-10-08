@@ -337,7 +337,7 @@ export function TeamCard({ t }: { t: Team }) {
           <Pill tone="primary">{t.sector}</Pill>
           {t.available ? <Pill tone="success">Available</Pill> : <Pill>Booked</Pill>}
         </div>
-        <h3 className="mt-3 font-display text-lg font-bold">{t.name}</h3>
+        <div className="mt-3 flex items-center gap-3"><Avatar initials={t.name.slice(0,2).toUpperCase()} src={t.avatarUrl} alt={t.name} /><h3 className="font-display text-lg font-bold">{t.name}</h3></div>
         <p className="mt-1 text-sm text-muted-foreground">{t.summary}</p>
         <div className="mt-4 flex items-center justify-between">
           <AvatarGroup ids={t.memberIds} />
@@ -354,11 +354,10 @@ export function TeamCard({ t }: { t: Team }) {
 
 export function BusinessCard({ b }: { b: Business }) {
   return (
+    <Link to="/businesses/$id" params={{ id: b.id }} className="block h-full">
     <Card className="h-full">
       <div className="flex items-center gap-3">
-        <div className="grid size-11 place-items-center rounded-xl bg-secondary">
-          <Building2 className="size-5 text-primary" />
-        </div>
+        <Avatar initials={b.name.slice(0,2).toUpperCase()} src={b.avatarUrl} alt={b.name} size="md" />
         <div>
           <div className="flex items-center gap-1 font-semibold">
             {b.name}
@@ -378,6 +377,7 @@ export function BusinessCard({ b }: { b: Business }) {
         </span>
       </div>
     </Card>
+    </Link>
   );
 }
 
