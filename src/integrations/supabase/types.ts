@@ -768,7 +768,8 @@ export type Database = {
       }
       opportunities: {
         Row: {
-          business_id: string
+          author_type: string
+          business_id: string | null
           change_note: string | null
           created_at: string
           created_by: string | null
@@ -796,7 +797,8 @@ export type Database = {
           version: number
         }
         Insert: {
-          business_id: string
+          author_type?: string
+          business_id?: string | null
           change_note?: string | null
           created_at?: string
           created_by?: string | null
@@ -824,7 +826,8 @@ export type Database = {
           version?: number
         }
         Update: {
-          business_id?: string
+          author_type?: string
+          business_id?: string | null
           change_note?: string | null
           created_at?: string
           created_by?: string | null
