@@ -13,6 +13,19 @@ type Status = "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" |
 
 export function MyApplications() {
   const { applications, allOpps, session, reloadUser } = useApp();
+  const actorIds = applications.flatMap((a) => [a.businessId, a.teamId].filter(Boolean) as string[]);
+  const actorsQ = useQuery({
+    queryKey: ["my-application-actors", actorIds],
+    enabled: !!session && applications.length > 0,
+    queryFn: async () => {
+      const [businesses, teams, profile] = await Promise.all([
+        actorIds.length ? supabase.from("businesses").select("id,name,avatar_url").in("id", actorIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
+        actorIds.length ? supabase.from("teams").select("id,name,avatar_url").in("id", actorIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
+        session ? supabase.from("profiles").select("id,display_name,avatar_url").eq("id", session.user.id).maybeSingle() : Promise.resolve({ data: null }),
+      ]);
+      return { businesses: businesses.data ?? [], teams: teams.data ?? [], profile: profile.data ?? null };
+    },
+  });
   const title = (id: string) => allOpps.find((o) => o.id === id)?.title ?? "Opportunity";
   return (
     <Card className="mt-6">
@@ -26,17 +39,24 @@ export function MyApplications() {
         </p>
       ) : (
         <ul className="mt-3 divide-y">
-          {applications.map((a) => (
+          {applications.map((a) => {
+            const business = actorsQ.data?.businesses.find((x) => x.id === a.businessId);
+            const team = actorsQ.data?.teams.find((x) => x.id === a.teamId);
+            const displayName = business?.name ?? team?.name ?? actorsQ.data?.profile?.display_name ?? "Applicant";
+            const avatar = business?.avatar_url ?? team?.avatar_url ?? actorsQ.data?.profile?.avatar_url;
+            return (
             <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
-              <Link
-                to="/opportunities/$id"
-                params={{ id: a.oppId }}
-                className="font-medium hover:text-primary"
-              >
-                {title(a.oppId)}
-              </Link>
+              <div className="flex min-w-0 items-center gap-3">
+                <Avatar initials={displayName.slice(0, 2).toUpperCase()} src={avatar} alt={displayName} size="md" />
+                <Link
+                  to="/opportunities/$id"
+                  params={{ id: a.oppId }}
+                  className="font-medium hover:text-primary"
+                >
+                  {title(a.oppId)}
+                </Link>
+              </div>
               <span className="flex items-center gap-2">
-                <Pill>{a.kind}</Pill>
                 {a.termsVersion && a.acceptedTermsVersion !== undefined && a.termsVersion > a.acceptedTermsVersion && a.status !== "Withdrawn" && a.status !== "Rejected" && (
                   <span className="flex items-center gap-2 rounded-xl border border-warning/40 bg-warning/10 px-2 py-1 text-xs">
                     <span>Terms changed</span>
