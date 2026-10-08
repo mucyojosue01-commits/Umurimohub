@@ -70,7 +70,7 @@ function Page() {
   const [note, setNote] = useState("");
   if (!o) throw notFound();
   const b = getBusiness(o.businessId);
-  const applied = applications.find((a) => a.oppId === o.id);
+  const applied = applications.filter((a) => a.oppId === o.id);
 
   return (
     <div className="container-page py-10">
@@ -165,24 +165,19 @@ function Page() {
         </div>
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <Card>
-            {applied ? (
-              <div className="text-center">
-                <CheckCircle2 className="mx-auto size-8 text-success" />
-                <p className="mt-2 font-semibold">Applied ({applied.kind})</p>
-                <p className="text-sm text-muted-foreground">Status: {applied.status}</p>
-                <Button variant="outline" className="mt-4 w-full" asChild>
-                  <Link to="/dashboard">Track in dashboard</Link>
-                </Button>
+            {applied.length > 0 && (
+              <div className="space-y-3">
+                {applied.map((application) => <div key={application.id} className="flex items-center justify-between rounded-xl border p-3"><div><p className="font-semibold">Applied as {application.kind}</p><p className="text-sm text-muted-foreground">Status: {application.status}</p></div><CheckCircle2 className="size-5 text-success" /></div>)}
+                <Button variant="outline" className="w-full" asChild><Link to="/dashboard">Track applications</Link></Button>
               </div>
-            ) : (
+            )}
+            {applied.length === 0 && (
               <div className="space-y-2">
-                <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>
-                  Apply
-                </Button>
-                {o.teamAllowed && (
+                {(!user || !applied.some((a) => a.kind === "Individual")) && <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>}
+                {o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
                   <Button className="w-full" variant="accent" size="lg" onClick={() => setKind("Team")}><Users />Apply as team</Button>
                 )}
-                {user?.businessIds.length ? <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button> : null}
+                {user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button> : null}
                 <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>
                   Refer someone you trust
                 </Button>
