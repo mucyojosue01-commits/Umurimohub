@@ -23,6 +23,7 @@ function Page() {
   const [about, setAbout] = useState(business.about);
   const [services, setServices] = useState(business.services.join(", "));
   const [busy, setBusy] = useState(false);
+  const [businessImage, setBusinessImage] = useState<File | null>(null);
   const projectsQ = useQuery({
     queryKey: ["business-projects", id],
     queryFn: async () => {
@@ -34,8 +35,24 @@ function Page() {
   const save = async () => {
     setBusy(true);
     const { error } = await supabase.from("businesses").update({ name: name.trim(), about: about.trim(), services: services.split(",").map((x) => x.trim()).filter(Boolean) }).eq("id", id);
+    if (error) { setBusy(false); toast.error(error.message); return; }
+    if (businessImage) {
+      if (!businessImage.type.startsWith("image/") || businessImage.size > 5_000_000) {
+        setBusy(false);
+        toast.error("Business picture must be an image under 5 MB.");
+        return;
+      }
+      const path = user!.id + "/businesses/" + id + "/" + crypto.randomUUID() + "-" + businessImage.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const upload = await supabase.storage.from("avatars").upload(path, businessImage, { upsert: false, contentType: businessImage.type });
+      if (upload.error) { setBusy(false); toast.error("Business details saved, but the picture could not be uploaded."); return; }
+      const { data: url } = supabase.storage.from("avatars").getPublicUrl(upload.data.path);
+      const avatarUpdate = await supabase.from("businesses").update({ avatar_url: url.publicUrl }).eq("id", id);
+      if (avatarUpdate.error) { setBusy(false); toast.error("Business details saved, but the picture could not be saved."); return; }
+    }
     setBusy(false);
-    if (error) toast.error(error.message); else { toast.success("Business updated"); setEditing(false); window.location.reload(); }
+    toast.success("Business updated");
+    setEditing(false);
+    window.location.reload();
   };
   const remove = async () => {
     if (!window.confirm("Delete this business? This cannot be undone.")) return;
@@ -62,7 +79,7 @@ function Page() {
       <p className="mt-6 text-muted-foreground">{business.about || "No business description yet."}</p>
       {business.services.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{business.services.map((s) => <Pill key={s}>{s}</Pill>)}</div>}
     </Card>
-    {editing && canManage && <Card className="mt-4"><div className="grid gap-3"><label className="text-sm">Business name<input className="mt-1 h-10 w-full rounded-xl border bg-card px-3" value={name} onChange={(e) => setName(e.target.value)} /></label><label className="text-sm">About<textarea rows={4} className="mt-1 w-full rounded-xl border bg-card p-3" value={about} onChange={(e) => setAbout(e.target.value)} /></label><label className="text-sm">Services<input className="mt-1 h-10 w-full rounded-xl border bg-card px-3" value={services} onChange={(e) => setServices(e.target.value)} /></label><Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button></div></Card>}
+    {editing && canManage && <Card className="mt-4"><div className="grid gap-3"><label className="text-sm">Business name<input className="mt-1 h-10 w-full rounded-xl border bg-card px-3" value={name} onChange={(e) => setName(e.target.value)} /></label><label className="text-sm">About<textarea rows={4} className="mt-1 w-full rounded-xl border bg-card p-3" value={about} onChange={(e) => setAbout(e.target.value)} /></label><label className="text-sm">Services<input className="mt-1 h-10 w-full rounded-xl border bg-card px-3" value={services} onChange={(e) => setServices(e.target.value)} /></label><label className="text-sm">Business picture<input type="file" accept="image/*" className="mt-1 block w-full rounded-xl border bg-card p-2 text-sm" onChange={(e) => setBusinessImage(e.target.files?.[0] ?? null)} /><span className="mt-1 block text-xs text-muted-foreground">Upload a new image or keep the current one.</span></label><Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button></div></Card>}
     <div className="mt-8">
       <PageHeader eyebrow="Track record" title="Past projects & opportunities" desc="Real work published by this business." />
       {projectsQ.isLoading ? <p className="mt-4 text-sm text-muted-foreground">Loading projects…</p> : projectsQ.isError ? <p className="mt-4 text-sm text-destructive">Could not load projects. Please try again.</p> : !projectsQ.data?.length ? <p className="mt-4 text-sm text-muted-foreground">No projects yet.</p> : <div className="mt-4 grid gap-4 md:grid-cols-2">{projectsQ.data.map((o) => <Link key={o.id} to="/opportunities/$id" params={{ id: o.id }}><Card><p className="font-semibold">{o.title}</p><p className="mt-1 text-sm text-muted-foreground">{o.summary}</p><Pill className="mt-3">{o.status}</Pill></Card></Link>)}</div>}
