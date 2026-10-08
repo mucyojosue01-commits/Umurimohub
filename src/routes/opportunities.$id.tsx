@@ -9,7 +9,7 @@ import { useCatalog } from "@/features/data/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { mapOpportunity } from "@/features/data/mappers";
 import { useApp, type Application } from "@/features/store/app-store";
-import { Card, Pill } from "@/features/ui/kit";
+import { Avatar, Card, Pill } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/opportunities/$id")({
   loader: async ({ params }) => {
@@ -70,6 +70,7 @@ function Page() {
   const [note, setNote] = useState("");
   if (!o) throw notFound();
   const b = getBusiness(o.businessId);
+  const author = o.authorType === "user" ? workers.find((w) => workerUserIds[w.id] === o.createdBy) : undefined;
   const applied = applications.filter((a) => a.oppId === o.id);
   const audience = o.eligibleActorTypes ?? ["individual", "team", "business"];
 
@@ -91,10 +92,7 @@ function Page() {
             )}
           </div>
           <h1 className="mt-3 text-3xl font-extrabold md:text-4xl">{o.title}</h1>
-          <p className="mt-2 flex items-center gap-1 text-muted-foreground">
-            {b?.name}
-            {b?.verified && <BadgeCheck className="size-4 text-primary" />} · rated {b?.rating}
-          </p>
+          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground"><Avatar initials={(author?.initials ?? b?.name ?? "U").slice(0, 2).toUpperCase()} src={author?.avatarUrl ?? b?.avatarUrl} alt={author?.name ?? b?.name ?? "Publisher"} size="sm" /><span>{author?.name ?? b?.name ?? "UmurimoHub member"}</span>{b?.verified && <BadgeCheck className="size-4 text-primary" />}{b && <span>· rated {b.rating}</span>}</div>
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
             {[
               [Wallet, `${rwf(o.payRwf)} / ${o.payUnit}`],
