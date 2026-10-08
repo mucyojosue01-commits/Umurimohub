@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
 import { IncomingApplications, MyApplications, TeamInvites } from "@/features/dashboard/panels";
 import { ContractsPanel, useContracts } from "@/features/contracts/panels";
-import { MilestonesPanel } from "@/features/milestones/panels";
-import { CompletionPanel } from "@/features/completion/panels";
 import { Avatar, Card, OpportunityCard, PageHeader, Stat } from "@/features/ui/kit";
 import { useCatalog } from "@/features/data/catalog";
 import { toast } from "sonner";
@@ -57,7 +55,11 @@ function Page() {
         <Stat icon={CheckCircle2} label="Contracts & projects" value={String(contractsQuery.data?.length ?? 0)} />
         <Stat icon={Wallet} label="Payment status" value="Not enabled yet" hint="Payments come after project verification." />
       </div>
-      <Card className="mt-6">
+      <TeamInvites />
+      <IncomingApplications />
+      <MyApplications />
+      <ContractsPanel />
+            <Card className="mt-6">
         <div className="flex items-center justify-between gap-3">
           <div><h2 className="font-bold">My businesses & teams</h2><p className="mt-1 text-sm text-muted-foreground">Manage the entities you own from one place.</p></div>
           <div className="flex gap-2"><Button size="sm" variant="outline" asChild><Link to="/register?create=business">+ Business</Link></Button><Button size="sm" variant="outline" asChild><Link to="/register?create=team">+ Team</Link></Button></div>
@@ -95,12 +97,6 @@ function Page() {
           </div>
         </div>
       </Card>
-      <TeamInvites />
-      <IncomingApplications />
-      <MyApplications />
-      <ContractsPanel />
-      <MilestonesPanel contracts={contractsQuery.data ?? []} />
-      <CompletionPanel contracts={contractsQuery.data ?? []} />
       <h2 className="mt-10 text-xl font-bold">Recommended for you</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {allOpps.filter((o) => o.createdBy !== user.id && !user.businessIds.includes(o.businessId)).slice(0, 3).map((o) => (
