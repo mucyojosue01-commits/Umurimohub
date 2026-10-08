@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { rwf } from "@/features/data/demo";
 import { catalogQuery, useCatalog } from "@/features/data/catalog";
 import { ConnectButton } from "@/features/network/connect-button";
-import { useApp } from "@/features/store/app-store";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, Card, DemoNotice, Pill, TrustMeter } from "@/features/ui/kit";
 
@@ -56,7 +55,6 @@ function Page() {
   const { w: loaded } = Route.useLoaderData();
   const { getTeam, getWorker, workerUserIds } = useCatalog();
   const w = getWorker(loaded.id) ?? loaded;
-  useApp();
   const nav = useNavigate();
   const detailQ = useQuery({
     queryKey: ["worker-detail", w.id, workerUserIds[w.id]],
