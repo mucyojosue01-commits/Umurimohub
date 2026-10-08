@@ -159,7 +159,7 @@ function MilestoneHistory({ id }: { id: string }) {
   });
 
   if (q.isLoading) return <p className="mt-2 text-xs text-muted-foreground">Loading history…</p>;
-  if (q.isError) return <p className="mt-2 text-xs text-destructive">Couldn't load history.</p>;
+  if (q.isError) return <div className="mt-2 flex items-center gap-2 text-xs text-destructive"><span>Could not load. Please try again.</span><Button size="sm" variant="outline" onClick={() => void q.refetch()}>Retry</Button></div>;
   if (!q.data?.length) return <p className="mt-2 text-xs text-muted-foreground">No history yet.</p>;
 
   return (
