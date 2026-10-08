@@ -32,6 +32,42 @@ function Page() {
   const [menu, setMenu] = useState(false);
   const [editing, setEditing] = useState(false);
   const contract = q.data?.find((x) => x.id === id);
+
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState("");
+  const [financeBusy, setFinanceBusy] = useState(false);
+  const paymentQ = useQuery({
+    queryKey: ["contract-payment", contract?.id],
+    enabled: !!contract,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("contract_payments").select("id,amount_rwf,status,payment_reference") .eq("contract_id", contract!.id).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const ratingQ = useQuery({
+    queryKey: ["contract-rating", contract?.id, user?.id],
+    enabled: !!user && !!contract,
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("contract_ratings").select("score,review,subject_type,subject_id") .eq("contract_id", contract!.id).eq("rater_user_id", user!.id).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const doFinance = async (fn: () => Promise<unknown>, success: string) => {
+    setFinanceBusy(true);
+    try {
+      await fn();
+      toast.success(success);
+      await Promise.all([paymentQ.refetch(), ratingQ.refetch()]);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setFinanceBusy(false);
+    }
+  };
+
   if (!q.isLoading && !contract) throw notFound();
   if (!contract) return <div className="container-page py-20 text-center text-muted-foreground">Loading contract…</div>;
 
@@ -58,38 +94,6 @@ function Page() {
     }
   };
 
-  const [rating, setRating] = useState(0);
-  const [review, setReview] = useState("");
-  const [financeBusy, setFinanceBusy] = useState(false);
-  const paymentQ = useQuery({
-    queryKey: ["contract-payment", contract.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("contract_payments").select("id,amount_rwf,status,payment_reference").eq("contract_id", contract.id).maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
-  const ratingQ = useQuery({
-    queryKey: ["contract-rating", contract.id, user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase.from("contract_ratings").select("score,review,subject_type,subject_id").eq("contract_id", contract.id).eq("rater_user_id", user!.id).maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
-  const doFinance = async (fn: () => Promise<unknown>, success: string) => {
-    setFinanceBusy(true);
-    try {
-      await fn();
-      toast.success(success);
-      await Promise.all([paymentQ.refetch(), ratingQ.refetch()]);
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setFinanceBusy(false);
-    }
-  };
 
   const remove = async () => {
     if (!window.confirm("Delete this proposed contract?")) return;
