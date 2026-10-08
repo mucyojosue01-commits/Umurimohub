@@ -52,9 +52,20 @@ function Page() {
               {!n.read ? <span className="mt-2 size-2 shrink-0 rounded-full bg-accent" /> : <span className="mt-2 size-2 shrink-0" />}
               <div className="min-w-0 flex-1">
                 {n.link ? (
-                  <Link to={n.link as never} className="text-sm hover:underline">{n.text}</Link>
+                  <Link
+                    to={n.link as never}
+                    className="text-sm hover:underline"
+                    onClick={() => { if (!n.read) void markOne(n.id); }}
+                  >
+                    {n.text}
+                  </Link>
                 ) : (
-                  <span className="text-sm">{n.text}</span>
+                  <button
+                    className="text-left text-sm hover:underline"
+                    onClick={() => { if (!n.read) void markOne(n.id); }}
+                  >
+                    {n.text}
+                  </button>
                 )}
                 <div className="mt-1 text-xs text-muted-foreground">{n.at}</div>
               </div>
