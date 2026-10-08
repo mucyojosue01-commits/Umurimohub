@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       applications: {
         Row: {
+          accepted_terms_version: number
           applicant_business_id: string | null
           applicant_team_id: string | null
           applicant_type: string
@@ -31,6 +32,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accepted_terms_version?: number
           applicant_business_id?: string | null
           applicant_team_id?: string | null
           applicant_type?: string
@@ -46,6 +48,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accepted_terms_version?: number
           applicant_business_id?: string | null
           applicant_team_id?: string | null
           applicant_type?: string
@@ -791,6 +794,7 @@ export type Database = {
           summary: string
           team_allowed: boolean
           team_size: number | null
+          terms_version: number
           title: string
           type: string
           updated_at: string
@@ -820,6 +824,7 @@ export type Database = {
           summary?: string
           team_allowed?: boolean
           team_size?: number | null
+          terms_version?: number
           title: string
           type: string
           updated_at?: string
@@ -849,6 +854,7 @@ export type Database = {
           summary?: string
           team_allowed?: boolean
           team_size?: number | null
+          terms_version?: number
           title?: string
           type?: string
           updated_at?: string
@@ -1714,6 +1720,10 @@ export type Database = {
       respond_contract: {
         Args: { _accept: boolean; _contract_id: string; _note?: string }
         Returns: Database["public"]["Enums"]["contract_status"]
+      }
+      respond_to_opportunity_change: {
+        Args: { _accept: boolean; _application_id: string }
+        Returns: boolean
       }
       submit_milestone: {
         Args: { _milestone_id: string; _submission_note?: string }
