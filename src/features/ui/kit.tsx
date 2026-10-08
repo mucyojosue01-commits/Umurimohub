@@ -287,6 +287,7 @@ export function OpportunityCard({ o }: { o: Opportunity }) {
           <Clock className="size-3.5" />
           {o.duration}
         </span>
+        <span className="text-muted-foreground">Posted {o.posted} ago</span>
       </div>
     </Card>
   );
