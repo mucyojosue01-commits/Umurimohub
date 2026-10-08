@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader } from "@/features/ui/kit";
@@ -18,12 +19,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/messages")({
+  validateSearch: z.object({ user: z.string().optional().catch(""), conversation: z.string().optional().catch("") }),
   head: () => ({ meta: [{ title: "Messages — UmurimoHub" }, { name: "description", content: "Live conversations on UmurimoHub." }] }),
   component: Page,
 });
 
 function Page() {
   const { session } = useApp();
+  const search = Route.useSearch();
   const { workers, workerUserIds } = useCatalog();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState("");
@@ -108,6 +111,20 @@ function Page() {
       toast.error((e as Error).message || "Couldn't send message.");
     }
   };
+  useEffect(() => {
+    if (!session) return;
+    if (search.conversation) {
+      setActiveId(search.conversation);
+      return;
+    }
+    if (!search.user || search.user === session.user.id) return;
+    void getOrCreateDirectConversation(search.user)
+      .then(async (id) => {
+        await reloadConversations();
+        setActiveId(id);
+      })
+      .catch((e) => toast.error((e as Error).message || "Couldn't start conversation."));
+  }, [search.conversation, search.user, session]);
 
   return (
     <div className="container-page py-10">
