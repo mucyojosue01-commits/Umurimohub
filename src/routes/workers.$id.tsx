@@ -56,7 +56,7 @@ function Page() {
   const { w: loaded } = Route.useLoaderData();
   const { getTeam, getWorker, workerUserIds } = useCatalog();
   const w = getWorker(loaded.id) ?? loaded;
-  const { send } = useApp();
+  useApp();
   const nav = useNavigate();
   const detailQ = useQuery({
     queryKey: ["worker-detail", w.id, workerUserIds[w.id]],
