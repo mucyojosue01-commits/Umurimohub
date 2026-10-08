@@ -27,7 +27,7 @@ create policy "contract payment parties read" on public.contract_payments
 for select to authenticated using (
   public.is_business_member(payer_business_id)
   or (recipient_worker_id is not null and recipient_worker_id = public.my_worker_id())
-  or (recipient_team_id is not null and public.is_team_lead(recipient_team_id))
+  or (recipient_team_id is not null and public.is_team_lead(recipient_team_id,auth.uid()))
 );
 
 create table if not exists public.contract_ratings (
