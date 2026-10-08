@@ -83,6 +83,7 @@ export function Avatar({ initials, src, alt = "", size = "md" }: { initials: str
       className={cn(
         "grid shrink-0 place-items-center rounded-full bg-secondary font-display font-bold text-secondary-foreground ring-2 ring-card",
         s,
+        "overflow-hidden",
       )}
     >
       {src ? <img src={src} alt={alt} className="size-full object-cover" /> : initials}
