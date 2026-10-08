@@ -48,11 +48,18 @@ export const catalogQuery = queryOptions({
       const team = mapTeam(x, members);
       return { ...team, avatarUrl: team.avatarUrl ?? (x.lead_user_id ? profileAvatars.get(x.lead_user_id) ?? null : null) };
     });
+    const mappedBusinesses = businesses.map((x) => {
+      const business = mapBusiness(x, opportunities);
+      return {
+        ...business,
+        avatarUrl: business.avatarUrl ?? (x.created_by ? profileAvatars.get(x.created_by) ?? null : null),
+      };
+    });
 
     return {
       workers: mappedWorkers,
       teams: mappedTeams,
-      businesses: businesses.map((x) => mapBusiness(x, opportunities)),
+      businesses: mappedBusinesses,
       opportunities: opportunities.map(mapOpportunity),
       workerUserIds: Object.fromEntries(workers.map((x) => [x.id, x.user_id])),
       source: "database",
