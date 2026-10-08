@@ -258,7 +258,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (lookupError) return { ok: false, error: "We couldn't verify this opportunity. Please try again." };
       if (!opportunity || opportunity.status !== "open")
         return { ok: false, error: "This opportunity is no longer available." };
-      const { error } = await supabase.from("applications").rpc("apply_as_actor", {
+      const { error } = await supabase.rpc("apply_as_actor", {
         _opportunity_id: a.oppId,
         _applicant_type: a.kind === "Team" ? "team" : a.kind === "Referral" ? "individual" : a.kind === "Business" ? "business" : "individual",
         _note: a.note.slice(0, 2000),
