@@ -37,6 +37,13 @@ export function MyApplications() {
               </Link>
               <span className="flex items-center gap-2">
                 <Pill>{a.kind}</Pill>
+                {a.termsVersion && a.acceptedTermsVersion !== undefined && a.termsVersion > a.acceptedTermsVersion && a.status !== "Withdrawn" && a.status !== "Rejected" && (
+                  <span className="flex items-center gap-2 rounded-xl border border-warning/40 bg-warning/10 px-2 py-1 text-xs">
+                    <span>Terms changed</span>
+                    <Button size="sm" onClick={async () => { const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: a.id, _accept: true }); if (error) toast.error(error.message); else { toast.success("Updated terms accepted"); await reloadUser(); } }}>Accept</Button>
+                    <Button size="sm" variant="outline" onClick={async () => { const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: a.id, _accept: false }); if (error) toast.error(error.message); else { toast.success("Updated terms declined; application withdrawn"); await reloadUser(); } }}>Decline</Button>
+                  </span>
+                )}
                 <Pill
                   tone={
                     a.status === "Accepted"
