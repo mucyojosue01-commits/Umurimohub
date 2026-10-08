@@ -1313,6 +1313,45 @@ export type Database = {
           },
         ]
       }
+      training_programs: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string
+          district: string
+          id: string
+          is_demo: boolean
+          provider_type: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string
+          district: string
+          id?: string
+          is_demo?: boolean
+          provider_type?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string
+          district?: string
+          id?: string
+          is_demo?: boolean
+          provider_type?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
