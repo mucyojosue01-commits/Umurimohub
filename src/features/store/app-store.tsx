@@ -40,7 +40,7 @@ export type Msg = {
   ref?: string;
 };
 export type Notif = { id: string; text: string; at: string; read: boolean; kind: string; link?: string | null };
-export type NewOpportunity = Omit<Opportunity, "id" | "businessId" | "posted" | "featured"> & { businessId?: string };
+export type NewOpportunity = Omit<Opportunity, "id" | "businessId" | "posted" | "featured"> & { businessId?: string; audience?: "individual" | "team" | "business" | "any" };
 
 type Ctx = {
   user: User | null;
@@ -273,6 +273,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           business_id: businessId || null,
           created_by: session.user.id,
           author_type: businessId ? "business" : "user",
+          eligible_actor_types: o.audience === "individual" ? ["individual"] : o.audience === "team" ? ["team"] : o.audience === "business" ? ["business"] : ["individual","team","business"],
           title: o.title,
           sector: o.sector,
           district: o.district,
