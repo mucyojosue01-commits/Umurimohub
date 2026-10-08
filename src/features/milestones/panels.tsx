@@ -385,7 +385,7 @@ export function MilestonesPanel({ contracts }: { contracts: Contract[] }) {
         const nextSequence = milestones.reduce((max, item) => Math.max(max, item.sequence), 0) + 1;
 
         return (
-          <Card key={contract.id}>
+          <Card key={contract.id} id={"milestones-" + contract.id}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="font-bold">{contract.title}</h2>
