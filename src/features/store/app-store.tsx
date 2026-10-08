@@ -16,7 +16,6 @@ export type User = {
   district: string;
   skills: string[];
   verifiedPhone: boolean;
-  avatarUrl: string | null;
   workerId: string | null;
   businessIds: string[];
   leadTeamIds: string[];
@@ -107,7 +106,6 @@ async function loadUser(session: Session): Promise<User> {
     avatarUrl: p.data?.avatar_url ?? null,
     district: p.data?.district ?? w.data?.district ?? "",
     verifiedPhone: !!p.data?.phone_verified,
-    avatarUrl: p.data?.avatar_url ?? null,
     roles,
     role: order.find((o) => roles.includes(o)) ?? "worker",
     skills,
