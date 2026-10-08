@@ -3,16 +3,29 @@ import { useState } from "react";
 import { Star, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { catalogQuery, useCatalog } from "@/features/data/catalog";
+import { mapWorker, mapTeam } from "@/features/data/mappers";
+import { supabase } from "@/integrations/supabase/client";
+import { useApp } from "@/features/store/app-store";
 import { TeamInvite } from "@/features/network/team-invite";
 import { Avatar, Card, DemoNotice, Pill, WorkerCard } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/teams/$id")({
-  loader: async ({ params, context }) => {
-    const c = await context.queryClient.ensureQueryData(catalogQuery);
-    const t = c.teams.find((x) => x.id === params.id);
-    if (!t) throw notFound();
-    return { t };
+  loader: async ({ params }) => {
+    const { data: raw, error } = await supabase.from("teams").select("*").eq("id", params.id).eq("is_demo", false).maybeSingle();
+    if (error) throw error;
+    if (!raw) throw notFound();
+    const { data: members, error: memberError } = await supabase.from("team_members").select("*").eq("team_id", params.id).eq("status", "active");
+    if (memberError) throw memberError;
+    const workerIds = (members ?? []).map((m) => m.worker_id);
+    const [workers, skills] = await Promise.all([
+      workerIds.length ? supabase.from("worker_profiles").select("*").in("id", workerIds) : Promise.resolve({ data: [] }),
+      workerIds.length ? supabase.from("worker_skills").select("*").in("worker_id", workerIds) : Promise.resolve({ data: [] }),
+    ]);
+    if (workers.error) throw workers.error;
+    if (skills.error) throw skills.error;
+    const t = mapTeam(raw, members ?? []);
+    const memberWorkers = (workers.data ?? []).map((w) => mapWorker(w, skills.data ?? [], members ?? []));
+    return { t, memberWorkers };
   },
   head: ({ loaderData }) => {
     const title = loaderData ? `${loaderData.t.name} — Team | UmurimoHub` : "Team — UmurimoHub";
@@ -40,10 +53,8 @@ export const Route = createFileRoute("/teams/$id")({
 });
 
 function Page() {
-  const { t: loaded } = Route.useLoaderData();
-  const { getWorker, getTeam } = useCatalog();
-  const t = getTeam(loaded.id) ?? loaded;
-  const lead = getWorker(t.leadId);
+  const { t, memberWorkers } = Route.useLoaderData();
+  const lead = memberWorkers.find((w) => w.id === t.leadId);
   const { user } = useApp();
   const isLead = user?.leadTeamIds.includes(t.id) ?? false;
   const [editing, setEditing] = useState(false);
@@ -109,7 +120,7 @@ function Page() {
       <h2 className="mt-10 text-xl font-bold">Members</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {t.memberIds.map((id) => {
-          const w = getWorker(id);
+          const w = memberWorkers.find((worker) => worker.id === id);
           return w ? (
             <div key={id} className="space-y-2">
               <WorkerCard w={w} />
