@@ -17,6 +17,7 @@ import {
   listMyContracts,
   respondContract,
   validateProposal,
+  type Contract,
 } from "./service";
 
 export function useContracts() {
