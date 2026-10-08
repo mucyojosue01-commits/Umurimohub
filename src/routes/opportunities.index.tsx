@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { SearchX, SlidersHorizontal } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { SearchSelect } from "@/components/search-select";
 import { DISTRICTS, SECTORS } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
 import { EmptyState, OpportunityCard, PageHeader } from "@/features/ui/kit";
@@ -13,6 +14,7 @@ const search = z.object({
   type: z.string().optional().catch(""),
   mode: z.string().optional().catch(""),
   team: z.boolean().optional().catch(false),
+  actor: z.string().optional().catch(""),
 });
 
 export const Route = createFileRoute("/opportunities/")({
@@ -53,7 +55,8 @@ function Page() {
       (!s.sector || o.sector === s.sector) &&
       (!s.type || o.type === s.type) &&
       (!s.mode || o.mode === s.mode) &&
-      (!s.team || o.teamAllowed),
+      (!s.team || o.teamAllowed) &&
+      (!s.actor || (o.eligibleActorTypes ?? ["individual", "team", "business"]).includes(s.actor as "individual" | "team" | "business")),
   );
   return (
     <div className="container-page py-10">
@@ -76,50 +79,20 @@ function Page() {
           placeholder="Search skill or title"
           className={`${sel} min-w-48 flex-1`}
         />
-        <select
-          aria-label="District"
-          value={s.district ?? ""}
-          onChange={(e) => set("district", e.target.value)}
-          className={sel}
-        >
-          <option value="">All districts</option>
-          {DISTRICTS.map((d) => (
-            <option key={d}>{d}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Sector"
-          value={s.sector ?? ""}
-          onChange={(e) => set("sector", e.target.value)}
-          className={sel}
-        >
-          <option value="">All sectors</option>
-          {SECTORS.map((d) => (
-            <option key={d}>{d}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Type"
-          value={s.type ?? ""}
-          onChange={(e) => set("type", e.target.value)}
-          className={sel}
-        >
-          <option value="">Any type</option>
-          {["Job", "Project", "Gig", "Seasonal", "Apprenticeship"].map((d) => (
-            <option key={d}>{d}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Mode"
-          value={s.mode ?? ""}
-          onChange={(e) => set("mode", e.target.value)}
-          className={sel}
-        >
-          <option value="">On-site / remote</option>
-          {["On-site", "Remote", "Hybrid"].map((d) => (
-            <option key={d}>{d}</option>
-          ))}
-        </select>
+        <div className="w-48"><SearchSelect value={s.district ?? ""} onChange={(v) => set("district", v)} placeholder="All districts" options={DISTRICTS.map((d) => ({ value: d, label: d }))} /></div>
+        <div className="w-44"><SearchSelect value={s.sector ?? ""} onChange={(v) => set("sector", v)} placeholder="All sectors" options={SECTORS.map((d) => ({ value: d, label: d }))} /></div>
+        <div className="w-36"><SearchSelect value={s.type ?? ""} onChange={(v) => set("type", v)} placeholder="Any type" options={["Job", "Project", "Gig", "Seasonal", "Apprenticeship"].map((d) => ({ value: d, label: d }))} /></div>
+        <div className="w-40"><SearchSelect value={s.mode ?? ""} onChange={(v) => set("mode", v)} placeholder="Any mode" options={["On-site", "Remote", "Hybrid"].map((d) => ({ value: d, label: d }))} /></div>
+        <div className="w-48"><SearchSelect
+          value={s.actor ?? ""}
+          onChange={(v) => set("actor", v)}
+          placeholder="Allowed applicant type"
+          options={[
+            { value: "individual", label: "Individuals" },
+            { value: "team", label: "Teams" },
+            { value: "business", label: "Companies" },
+          ]}
+        /></div>
         <label className="flex items-center gap-2 px-2 text-sm">
           <input
             type="checkbox"
