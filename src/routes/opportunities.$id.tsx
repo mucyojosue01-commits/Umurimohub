@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { BadgeCheck, Calendar, Clock, MapPin, Users, Wallet, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -56,7 +56,15 @@ function Page() {
   const [teamId, setTeamId] = useState("");
   const [refWorker, setRefWorker] = useState("");
   const [busy, setBusy] = useState(false);
+  const [attachments, setAttachments] = useState<Array<{ id: string; file_name: string; storage_path: string }>>([]);
   const myTeams = user ? teams.filter((t) => user.leadTeamIds.includes(t.id)) : teams;
+  useEffect(() => {
+    let active = true;
+    void supabase.from("opportunity_attachments").select("id,file_name,storage_path").eq("opportunity_id", id).order("created_at").then(({ data }) => {
+      if (active) setAttachments(data ?? []);
+    });
+    return () => { active = false; };
+  }, [id]);
   const [kind, setKind] = useState<Application["kind"] | null>(null);
   const [note, setNote] = useState("");
   if (!o) throw notFound();
@@ -127,6 +135,23 @@ function Page() {
               ))}
             </ul>
           </section>
+          {attachments.length > 0 && (
+            <section className="mt-6">
+              <h2 className="text-lg font-bold">Attachments</h2>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {attachments.map((file) => (
+                  <button key={file.id} className="rounded-xl border p-3 text-left text-sm hover:bg-muted" onClick={async () => {
+                    const { data, error } = await supabase.storage.from("opportunity-attachments").createSignedUrl(file.storage_path, 300);
+                    if (error || !data?.signedUrl) { toast.error("Couldn't open this attachment."); return; }
+                    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+                  }}>
+                    <span className="font-medium">{file.file_name}</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">Open attachment</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
           <section className="mt-6">
             <h2 className="text-lg font-bold">Skills</h2>
             <div className="mt-2 flex flex-wrap gap-2">
