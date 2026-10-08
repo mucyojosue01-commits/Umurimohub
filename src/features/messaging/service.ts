@@ -43,7 +43,7 @@ export async function listConversations(userId: string): Promise<Conversation[]>
   const result: Conversation[] = [];
   for (const conversation of conversations ?? []) {
     const other = (allMembers ?? []).find(
-      ((m: any) => m.conversation_id === conversation.id && m.user_id !== userId,
+      (m: any) => m.conversation_id === conversation.id && m.user_id !== userId,
     );
     if (!other) continue;
     const { data: last } = await db
