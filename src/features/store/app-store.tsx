@@ -1,3 +1,4 @@
+import { db } from "@/lib/pending-db";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
@@ -81,16 +82,16 @@ export function applicationErrorMessage(error: { code?: string; message?: string
 async function loadUser(session: Session): Promise<User> {
   const uid = session.user.id;
   const [p, r, w, bm, t] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
-    supabase.from("user_roles").select("role").eq("user_id", uid),
-    supabase.from("worker_profiles").select("id, district").eq("user_id", uid).maybeSingle(),
-    supabase.from("business_members").select("business_id").eq("user_id", uid),
-    supabase.from("teams").select("id").eq("lead_user_id", uid),
+    db.from("profiles").select("*").eq("id", uid).maybeSingle(),
+    db.from("user_roles").select("role").eq("user_id", uid),
+    db.from("worker_profiles").select("id, district").eq("user_id", uid).maybeSingle(),
+    db.from("business_members").select("business_id").eq("user_id", uid),
+    db.from("teams").select("id").eq("lead_user_id", uid),
   ]);
   const roles = (r.data ?? []).map((x) => x.role as Role);
   let skills: string[] = [];
   if (w.data) {
-    const result = await supabase.from("worker_skills").select("name").eq("worker_id", w.data.id);
+    const result = await db.from("worker_skills").select("name").eq("worker_id", w.data.id);
     skills = (result.data ?? []).map((s) => s.name);
   }
   const order: Role[] = ["admin", "institution", "business", "team_lead", "worker", "learner"];
@@ -141,7 +142,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .select("*")
         .eq("applicant_user_id", sess.user.id)
         .order("created_at", { ascending: false }),
-      supabase.from("saved_opportunities").select("opportunity_id").eq("user_id", sess.user.id),
+      db.from("saved_opportunities").select("opportunity_id").eq("user_id", sess.user.id),
       supabase
         .from("notifications")
         .select("id,text,created_at,read,kind,link")
@@ -230,7 +231,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (lookupError) return { ok: false, error: "We couldn't verify this opportunity. Please try again." };
       if (!opportunity || opportunity.status !== "open")
         return { ok: false, error: "This opportunity is no longer available." };
-      const { error } = await supabase.from("applications").insert({
+      const { error } = await db.from("applications").insert({
         opportunity_id: a.oppId,
         applicant_user_id: session.user.id,
         kind: a.kind,
@@ -243,7 +244,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     refer: async (oppId, workerId, note) => {
       if (!session) return { ok: false, error: "Sign in to refer someone." };
-      const { error } = await supabase.from("referrals").insert({
+      const { error } = await db.from("referrals").insert({
         referrer: session.user.id,
         referee_worker_id: workerId,
         opportunity_id: oppId,
@@ -262,7 +263,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Keeping this compatibility hook prevents older UI consumers from crashing.
     },
     markAllRead: () => {
-      if (session) void supabase.rpc("mark_all_notifications_read").then(() => loadPersonal(session));
+      if (session) void db.rpc("mark_all_notifications_read").then(() => loadPersonal(session));
     },
     createOpp: async (o) => {
       if (!session || !user) return { error: "Sign in with a business account to publish." };
@@ -306,8 +307,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const on = dbSaved.includes(id);
       setDbSaved((p) => (on ? p.filter((x) => x !== id) : [...p, id]));
       void (on
-        ? supabase.from("saved_opportunities").delete().eq("user_id", session.user.id).eq("opportunity_id", id)
-        : supabase.from("saved_opportunities").insert({ user_id: session.user.id, opportunity_id: id }));
+        ? db.from("saved_opportunities").delete().eq("user_id", session.user.id).eq("opportunity_id", id)
+        : db.from("saved_opportunities").insert({ user_id: session.user.id, opportunity_id: id }));
     },
     advanceMilestone: () => undefined,
   };

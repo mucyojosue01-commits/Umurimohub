@@ -1,14 +1,15 @@
+import { db } from "@/lib/pending-db";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
-export type Conversation = Tables<"conversations"> & {
+export type Conversation = import("@/lib/pending-db").ConversationRow & {
   otherUserId: string;
   otherName: string;
-  lastMessage?: Tables<"messages"> | undefined;
+  lastMessage?: import("@/lib/pending-db").MessageRow | undefined;
   unreadCount: number;
 };
 
-export type Message = Tables<"messages"> & { read: boolean };
+export type Message = import("@/lib/pending-db").MessageRow & { read: boolean };
 
 export async function listConversations(userId: string): Promise<Conversation[]> {
   const { data: memberships, error: memberError } = await supabase
@@ -34,7 +35,7 @@ export async function listConversations(userId: string): Promise<Conversation[]>
 
   const otherIds = [...new Set((allMembers ?? []).filter((m) => m.user_id !== userId).map((m) => m.user_id))];
   const { data: profiles, error: profilesError } = otherIds.length
-    ? await supabase.from("profiles").select("id,display_name").in("id", otherIds)
+    ? await db.from("profiles").select("id,display_name").in("id", otherIds)
     : { data: [], error: null };
   if (profilesError) throw profilesError;
 
@@ -97,7 +98,7 @@ export async function listMessages(conversationId: string, userId: string): Prom
 }
 
 export async function getOrCreateDirectConversation(otherUserId: string, opportunityId?: string, subject?: string) {
-  const { data, error } = await supabase.rpc("get_or_create_direct_conversation", {
+  const { data, error } = await db.rpc("get_or_create_direct_conversation", {
     _other_user: otherUserId,
     ...(opportunityId ? { _opportunity_id: opportunityId } : {}),
     ...(subject ? { _subject: subject } : {}),
@@ -122,7 +123,7 @@ export async function sendMessage(conversationId: string, senderId: string, body
 export async function markMessageRead(messageId: string) {
   const userId = (await supabase.auth.getUser()).data.user?.id;
   if (!userId) return;
-  const { error } = await supabase.from("message_reads").upsert(
+  const { error } = await db.from("message_reads").upsert(
     { message_id: messageId, user_id: userId },
     { onConflict: "message_id,user_id", ignoreDuplicates: true },
   );
@@ -133,7 +134,7 @@ export async function markMessagesRead(messageIds: string[]) {
   if (!messageIds.length) return;
   const userId = (await supabase.auth.getUser()).data.user?.id;
   if (!userId) return;
-  const { error } = await supabase.from("message_reads").upsert(
+  const { error } = await db.from("message_reads").upsert(
     messageIds.map((message_id) => ({ message_id, user_id: userId })),
     { onConflict: "message_id,user_id", ignoreDuplicates: true },
   );

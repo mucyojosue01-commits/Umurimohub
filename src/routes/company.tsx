@@ -1,3 +1,4 @@
+import { db } from "@/lib/pending-db";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Briefcase, FileText, Milestone, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -19,13 +20,13 @@ function Page() {
     queryFn: async () => {
       const ids = user!.businessIds;
       const [businesses, opportunities, applications, contracts, milestones] = await Promise.all([
-        supabase.from("businesses").select("*").in("id", ids),
-        supabase.from("opportunities").select("id,status").in("business_id", ids),
-        supabase.from("applications").select("id,status,opportunity_id").in("opportunity_id",
-          (await supabase.from("opportunities").select("id").in("business_id", ids)).data?.map((x) => x.id) ?? []),
-        supabase.from("contracts").select("id,status,business_id").in("business_id", ids),
-        supabase.from("milestones").select("id,status,contract_id").in("contract_id",
-          (await supabase.from("contracts").select("id").in("business_id", ids)).data?.map((x) => x.id) ?? []),
+        db.from("businesses").select("*").in("id", ids),
+        db.from("opportunities").select("id,status").in("business_id", ids),
+        db.from("applications").select("id,status,opportunity_id").in("opportunity_id",
+          (await db.from("opportunities").select("id").in("business_id", ids)).data?.map((x) => x.id) ?? []),
+        db.from("contracts").select("id,status,business_id").in("business_id", ids),
+        db.from("milestones").select("id,status,contract_id").in("contract_id",
+          (await db.from("contracts").select("id").in("business_id", ids)).data?.map((x) => x.id) ?? []),
       ]);
       return {
         businesses: businesses.data ?? [],

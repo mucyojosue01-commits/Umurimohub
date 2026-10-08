@@ -1,9 +1,10 @@
+import { db } from "@/lib/pending-db";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
-export type Milestone = Database["public"]["Tables"]["milestones"]["Row"];
-export type MilestoneEvent = Database["public"]["Tables"]["milestone_events"]["Row"];
-export type MilestoneStatus = Database["public"]["Enums"]["milestone_status"];
+export type Milestone = import("@/lib/pending-db").MilestoneRow;
+export type MilestoneEvent = import("@/lib/pending-db").MilestoneEventRow;
+export type MilestoneStatus = import("@/lib/pending-db").MilestoneStatus;
 
 export const milestoneStatuses = ["pending", "submitted", "disputed", "approved"] as const;
 
@@ -66,7 +67,7 @@ export async function listMilestoneEvents(milestoneId: string): Promise<Mileston
 }
 
 export async function createMilestone(input: MilestoneInput) {
-  const { data, error } = await supabase.rpc("create_milestone", {
+  const { data, error } = await db.rpc("create_milestone", {
     _contract_id: input.contractId,
     _sequence: input.sequence,
     _title: input.title,
@@ -82,7 +83,7 @@ export async function updatePendingMilestone(
   id: string,
   input: Omit<MilestoneInput, "contractId">,
 ) {
-  const { data, error } = await supabase.rpc("update_pending_milestone", {
+  const { data, error } = await db.rpc("update_pending_milestone", {
     _milestone_id: id,
     _sequence: input.sequence,
     _title: input.title,
@@ -95,7 +96,7 @@ export async function updatePendingMilestone(
 }
 
 export async function deletePendingMilestone(id: string) {
-  const { data, error } = await supabase.rpc("delete_pending_milestone", {
+  const { data, error } = await db.rpc("delete_pending_milestone", {
     _milestone_id: id,
   });
   if (error) throw new Error(error.message);
@@ -103,7 +104,7 @@ export async function deletePendingMilestone(id: string) {
 }
 
 export async function submitMilestone(id: string, submissionNote?: string) {
-  const { data, error } = await supabase.rpc("submit_milestone", {
+  const { data, error } = await db.rpc("submit_milestone", {
     _milestone_id: id,
     ...(submissionNote?.trim() ? { _submission_note: submissionNote.trim() } : {}),
   });
@@ -112,7 +113,7 @@ export async function submitMilestone(id: string, submissionNote?: string) {
 }
 
 export async function disputeMilestone(id: string, note?: string) {
-  const { data, error } = await supabase.rpc("dispute_milestone", {
+  const { data, error } = await db.rpc("dispute_milestone", {
     _milestone_id: id,
     ...(note?.trim() ? { _note: note.trim() } : {}),
   });
@@ -121,7 +122,7 @@ export async function disputeMilestone(id: string, note?: string) {
 }
 
 export async function approveMilestone(id: string) {
-  const { data, error } = await supabase.rpc("approve_milestone", {
+  const { data, error } = await db.rpc("approve_milestone", {
     _milestone_id: id,
   });
   if (error) throw new Error(error.message);

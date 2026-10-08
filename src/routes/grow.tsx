@@ -1,3 +1,4 @@
+import { db } from "@/lib/pending-db";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Briefcase, CheckCircle2, GraduationCap, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -21,13 +22,13 @@ function Page() {
       const worker = user?.workerId;
       const [experiences, evidence, applications, teams] = await Promise.all([
         worker
-          ? supabase.from("verified_experiences").select("id").eq("worker_id", worker)
+          ? db.from("verified_experiences").select("id").eq("worker_id", worker)
           : Promise.resolve({ data: [], error: null }),
         worker
-          ? supabase.from("reputation_evidence").select("id,evidence_type").eq("subject_type", "worker").eq("subject_id", worker)
+          ? db.from("reputation_evidence").select("id,evidence_type").eq("subject_type", "worker").eq("subject_id", worker)
           : Promise.resolve({ data: [], error: null }),
-        supabase.from("applications").select("id,status").eq("applicant_user_id", uid),
-        supabase.from("team_members").select("team_id,worker_id").eq("worker_id", worker ?? ""),
+        db.from("applications").select("id,status").eq("applicant_user_id", uid),
+        db.from("team_members").select("team_id,worker_id").eq("worker_id", worker ?? ""),
       ]);
       return {
         experiences: experiences.data?.length ?? 0,

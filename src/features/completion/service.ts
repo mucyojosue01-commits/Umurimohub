@@ -1,15 +1,16 @@
+import { db } from "@/lib/pending-db";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
-export type Completion = Database["public"]["Tables"]["contract_completions"]["Row"];
-export type CompletionEvent = Database["public"]["Tables"]["completion_events"]["Row"];
-export type VerifiedExperience = Database["public"]["Tables"]["verified_experiences"]["Row"];
-export type ReputationEvidence = Database["public"]["Tables"]["reputation_evidence"]["Row"];
-export type CompletionStatus = Database["public"]["Enums"]["completion_status"];
+export type Completion = import("@/lib/pending-db").CompletionRow;
+export type CompletionEvent = import("@/lib/pending-db").CompletionEventRow;
+export type VerifiedExperience = import("@/lib/pending-db").VerifiedExperienceRow;
+export type ReputationEvidence = import("@/lib/pending-db").ReputationEvidenceRow;
+export type CompletionStatus = import("@/lib/pending-db").CompletionStatus;
 export type ContractStatus = Database["public"]["Enums"]["contract_status"];
 
 export type MilestoneSummary = {
-  status: Database["public"]["Enums"]["milestone_status"];
+  status: import("@/lib/pending-db").MilestoneStatus;
 };
 
 export type EvidenceSummary = {
@@ -105,7 +106,7 @@ export async function listReputationEvidence(): Promise<ReputationEvidence[]> {
 }
 
 export async function requestCompletion(contractId: string, note?: string) {
-  const { data, error } = await supabase.rpc("request_completion", {
+  const { data, error } = await db.rpc("request_completion", {
     _contract_id: contractId,
     ...(note?.trim() ? { _request_note: note.trim() } : {}),
   });
@@ -114,7 +115,7 @@ export async function requestCompletion(contractId: string, note?: string) {
 }
 
 export async function withdrawCompletionRequest(contractId: string, note?: string) {
-  const { data, error } = await supabase.rpc("withdraw_completion_request", {
+  const { data, error } = await db.rpc("withdraw_completion_request", {
     _contract_id: contractId,
     ...(note?.trim() ? { _note: note.trim() } : {}),
   });
@@ -123,7 +124,7 @@ export async function withdrawCompletionRequest(contractId: string, note?: strin
 }
 
 export async function rejectCompletion(contractId: string, note?: string) {
-  const { data, error } = await supabase.rpc("reject_completion", {
+  const { data, error } = await db.rpc("reject_completion", {
     _contract_id: contractId,
     ...(note?.trim() ? { _note: note.trim() } : {}),
   });
@@ -132,7 +133,7 @@ export async function rejectCompletion(contractId: string, note?: string) {
 }
 
 export async function confirmCompletion(contractId: string, note?: string) {
-  const { data, error } = await supabase.rpc("confirm_completion", {
+  const { data, error } = await db.rpc("confirm_completion", {
     _contract_id: contractId,
     ...(note?.trim() ? { _note: note.trim() } : {}),
   });
