@@ -353,9 +353,7 @@ export function MilestonesPanel({ contracts }: { contracts: Contract[] }) {
     return (
       <Card className="mt-6">
         <h2 className="font-bold">Contract milestones</h2>
-        <p className="mt-2 text-sm text-destructive">
-          Couldn't load milestones. Try again shortly.
-        </p>
+        <div className="flex items-center gap-2 text-sm text-destructive"><span>Could not load milestones. Please try again.</span><Button size="sm" variant="outline" onClick={() => void q.refetch()}>Retry</Button></div>
       </Card>
     );
   }
