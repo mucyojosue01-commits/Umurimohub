@@ -45,6 +45,7 @@ export const Route = createFileRoute("/teams/$id")({
       ],
     };
   },
+  validateSearch: (search: Record<string, unknown>) => ({ edit: search.edit === "1" }),
   component: Page,
   errorComponent: () => (
     <div className="container-page py-20 text-center">Couldn't load this team.</div>
@@ -61,10 +62,11 @@ export const Route = createFileRoute("/teams/$id")({
 
 function Page() {
   const { t, memberWorkers } = Route.useLoaderData();
+  const { edit } = Route.useSearch();
   const lead = memberWorkers.find((w) => w.id === t.leadId);
   const { user } = useApp();
   const isLead = user?.leadTeamIds.includes(t.id) ?? false;
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(edit);
   const [name, setName] = useState(t.name);
   const [summary, setSummary] = useState(t.summary);
   const [areas, setAreas] = useState(t.areas.join(", "));
