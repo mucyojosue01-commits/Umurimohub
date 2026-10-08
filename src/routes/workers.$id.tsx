@@ -63,7 +63,7 @@ function Page() {
     enabled: !!workerUserIds[w.id],
     queryFn: async () => {
       const uid = workerUserIds[w.id]!;
-      const [experiences, connections, businesses, teams] = await Promise.all([
+      const [experiences, connections, teams] = await Promise.all([
         supabase.from("verified_experiences").select("id,title,scope,completed_at,amount_rwf,business_id,team_id").eq("worker_id", w.id).order("completed_at", { ascending: false }),
         supabase.from("connections").select("*").or("requester.eq." + uid + ",addressee.eq." + uid).eq("status", "accepted"),
         supabase.from("team_members").select("team_id,role,status").eq("worker_id", w.id).eq("status", "active"),
