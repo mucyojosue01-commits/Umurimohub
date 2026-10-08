@@ -113,8 +113,12 @@ function Page() {
             <Button
               variant="outline"
               onClick={() => {
-                send(w.name, `Hello ${w.name.split(" ")[0]}, I'd like to discuss work.`);
-                nav({ to: "/messages" });
+                const targetUser = workerUserIds[w.id];
+                if (!targetUser) {
+                  toast.error("This member is not available for messaging yet.");
+                  return;
+                }
+                nav({ to: "/messages", search: { user: targetUser } });
               }}
             >
               <MessageSquare />
