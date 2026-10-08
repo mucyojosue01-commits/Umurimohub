@@ -179,8 +179,43 @@ function Page() {
             {detailQ.isLoading ? <p className="mt-2 text-sm text-muted-foreground">Loading projects…</p> : detailQ.isError ? <p className="mt-2 text-sm text-destructive">Could not load projects. Please try again.</p> : !detailQ.data?.experiences.length ? <p className="mt-2 text-sm text-muted-foreground">No verified projects yet.</p> : <ul className="mt-3 divide-y">{detailQ.data.experiences.map((x) => { const business = detailQ.data?.businesses.find((b) => b.id === x.business_id); const team = x.team_id ? detailQ.data?.teams.find((t) => t.id === x.team_id) : undefined; return <li key={x.id} className="py-3"><p className="font-medium">{x.title}</p><p className="text-sm text-muted-foreground">{x.scope}</p><div className="mt-2 flex flex-wrap gap-2">{business && <Link to="/businesses/$id" params={{ id: business.id }} className="inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs hover:bg-muted"><Avatar initials={business.name.slice(0,2).toUpperCase()} src={business.avatar_url} alt={business.name} size="sm" />{business.name}</Link>}{team && <Link to="/teams/$id" params={{ id: team.id }} className="inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs hover:bg-muted"><Avatar initials={team.name.slice(0,2).toUpperCase()} src={team.avatar_url} alt={team.name} size="sm" />{team.name}</Link>}</div><p className="mt-1 text-xs text-muted-foreground">{new Date(x.completed_at).toLocaleDateString()} · {rwf(x.amount_rwf)}</p></li>; })}</ul>}
           </Card>
           <Card>
-            <h2 className="flex items-center gap-2 font-bold"><Users className="size-4" />Connections</h2>
-            {detailQ.isLoading ? <p className="mt-2 text-sm text-muted-foreground">Loading connections…</p> : !detailQ.data?.connections.length ? <p className="mt-2 text-sm text-muted-foreground">No accepted connections yet.</p> : <div className="mt-3 flex flex-wrap gap-3">{detailQ.data.connections.map((x) => { const uid = workerUserIds[w.id]; const other = detailQ.data?.profiles.find((p) => p.id === (x.requester === uid ? x.addressee : x.requester)); return <div key={x.id} className="flex items-center gap-2 rounded-xl border px-3 py-2 text-sm"><Avatar initials={(other?.display_name ?? "U").slice(0,2).toUpperCase()} src={other?.avatar_url} alt={other?.display_name ?? "Connection"} size="sm" /><Link to="/workers/$id" params={{ id: other?.id ?? "" }} className="hover:text-primary">{other?.display_name ?? "Connection"}</Link></div>; })}</div>
+            <h2 className="flex items-center gap-2 font-bold">
+              <Users className="size-4" />
+              Connections
+            </h2>
+            {detailQ.isLoading ? (
+              <p className="mt-2 text-sm text-muted-foreground">Loading connections…</p>
+            ) : !detailQ.data?.connections.length ? (
+              <p className="mt-2 text-sm text-muted-foreground">No accepted connections yet.</p>
+            ) : (
+              <div className="mt-3 flex flex-wrap gap-3">
+                {detailQ.data.connections.map((x) => {
+                  const uid = workerUserIds[w.id];
+                  const other = detailQ.data?.profiles.find(
+                    (p) => p.id === (x.requester === uid ? x.addressee : x.requester),
+                  );
+                  const otherWorker = other
+                    ? detailQ.data?.profiles.find((p) => p.id === other.id)
+                    : undefined;
+                  return (
+                    <Link
+                      key={x.id}
+                      to="/workers/$id"
+                      params={{ id: other?.id ?? "" }}
+                      className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-muted"
+                    >
+                      <Avatar
+                        initials={(other?.display_name ?? "U").slice(0, 2).toUpperCase()}
+                        src={other?.avatar_url}
+                        alt={other?.display_name ?? "Connection"}
+                        size="sm"
+                      />
+                      {otherWorker?.display_name ?? other?.display_name ?? "Connection"}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </Card>
           <Card>
             <h2 className="font-bold">Teams & companies</h2>
