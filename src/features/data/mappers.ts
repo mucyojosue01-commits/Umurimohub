@@ -64,6 +64,7 @@ export function mapWorker(
         .slice(0, 2)
         .join("")
         .toUpperCase(),
+    avatarUrl: w.avatar_url,
     skills: skills
       .filter((s) => s.worker_id === w.id)
       .map((s) => ({
@@ -83,6 +84,7 @@ export function mapTeam(t: Tables<"teams">, members: Tables<"team_members">[]): 
   return {
     id: t.id,
     name: t.name,
+    avatarUrl: t.avatar_url,
     leadId: t.lead_worker_id ?? "",
     sector: t.sector as Sector,
     areas: t.areas,
@@ -101,6 +103,7 @@ export function mapBusiness(b: Tables<"businesses">, opps: Tables<"opportunities
   return {
     id: b.id,
     name: b.name,
+    avatarUrl: b.avatar_url,
     sector: b.sector as Sector,
     district: b.district,
     verified: b.verified,
@@ -115,7 +118,8 @@ export function mapOpportunity(o: Tables<"opportunities">): Opportunity {
   return {
     id: o.id,
     title: o.title,
-    businessId: o.business_id,
+    businessId: o.business_id ?? "",
+    authorType: o.author_type,
     sector: o.sector as Sector,
     district: o.district,
     type: o.type as Opportunity["type"],
