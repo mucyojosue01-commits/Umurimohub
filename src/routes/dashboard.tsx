@@ -74,7 +74,7 @@ function Page() {
                 <Button size="icon" variant="ghost" aria-label="Business actions" onClick={() => setMenu(menu === "b:" + b.id ? null : "b:" + b.id)}><MoreVertical className="size-4" /></Button>
                 {menu === "b:" + b.id && <div className="absolute right-2 top-12 z-30 w-40 rounded-2xl border bg-popover p-1 shadow-xl">
                   <Link to="/businesses/$id" params={{ id: b.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Info</Link>
-                  <Link to="/businesses/$id" params={{ id: b.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Edit</Link>
+                  <a href={"/businesses/" + b.id + "?edit=1"} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Edit</a>
                   <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={async () => { setMenu(null); if (!window.confirm("Delete this business?")) return; const { error } = await supabase.from("businesses").delete().eq("id", b.id); if (error) toast.error("This business cannot be deleted while it has dependent work."); else { toast.success("Business deleted"); await contractsQuery.refetch(); window.location.reload(); } }}>Delete</button>
                 </div>}
               </div>
@@ -89,7 +89,7 @@ function Page() {
                 <Button size="icon" variant="ghost" aria-label="Team actions" onClick={() => setMenu(menu === "t:" + t.id ? null : "t:" + t.id)}><MoreVertical className="size-4" /></Button>
                 {menu === "t:" + t.id && <div className="absolute right-2 top-12 z-30 w-40 rounded-2xl border bg-popover p-1 shadow-xl">
                   <Link to="/teams/$id" params={{ id: t.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Info</Link>
-                  <Link to="/teams/$id" params={{ id: t.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Edit</Link>
+                  <a href={"/teams/" + t.id + "?edit=1"} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Edit</a>
                   <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={async () => { setMenu(null); if (!window.confirm("Delete this team?")) return; const { error } = await supabase.from("teams").delete().eq("id", t.id); if (error) toast.error("This team cannot be deleted while it has dependent work or members."); else { toast.success("Team deleted"); window.location.reload(); } }}>Delete</button>
                 </div>}
               </div>
