@@ -57,6 +57,15 @@ function Page() {
       void qc.invalidateQueries({ queryKey: ["network"] });
     }
   };
+  const respondReferral = async (id: string, accept: boolean) => {
+    const { error } = await supabase.rpc("respond_referral", { _referral_id: id, _accept: accept });
+    if (error) toast.error(error.message);
+    else {
+      toast.success(accept ? "Referral accepted — your application was submitted" : "Referral declined");
+      void qc.invalidateQueries({ queryKey: ["network"] });
+    }
+  };
+
   const cons = q.data?.connections ?? [];
   const profileMap = new Map((q.data?.profiles ?? []).map((p) => [p.id, p]));
   const workerMap = new Map((q.data?.workers ?? []).map((w) => [w.user_id, w]));
@@ -136,18 +145,32 @@ function Page() {
           </p>
         ) : (
           <ul className="mt-3 divide-y">
-            {q.data.referrals.map((r) => (
-              <li key={r.id} className="flex items-center justify-between py-3 text-sm">
-                <Link
-                  to="/opportunities/$id"
-                  params={{ id: r.opportunity_id }}
-                  className="hover:text-primary"
-                >
-                  {r.referrer === me ? "You referred someone" : "You were referred"}
-                </Link>
-                <Pill>{r.status}</Pill>
-              </li>
-            ))}
+            {q.data.referrals.map((r) => {
+              const referee = (q.data?.workers ?? []).find((w) => w.id === r.referee_worker_id);
+              const referrer = (q.data?.workers ?? []).find((w) => w.user_id === r.referrer);
+              const referrerProfile = profileMap.get(r.referrer);
+              const isRecipient = referee?.user_id === me;
+              return (
+                <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar initials={(referee?.name ?? "Applicant").slice(0,2).toUpperCase()} src={referee?.avatar_url} alt={referee?.name ?? "Applicant"} size="md" />
+                    <div>
+                      <Link to="/opportunities/$id" params={{ id: r.opportunity_id }} className="font-medium hover:text-primary">Referral for opportunity</Link>
+                      <p className="text-xs text-muted-foreground">
+                        {r.referrer === me ? "You referred " + (referee?.name ?? "someone") : "Referred by " + (referrer?.name ?? referrerProfile?.display_name ?? "a trusted member")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Pill tone={r.status === "accepted" ? "success" : r.status === "pending" ? "primary" : "muted"}>{r.status}</Pill>
+                    {isRecipient && r.status === "pending" && <>
+                      <Button size="sm" onClick={() => void respondReferral(r.id, true)}>Approve & apply</Button>
+                      <Button size="sm" variant="outline" onClick={() => void respondReferral(r.id, false)}>Decline</Button>
+                    </>}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </Card>
