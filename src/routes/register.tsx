@@ -129,7 +129,7 @@ function Page() {
     try {
     const roles = v.roles as Array<"worker" | "team_lead" | "business" | "learner">;
     const skills = [...new Set(v.skills.split(",").map((s) => s.trim()).filter(Boolean))].slice(0, 15);
-    const { error } = await supabase.rpc("complete_onboarding", {
+    const { data: onboarding, error } = await supabase.rpc("complete_onboarding", {
       _display_name: v.name,
       _phone: v.phone ?? null,
       _district: v.district,
@@ -160,7 +160,10 @@ function Page() {
     }
     if (businessImage && v.roles.includes("business")) {
       if (!businessImage.type.startsWith("image/") || businessImage.size > 5_000_000) throw new Error("Business picture must be an image under 5 MB.");
-      const { data: biz } = await supabase.from("businesses").select("id").eq("created_by", session.user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const rpcBusinessId = (onboarding as { business_id?: string | null } | null)?.business_id;
+      const { data: biz } = rpcBusinessId
+        ? { data: { id: rpcBusinessId } }
+        : await supabase.from("businesses").select("id").eq("created_by", session.user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (biz?.id) {
         const path = session.user.id + "/businesses/" + biz.id + "/" + crypto.randomUUID() + "-" + businessImage.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const upload = await supabase.storage.from("avatars").upload(path, businessImage, { upsert: false, contentType: businessImage.type });
