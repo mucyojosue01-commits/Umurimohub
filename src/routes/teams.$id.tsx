@@ -87,7 +87,7 @@ function Page() {
                 <Star className="size-4 fill-accent text-accent" />
                 {t.rating}
               </span>
-              <span>{t.projects} verified projects</span>
+              <span>{t.projects} verified projects</span><span className="font-semibold text-primary">{Math.round(t.trustScore ?? 0)} trust</span>
               <span className="flex items-center gap-1">
                 <Users className="size-4" />
                 Lead: {lead?.name}
