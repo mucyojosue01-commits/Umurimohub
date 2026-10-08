@@ -230,12 +230,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (lookupError) return { ok: false, error: "We couldn't verify this opportunity. Please try again." };
       if (!opportunity || opportunity.status !== "open")
         return { ok: false, error: "This opportunity is no longer available." };
-      const { error } = await supabase.from("applications").insert({
-        opportunity_id: a.oppId,
-        applicant_user_id: session.user.id,
-        kind: a.kind,
-        note: a.note.slice(0, 2000),
-        team_id: a.teamId ?? null,
+      const { error } = await supabase.from("applications").rpc("apply_as_actor", {
+        _opportunity_id: a.oppId,
+        _applicant_type: a.kind === "Team" ? "team" : a.kind === "Referral" ? "individual" : a.kind === "Business" ? "business" : "individual",
+        _note: a.note.slice(0, 2000),
+        _team_id: a.teamId ?? null,
+        _business_id: null,
       });
       if (error) return { ok: false, error: applicationErrorMessage(error) };
       await loadPersonal(session);
@@ -266,13 +266,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     createOpp: async (o) => {
       if (!session || !user) return { error: "Sign in with a business account to publish." };
-      const businessId = o.businessId ?? user.businessIds[0];
-      if (!businessId) return { error: "Create your business profile first." };
+      const businessId = o.businessId ?? user.businessIds[0] ?? null;
       const { data, error } = await supabase
         .from("opportunities")
         .insert({
-          business_id: businessId,
+          business_id: businessId || null,
           created_by: session.user.id,
+          author_type: businessId ? "business" : "user",
           title: o.title,
           sector: o.sector,
           district: o.district,
