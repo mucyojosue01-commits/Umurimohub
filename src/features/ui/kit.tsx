@@ -96,7 +96,7 @@ export function AvatarGroup({ ids }: { ids: string[] }) {
     <div className="flex -space-x-2">
       {ids.map((id) => {
         const w = getWorker(id);
-        return w ? <Avatar key={id} initials={w.initials} size="sm" /> : null;
+        return w ? <Avatar key={id} initials={w.initials} src={w.avatarUrl} alt={w.name} size="sm" /> : null;
       })}
     </div>
   );
