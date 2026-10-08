@@ -16,6 +16,7 @@ export type User = {
   district: string;
   skills: string[];
   verifiedPhone: boolean;
+  avatarUrl: string | null;
   workerId: string | null;
   businessIds: string[];
   leadTeamIds: string[];
@@ -103,9 +104,10 @@ async function loadUser(session: Session): Promise<User> {
       session.user.email?.split("@")[0] ??
       "Member",
     phone: p.data?.phone ?? "",
-    avatarUrl: (p.data as { avatar_url?: string | null } | null)?.avatar_url ?? null,
+    avatarUrl: p.data?.avatar_url ?? null,
     district: p.data?.district ?? w.data?.district ?? "",
     verifiedPhone: !!p.data?.phone_verified,
+    avatarUrl: p.data?.avatar_url ?? null,
     roles,
     role: order.find((o) => roles.includes(o)) ?? "worker",
     skills,
