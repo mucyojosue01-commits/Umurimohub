@@ -29,11 +29,12 @@ function Page() {
     queryKey: ["network", me],
     enabled: !!me,
     queryFn: async () => {
-      const [c, r] = await Promise.all([
+      const [c, r, p] = await Promise.all([
         supabase.from("connections").select("*").order("created_at", { ascending: false }),
         supabase.from("referrals").select("*").order("created_at", { ascending: false }),
+        supabase.from("profiles").select("id,display_name,avatar_url"),
       ]);
-      return { connections: c.data ?? [], referrals: r.data ?? [] };
+      return { connections: c.data ?? [], referrals: r.data ?? [], profiles: p.data ?? [] };
     },
   });
   if (!authReady)
@@ -56,6 +57,7 @@ function Page() {
     }
   };
   const cons = q.data?.connections ?? [];
+  const profileMap = new Map((q.data?.profiles ?? []).map((p) => [p.id, p]));
   return (
     <div className="container-page max-w-3xl py-10">
       <PageHeader
@@ -77,22 +79,10 @@ function Page() {
           <ul className="mt-3 divide-y">
             {cons.map((c) => (
               <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
-                <span className="text-sm">
-                  {c.requester === me ? "You sent a request" : "Request received"} ·{" "}
-                  {c.relation.replace("_", " ")}
-                </span>
+                <div className="flex items-center gap-3 text-sm"><div className="grid size-10 place-items-center overflow-hidden rounded-full bg-secondary font-semibold">{profileMap.get(c.requester === me ? c.addressee : c.requester)?.avatar_url ? <img src={profileMap.get(c.requester === me ? c.addressee : c.requester)?.avatar_url!} className="size-full object-cover" /> : (profileMap.get(c.requester === me ? c.addressee : c.requester)?.display_name ?? "U").slice(0,2).toUpperCase()}</div><span>{profileMap.get(c.requester === me ? c.addressee : c.requester)?.display_name ?? "Member"} · {c.relation.replace("_", " ")}</span></div>
                 <span className="flex gap-2">
                   <Pill tone={c.status === "accepted" ? "success" : "muted"}>{c.status}</Pill>
-                  {c.addressee === me && c.status === "pending" && (
-                    <>
-                      <Button size="sm" onClick={() => respond(c.id, "accepted")}>
-                        Accept
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => respond(c.id, "blocked")}>
-                        Decline
-                      </Button>
-                    </>
-                  )}
+                  {(c.addressee === me || c.requester === me) && <><Button size="sm" onClick={() => respond(c.id, "accepted")}>Accept</Button><Button size="sm" variant="outline" onClick={() => respond(c.id, "blocked")}>Block</Button></>}
                 </span>
               </li>
             ))}
