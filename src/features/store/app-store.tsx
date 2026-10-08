@@ -25,7 +25,7 @@ export type User = {
 export type Application = {
   id: string;
   oppId: string;
-  kind: "Individual" | "Team" | "Referral" | "Invitation" | "Rehire";
+  kind: "Individual" | "Team" | "Business" | "Referral" | "Invitation" | "Rehire";
   status: string;
   note: string;
   at: string;
