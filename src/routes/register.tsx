@@ -80,6 +80,7 @@ function Page() {
     businessName: "",
     teamName: "",
   });
+  const [workDistricts, setWorkDistricts] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [businessImage, setBusinessImage] = useState<File | null>(null);
@@ -145,6 +146,17 @@ function Page() {
     if (error) {
       if (error.code === "42501") throw new Error("Your account is not authorized to complete onboarding.");
       throw new Error("We couldn't save your profile. Please check your details and try again.");
+    }
+    const extraDistricts = [...new Set((workDistricts || "").split(",").map((d) => d.trim()).filter((d) => DISTRICTS.includes(d)))];
+    if (extraDistricts.length) {
+      const [worker, businesses, teams] = await Promise.all([
+        supabase.from("worker_profiles").select("id").eq("user_id", session.user.id).maybeSingle(),
+        supabase.from("business_members").select("business_id").eq("user_id", session.user.id),
+        supabase.from("teams").select("id").eq("lead_user_id", session.user.id),
+      ]);
+      if (worker.data?.id) await supabase.from("worker_districts").upsert(extraDistricts.map((district) => ({ worker_id: worker.data!.id, district })), { onConflict: "worker_id,district" });
+      if (businesses.data?.length) await supabase.from("business_districts").upsert(businesses.data.flatMap((b) => extraDistricts.map((district) => ({ business_id: b.business_id, district }))), { onConflict: "business_id,district" });
+      if (teams.data?.length) await supabase.from("team_districts").upsert(teams.data.flatMap((t) => extraDistricts.map((district) => ({ team_id: t.id, district }))), { onConflict: "team_id,district" });
     }
     if (businessImage && v.roles.includes("business")) {
       if (!businessImage.type.startsWith("image/") || businessImage.size > 5_000_000) throw new Error("Business picture must be an image under 5 MB.");
@@ -231,6 +243,12 @@ function Page() {
                 <option key={d}>{d}</option>
               ))}
             </select>
+          </label>
+          <label className="text-sm md:col-span-2">
+            Other districts where you work
+            <input list="district-search" value={workDistricts} onChange={(e) => setWorkDistricts(e.target.value)} placeholder="Type districts, separated by commas" className={inp} />
+            <datalist id="district-search">{DISTRICTS.map((d) => <option key={d} value={d} />)}</datalist>
+            <span className="mt-1 block text-xs text-muted-foreground">You can work across multiple districts. Your main district above remains your home/base.</span>
           </label>
           <label className="text-sm">
             Main sector
