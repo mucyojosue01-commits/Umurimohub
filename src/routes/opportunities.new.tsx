@@ -98,26 +98,33 @@ function Page() {
     const r = await createOpp(o);
     if (!r.id) {
       toast.error(r.error ?? "Couldn't publish");
-        if (file.size > 10_000_000) {
-          toast.error(`${file.name} is larger than 10 MB.`);
-          continue;
-        }
+      return;
     }
     if (media.length) {
       for (const file of media) {
-        if (upload.error) {
-          toast.error(`Couldn't upload ${file.name}.`);
+        if (file.size > 10_000_000) {
+          toast.error(file.name + " is larger than 10 MB.");
           continue;
         }
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `${r.id}/${crypto.randomUUID()}-${safeName}`;
-        const upload = await supabase.storage.from("opportunity-attachments").upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
-        if (upload.error) {\n          toast.error(`Couldn't upload ${file.name}.`);\n          continue;\n        }
-        const { error: rowError } = await supabase.from("opportunity_attachments").insert({
-          opportunity_id: r.id, uploaded_by: user!.id, storage_path: upload.data.path,
-          file_name: file.name, mime_type: file.type || "application/octet-stream", size_bytes: file.size,
+        const path = r.id + "/" + crypto.randomUUID() + "-" + safeName;
+        const upload = await supabase.storage.from("opportunity-attachments").upload(path, file, {
+          contentType: file.type || "application/octet-stream",
+          upsert: false,
         });
-        if (rowError) toast.error(`Couldn't save ${file.name}.`);
+        if (upload.error) {
+          toast.error("Couldn't upload " + file.name + ".");
+          continue;
+        }
+        const { error: rowError } = await supabase.from("opportunity_attachments").insert({
+          opportunity_id: r.id,
+          uploaded_by: user!.id,
+          storage_path: upload.data.path,
+          file_name: file.name,
+          mime_type: file.type || "application/octet-stream",
+          size_bytes: file.size,
+        });
+        if (rowError) toast.error("Couldn't save " + file.name + ".");
       }
     }
     toast.success(media.length ? "Opportunity published with media" : "Opportunity published");
