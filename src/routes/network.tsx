@@ -33,7 +33,7 @@ function Page() {
         supabase.from("connections").select("*").order("created_at", { ascending: false }),
         supabase.from("referrals").select("*").order("created_at", { ascending: false }),
         supabase.from("profiles").select("id,display_name,avatar_url"),
-        supabase.from("worker_profiles").select("id,user_id,name,avatar_url").eq("visibility", "public"),
+        supabase.from("worker_profiles").select("id,user_id,name,avatar_url"),
       ]);
       return { connections: c.data ?? [], referrals: r.data ?? [], profiles: p.data ?? [], workers: workers.data ?? [] };
     },
