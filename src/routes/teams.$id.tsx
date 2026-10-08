@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 import { Star, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,15 @@ function Page() {
   const { getWorker, getTeam } = useCatalog();
   const t = getTeam(loaded.id) ?? loaded;
   const lead = getWorker(t.leadId);
+  const { user } = useApp();
+  const isLead = user?.leadTeamIds.includes(t.id) ?? false;
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(t.name);
+  const [summary, setSummary] = useState(t.summary);
+  const [areas, setAreas] = useState(t.areas.join(", "));
+  const [busy, setBusy] = useState(false);
+  const save = async () => { setBusy(true); const { error } = await supabase.from("teams").update({ name: name.trim(), summary: summary.trim(), areas: areas.split(",").map((x) => x.trim()).filter(Boolean) }).eq("id", t.id); setBusy(false); if (error) toast.error(error.message); else { toast.success("Team updated"); setEditing(false); window.location.reload(); } };
+  const remove = async () => { if (!window.confirm("Delete this team? This cannot be undone.")) return; setBusy(true); const { error } = await supabase.from("teams").delete().eq("id", t.id); setBusy(false); if (error) toast.error("This team cannot be deleted while it has dependent work or members."); else window.location.href = "/teams"; };
   return (
     <div className="container-page py-10">
       <Card className="p-6 md:p-8">
@@ -62,13 +72,7 @@ function Page() {
               </span>
             </div>
           </div>
-          <Button
-            size="lg"
-            onClick={() => toast.success(`Hire request sent to ${t.name}`)}
-            disabled={!t.available}
-          >
-            {t.available ? "Hire team" : "Currently booked"}
-          </Button>
+          <div className="flex flex-wrap gap-2">{isLead && <><Button size="sm" variant="outline" onClick={() => setEditing((v) => !v)}>{editing ? "Cancel edit" : "Edit team"}</Button><Button size="sm" variant="outline" onClick={remove} disabled={busy}>Delete</Button></>}<Button size="lg" onClick={() => toast.success("Hire request sent to " + t.name)} disabled={!t.available}>{t.available ? "Hire team" : "Currently booked"}</Button></div>
         </div>
       </Card>
       <div className="mt-6 grid gap-6 md:grid-cols-2">
