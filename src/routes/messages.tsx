@@ -32,6 +32,7 @@ function Page() {
   const [loading, setLoading] = useState(true);
 
   const active = conversations.find((c) => c.id === activeId);
+  const activeWorker = active ? workers.find((w) => workerUserIds[w.id] === active.otherUserId) : undefined;
   const availableWorkers = useMemo(
     () => workers.filter((w) => workerUserIds[w.id] && workerUserIds[w.id] !== session?.user.id),
     [workers, workerUserIds, session?.user.id],
@@ -147,7 +148,7 @@ function Page() {
             <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">Choose a conversation to begin.</div>
           ) : (
             <>
-              <div className="border-b pb-3 font-semibold">{active.otherName}</div>
+              <div className="border-b pb-3 font-semibold">{activeWorker ? <Link to="/workers/$id" params={{id:activeWorker.id}} className="inline-flex items-center gap-2 hover:text-primary"><span className="grid size-8 place-items-center overflow-hidden rounded-full bg-secondary text-xs">{activeWorker.avatarUrl ? <img src={activeWorker.avatarUrl} className="size-full object-cover" /> : activeWorker.initials}</span>{active.otherName}</Link> : <span>{active.otherName}</span>}</div>
               <div className="flex-1 space-y-2 overflow-y-auto py-4">
                 {messages.map((message) => (
                   <div key={message.id} className={cn("max-w-[80%] rounded-2xl px-3 py-2 text-sm", message.sender_id === session.user.id ? "ml-auto bg-primary text-primary-foreground" : "bg-muted")}>
