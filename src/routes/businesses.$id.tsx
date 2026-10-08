@@ -71,7 +71,7 @@ function Page() {
           <div>
             <div className="flex items-center gap-2"><Building2 className="size-5 text-primary" /><h1 className="text-3xl font-display font-bold">{business.name}</h1></div>
             <p className="mt-2 flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="size-4" />{business.district}</p>
-            <Pill className="mt-3">{business.sector}</Pill>
+            <Pill className="mt-3">{business.sector}</Pill><Pill tone="success" className="mt-3 ml-2">{Math.round(business.trustScore ?? 0)} trust</Pill>
           </div>
         </div>
         {canManage && <div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setEditing((v) => !v)}>{editing ? "Cancel edit" : "Edit business"}</Button><Button size="sm" variant="outline" onClick={remove} disabled={busy}>Delete</Button></div>}
