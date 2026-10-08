@@ -1,4 +1,3 @@
-import { db } from "@/lib/pending-db";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
@@ -263,7 +262,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Keeping this compatibility hook prevents older UI consumers from crashing.
     },
     markAllRead: () => {
-      if (session) void db.rpc("mark_all_notifications_read").then(() => loadPersonal(session));
+      if (session) void supabase.rpc("mark_all_notifications_read").then(() => loadPersonal(session));
     },
     createOpp: async (o) => {
       if (!session || !user) return { error: "Sign in with a business account to publish." };
