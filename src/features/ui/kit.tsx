@@ -177,7 +177,7 @@ export function EmptyState({
 }
 
 export function TrustMeter({ w }: { w: Worker }) {
-  const score = trustScore(w.rep);
+  const score = w.trustScore && w.trustScore > 0 ? Math.round(w.trustScore) : trustScore(w.rep);
   const rows: [string, number][] = [
     ["Completion", w.rep.completion],
     ["On time", w.rep.onTime],
@@ -358,8 +358,8 @@ export function TeamCard({ t }: { t: Team }) {
         <div className="mt-4 flex items-center justify-between">
           <AvatarGroup ids={t.memberIds} />
           <span className="flex items-center gap-1 text-sm">
-            <Star className="size-3.5 fill-accent text-accent" />
-            {t.rating} · {t.projects} projects
+            <ShieldCheck className="size-3.5 text-primary" />
+            {Math.round(t.trustScore ?? 0)} trust · {t.projects} projects
           </span>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">Serves {t.areas.join(", ")}</p>
@@ -388,8 +388,8 @@ export function BusinessCard({ b }: { b: Business }) {
       <div className="mt-4 flex justify-between text-sm">
         <span>{b.hiring} open roles</span>
         <span className="flex items-center gap-1">
-          <Star className="size-3.5 fill-accent text-accent" />
-          {b.rating}
+          <ShieldCheck className="size-3.5 text-primary" />
+          {Math.round(b.trustScore ?? 0)} trust · {b.rating.toFixed(1)}
         </span>
       </div>
     </Card>
