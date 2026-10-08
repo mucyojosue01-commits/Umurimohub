@@ -77,36 +77,40 @@ function Page() {
           </p>
         ) : (
           <ul className="mt-3 divide-y">
-            {cons.map((c) => (
-              {(() => {
-                const otherProfile = profileMap.get(c.requester === me ? c.addressee : c.requester);
-                return (
-                  <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
-                    <div className="flex items-center gap-3 text-sm">
-                      <div className="grid size-10 place-items-center overflow-hidden rounded-full bg-secondary font-semibold">
-                        {otherProfile?.avatar_url ? <img src={otherProfile.avatar_url} className="size-full object-cover" /> : (otherProfile?.display_name ?? "U").slice(0, 2).toUpperCase()}
-                      </div>
-                      <span>{otherProfile?.display_name ?? "Member"} · {c.relation.replace("_", " ")}</span>
-                    </div>
-                    <span className="flex gap-2">
-                      <Pill tone={c.status === "accepted" ? "success" : "muted"}>{c.status}</Pill>
-                      {(c.addressee === me || c.requester === me) && (
-                        <>
-                          <Button size="sm" onClick={() => respond(c.id, "accepted")}>Accept</Button>
-                          <Button size="sm" variant="outline" onClick={() => respond(c.id, "blocked")}>Block</Button>
-                        </>
+            {cons.map((connection) => {
+              const otherProfile = profileMap.get(
+                connection.requester === me ? connection.addressee : connection.requester,
+              );
+              return (
+                <li key={connection.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="grid size-10 place-items-center overflow-hidden rounded-full bg-secondary font-semibold">
+                      {otherProfile?.avatar_url ? (
+                        <img src={otherProfile.avatar_url} className="size-full object-cover" />
+                      ) : (
+                        (otherProfile?.display_name ?? "U").slice(0, 2).toUpperCase()
                       )}
-                    </span>
-                  </li>
-                );
-              })()}
-                <div className="flex items-center gap-3 text-sm"><div className="grid size-10 place-items-center overflow-hidden rounded-full bg-secondary font-semibold">{profileMap.get(c.requester === me ? c.addressee : c.requester)?.avatar_url ? <img src={profileMap.get(c.requester === me ? c.addressee : c.requester)?.avatar_url!} className="size-full object-cover" /> : (profileMap.get(c.requester === me ? c.addressee : c.requester)?.display_name ?? "U").slice(0,2).toUpperCase()}</div><span>{profileMap.get(c.requester === me ? c.addressee : c.requester)?.display_name ?? "Member"} · {c.relation.replace("_", " ")}</span></div>
-                <span className="flex gap-2">
-                  <Pill tone={c.status === "accepted" ? "success" : "muted"}>{c.status}</Pill>
-                  {(c.addressee === me || c.requester === me) && <><Button size="sm" onClick={() => respond(c.id, "accepted")}>Accept</Button><Button size="sm" variant="outline" onClick={() => respond(c.id, "blocked")}>Block</Button></>}
-                </span>
-              </li>
-            ))}
+                    </div>
+                    <span>{otherProfile?.display_name ?? "Member"} · {connection.relation.replace("_", " ")}</span>
+                  </div>
+                  <span className="flex gap-2">
+                    <Pill tone={connection.status === "accepted" ? "success" : "muted"}>
+                      {connection.status}
+                    </Pill>
+                    {(connection.addressee === me || connection.requester === me) && (
+                      <>
+                        <Button size="sm" onClick={() => respond(connection.id, "accepted")}>
+                          Accept
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => respond(connection.id, "blocked")}>
+                          Block
+                        </Button>
+                      </>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </Card>
