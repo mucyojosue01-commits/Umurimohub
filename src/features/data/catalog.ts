@@ -21,15 +21,16 @@ export const emptyCatalog: Catalog = {
 export const catalogQuery = queryOptions({
   queryKey: ["catalog"],
   queryFn: async (): Promise<Catalog> => {
-    const [w, s, t, m, b, o] = await Promise.all([
+    const [w, s, t, m, b, o, profiles] = await Promise.all([
       supabase.from("worker_profiles").select("*").eq("is_demo", false).order("created_at", { ascending: false }).limit(200),
       supabase.from("worker_skills").select("*").limit(2000),
       supabase.from("teams").select("*").eq("is_demo", false).order("created_at", { ascending: false }).limit(200),
       supabase.from("team_members").select("*").limit(2000),
       supabase.from("businesses").select("*").eq("is_demo", false).order("created_at", { ascending: false }).limit(200),
       supabase.from("opportunities").select("*").eq("is_demo", false).neq("status", "draft").order("created_at", { ascending: false }).limit(200),
+      supabase.from("profiles").select("id,avatar_url").limit(500),
     ]);
-    const err = w.error ?? s.error ?? t.error ?? m.error ?? b.error ?? o.error;
+    const err = w.error ?? s.error ?? t.error ?? m.error ?? b.error ?? o.error ?? profiles.error;
     if (err) throw new Error(err.message);
 
     const workers = w.data ?? [];
@@ -38,10 +39,19 @@ export const catalogQuery = queryOptions({
     const members = m.data ?? [];
     const businesses = b.data ?? [];
     const opportunities = (o.data ?? []).filter((x) => x.status === "open");
+    const profileAvatars = new Map((profiles.data ?? []).map((p) => [p.id, p.avatar_url]));
+    const mappedWorkers = workers.map((x) => {
+      const worker = mapWorker(x, skills, members);
+      return { ...worker, avatarUrl: worker.avatarUrl ?? (x.user_id ? profileAvatars.get(x.user_id) ?? null : null) };
+    });
+    const mappedTeams = teams.map((x) => {
+      const team = mapTeam(x, members);
+      return { ...team, avatarUrl: team.avatarUrl ?? (x.lead_user_id ? profileAvatars.get(x.lead_user_id) ?? null : null) };
+    });
 
     return {
-      workers: workers.map((x) => mapWorker(x, skills, members)),
-      teams: teams.map((x) => mapTeam(x, members)),
+      workers: mappedWorkers,
+      teams: mappedTeams,
       businesses: businesses.map((x) => mapBusiness(x, opportunities)),
       opportunities: opportunities.map(mapOpportunity),
       workerUserIds: Object.fromEntries(workers.map((x) => [x.id, x.user_id])),
