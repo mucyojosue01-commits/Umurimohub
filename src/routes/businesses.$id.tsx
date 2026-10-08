@@ -9,16 +9,20 @@ import { useCatalog } from "@/features/data/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/businesses/$id")({ component: Page });
+export const Route = createFileRoute("/businesses/$id")({
+  validateSearch: (search: Record<string, unknown>) => ({ edit: search.edit === "1" }),
+  component: Page,
+});
 
 function Page() {
   const { id } = Route.useParams();
+  const { edit } = Route.useSearch();
   const { getBusiness } = useCatalog();
   const { user } = useApp();
   const business = getBusiness(id);
   if (!business) throw notFound();
   const canManage = user?.businessIds.includes(id) ?? false;
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(edit);
   const [name, setName] = useState(business.name);
   const [about, setAbout] = useState(business.about);
   const [services, setServices] = useState(business.services.join(", "));
