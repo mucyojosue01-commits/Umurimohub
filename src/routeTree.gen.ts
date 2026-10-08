@@ -13,7 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AgricultureRouteImport } from './routes/agriculture'
 import { Route as BusinessesRouteImport } from './routes/businesses'
+import { Route as CompanyRouteImport } from './routes/company'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as GrowRouteImport } from './routes/grow'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as InsightsRouteImport } from './routes/insights'
@@ -24,10 +26,9 @@ import { Route as NetworkRouteImport } from './routes/network'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrainingRouteImport } from './routes/training'
-import { Route as GrowRouteImport } from './routes/grow'
-import { Route as CompanyRouteImport } from './routes/company'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as OpportunitiesNewRouteImport } from './routes/opportunities.new'
@@ -56,9 +57,19 @@ const BusinessesRoute = BusinessesRouteImport.update({
   path: '/businesses',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompanyRoute = CompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrowRoute = GrowRouteImport.update({
+  id: '/grow',
+  path: '/grow',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpRoute = HelpRouteImport.update({
@@ -111,6 +122,11 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -119,16 +135,6 @@ const TermsRoute = TermsRouteImport.update({
 const TrainingRoute = TrainingRouteImport.update({
   id: '/training',
   path: '/training',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GrowRoute = GrowRouteImport.update({
-  id: '/grow',
-  path: '/grow',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompanyRoute = CompanyRouteImport.update({
-  id: '/company',
-  path: '/company',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OpportunitiesIndexRoute = OpportunitiesIndexRouteImport.update({
@@ -172,7 +178,9 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
   '/businesses': typeof BusinessesRoute
+  '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
+  '/grow': typeof GrowRoute
   '/help': typeof HelpRoute
   '/how-it-works': typeof HowItWorksRoute
   '/insights': typeof InsightsRoute
@@ -183,10 +191,9 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
-  '/grow': typeof GrowRoute
-  '/company': typeof CompanyRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -200,7 +207,9 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
   '/businesses': typeof BusinessesRoute
+  '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
+  '/grow': typeof GrowRoute
   '/help': typeof HelpRoute
   '/how-it-works': typeof HowItWorksRoute
   '/insights': typeof InsightsRoute
@@ -211,10 +220,9 @@ export interface FileRoutesByTo {
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
-  '/grow': typeof GrowRoute
-  '/company': typeof CompanyRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -229,7 +237,9 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
   '/businesses': typeof BusinessesRoute
+  '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
+  '/grow': typeof GrowRoute
   '/help': typeof HelpRoute
   '/how-it-works': typeof HowItWorksRoute
   '/insights': typeof InsightsRoute
@@ -240,10 +250,9 @@ export interface FileRoutesById {
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
-  '/grow': typeof GrowRoute
-  '/company': typeof CompanyRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -259,7 +268,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/agriculture'
     | '/businesses'
+    | '/company'
     | '/dashboard'
+    | '/grow'
     | '/help'
     | '/how-it-works'
     | '/insights'
@@ -270,10 +281,9 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/pricing'
     | '/register'
+    | '/settings'
     | '/terms'
     | '/training'
-    | '/grow'
-    | '/company'
     | '/opportunities/$id'
     | '/opportunities/new'
     | '/teams/$id'
@@ -287,7 +297,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/agriculture'
     | '/businesses'
+    | '/company'
     | '/dashboard'
+    | '/grow'
     | '/help'
     | '/how-it-works'
     | '/insights'
@@ -298,6 +310,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/pricing'
     | '/register'
+    | '/settings'
     | '/terms'
     | '/training'
     | '/opportunities/$id'
@@ -313,7 +326,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/agriculture'
     | '/businesses'
+    | '/company'
     | '/dashboard'
+    | '/grow'
     | '/help'
     | '/how-it-works'
     | '/insights'
@@ -324,6 +339,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/pricing'
     | '/register'
+    | '/settings'
     | '/terms'
     | '/training'
     | '/opportunities/$id'
@@ -340,7 +356,9 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AgricultureRoute: typeof AgricultureRoute
   BusinessesRoute: typeof BusinessesRoute
+  CompanyRoute: typeof CompanyRoute
   DashboardRoute: typeof DashboardRoute
+  GrowRoute: typeof GrowRoute
   HelpRoute: typeof HelpRoute
   HowItWorksRoute: typeof HowItWorksRoute
   InsightsRoute: typeof InsightsRoute
@@ -351,10 +369,9 @@ export interface RootRouteChildren {
   NotificationsRoute: typeof NotificationsRoute
   PricingRoute: typeof PricingRoute
   RegisterRoute: typeof RegisterRoute
+  SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
   TrainingRoute: typeof TrainingRoute
-  GrowRoute: typeof GrowRoute
-  CompanyRoute: typeof CompanyRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
   OpportunitiesNewRoute: typeof OpportunitiesNewRoute
   TeamsIdRoute: typeof TeamsIdRoute
@@ -394,11 +411,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/company': {
+      id: '/company'
+      path: '/company'
+      fullPath: '/company'
+      preLoaderRoute: typeof CompanyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grow': {
+      id: '/grow'
+      path: '/grow'
+      fullPath: '/grow'
+      preLoaderRoute: typeof GrowRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help': {
@@ -471,25 +502,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/grow': {
-      id: '/grow'
-      path: '/grow'
-      fullPath: '/grow'
-      preLoaderRoute: typeof GrowRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/company': {
-      id: '/company'
-      path: '/company'
-      fullPath: '/company'
-      preLoaderRoute: typeof CompanyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/training': {
@@ -556,7 +580,9 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AgricultureRoute: AgricultureRoute,
   BusinessesRoute: BusinessesRoute,
+  CompanyRoute: CompanyRoute,
   DashboardRoute: DashboardRoute,
+  GrowRoute: GrowRoute,
   HelpRoute: HelpRoute,
   HowItWorksRoute: HowItWorksRoute,
   InsightsRoute: InsightsRoute,
@@ -567,10 +593,9 @@ const rootRouteChildren: RootRouteChildren = {
   NotificationsRoute: NotificationsRoute,
   PricingRoute: PricingRoute,
   RegisterRoute: RegisterRoute,
+  SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
   TrainingRoute: TrainingRoute,
-  GrowRoute: GrowRoute,
-  CompanyRoute: CompanyRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
   OpportunitiesNewRoute: OpportunitiesNewRoute,
   TeamsIdRoute: TeamsIdRoute,
