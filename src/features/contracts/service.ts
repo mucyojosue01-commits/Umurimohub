@@ -84,3 +84,34 @@ export async function deleteContract(id: string) {
   const { error } = await supabase.rpc("delete_contract", { _contract_id: id });
   if (error) throw new Error(error.message);
 }
+
+
+export async function reacceptCancelledContract(id: string) {
+  const { data, error } = await supabase.rpc("reaccept_cancelled_contract", { _contract_id: id });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function createContractPayment(id: string) {
+  const { data, error } = await supabase.rpc("create_contract_payment", { _contract_id: id });
+  if (error) throw new Error(error.message);
+  return data as string;
+}
+
+export async function markContractPaymentPaid(id: string, reference?: string) {
+  const { data, error } = await supabase.rpc("mark_contract_payment_paid", { _payment_id: id, _reference: reference ?? null });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function confirmContractPaymentReceived(id: string) {
+  const { data, error } = await supabase.rpc("confirm_contract_payment_received", { _payment_id: id });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function rateCompletedContract(id: string, score: number, review: string) {
+  const { data, error } = await supabase.rpc("rate_completed_contract", { _contract_id: id, _score: score, _review: review });
+  if (error) throw new Error(error.message);
+  return data as string;
+}
