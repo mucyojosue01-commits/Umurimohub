@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -190,6 +191,7 @@ function MilestoneCard({
   const [disputeNote, setDisputeNote] = useState("");
   const [editing, setEditing] = useState(false);
   const [history, setHistory] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const act = async (fn: () => Promise<unknown>, message: string) => {
     setBusy(true);
@@ -230,7 +232,17 @@ function MilestoneCard({
             {rwf(milestone.amount_rwf)} · Due {milestone.due_date}
           </p>
         </div>
-        <Pill tone={tone(milestone.status)}>{milestone.status}</Pill>
+        <div className="relative flex items-center gap-2">
+          <Pill tone={tone(milestone.status)}>{milestone.status}</Pill>
+          <Button size="icon" variant="ghost" aria-label="Milestone actions" onClick={() => setMenuOpen((v) => !v)}><MoreVertical className="size-4" /></Button>
+          {menuOpen && (
+            <div className="absolute right-0 top-9 z-30 w-44 rounded-2xl border bg-popover p-1 shadow-xl">
+              {isBusiness && milestone.status === "pending" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setEditing(true); setMenuOpen(false); }}>Edit</button>}
+              {isBusiness && milestone.status === "pending" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => { setMenuOpen(false); void act(() => deletePendingMilestone(milestone.id), "Milestone deleted"); }}>Delete</button>}
+              <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setHistory((v) => !v); setMenuOpen(false); }}>{history ? "Hide history" : "View history"}</button>
+            </div>
+          )}
+        </div>
       </div>
 
       {milestone.submission_note && (
@@ -240,22 +252,6 @@ function MilestoneCard({
       )}
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {isBusiness && milestone.status === "pending" && (
-          <>
-            <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-              Edit
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={busy}
-              onClick={() => act(() => deletePendingMilestone(milestone.id), "Milestone deleted")}
-            >
-              Delete
-            </Button>
-          </>
-        )}
-
         {isRecipient && (milestone.status === "pending" || milestone.status === "disputed") && (
           <div className="w-full space-y-2">
             <Textarea
@@ -307,9 +303,6 @@ function MilestoneCard({
           </div>
         )}
 
-        <Button size="sm" variant="ghost" onClick={() => setHistory((value) => !value)}>
-          {history ? "Hide history" : "History"}
-        </Button>
       </div>
 
       {history && <MilestoneHistory id={milestone.id} />}
@@ -337,6 +330,8 @@ export function MilestonesPanel({ contracts }: { contracts: Contract[] }) {
     }
     return map;
   }, [q.data]);
+
+  const [addingContractId, setAddingContractId] = useState<string | null>(null);
 
   if (!user) return null;
 
@@ -401,12 +396,18 @@ export function MilestonesPanel({ contracts }: { contracts: Contract[] }) {
             </div>
 
             {contract.status === "active" && business && (
-              <MilestoneForm
-                contractId={contract.id}
-                nextSequence={nextSequence}
-                remaining={remaining}
-                onDone={() => undefined}
-              />
+              addingContractId === contract.id ? (
+                <MilestoneForm
+                  contractId={contract.id}
+                  nextSequence={nextSequence}
+                  remaining={remaining}
+                  onDone={() => setAddingContractId(null)}
+                />
+              ) : (
+                <Button size="sm" className="mt-3" onClick={() => setAddingContractId(contract.id)}>
+                  + Add milestone
+                </Button>
+              )
             )}
 
             {!milestones.length ? (
