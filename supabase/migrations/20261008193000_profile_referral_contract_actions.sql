@@ -38,7 +38,7 @@ begin
   values(_opportunity_id,_referee_worker_id,actor,left(coalesce(_note,''),500))
   returning id into referral_id;
   insert into public.notifications(user_id,kind,text,link)
-  values(worker.user_id,'referral_received','You were referred for: '||opp.title,'/opportunities/'||opp.id);
+  values(worker.user_id,'referral_received','You were referred for: '||opp.title,'/network');
   business_id:=opp.business_id;
   if business_id is not null and public.is_business_member(business_id) then
     insert into public.notifications(user_id,kind,text,link)
