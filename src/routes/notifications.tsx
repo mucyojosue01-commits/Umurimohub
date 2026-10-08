@@ -68,6 +68,20 @@ function Page() {
                   </button>
                 )}
                 <div className="mt-1 text-xs text-muted-foreground">{n.at}</div>
+                {n.link && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-2"
+                    disabled={busy === n.id}
+                    onClick={() => { if (!n.read) void markOne(n.id); }}
+                    asChild
+                  >
+                    <Link to={n.link as never}>
+                      {n.kind.startsWith("training_") ? "Review training" : n.kind.startsWith("contract_") ? "Review contract" : n.kind.startsWith("milestone_") ? "Open project" : n.kind.includes("team") ? "Review invite" : "Review"}
+                    </Link>
+                  </Button>
+                )}
               </div>
               {!n.read && (
                 <Button size="sm" variant="ghost" disabled={busy === n.id} onClick={() => void markOne(n.id)}>
