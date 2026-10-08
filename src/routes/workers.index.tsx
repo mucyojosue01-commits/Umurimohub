@@ -3,6 +3,7 @@ import { useState } from "react";
 import { DISTRICTS, SECTORS } from "@/features/data/demo";
 import { useCatalog } from "@/features/data/catalog";
 import { PageHeader, WorkerCard } from "@/features/ui/kit";
+import { SearchSelect } from "@/components/search-select";
 
 export const Route = createFileRoute("/workers/")({
   head: () => ({
@@ -56,28 +57,8 @@ function Page() {
           placeholder="Name or skill"
           className={`${sel} min-w-48 flex-1`}
         />
-        <select
-          aria-label="District"
-          value={d}
-          onChange={(e) => setD(e.target.value)}
-          className={sel}
-        >
-          <option value="">All districts</option>
-          {DISTRICTS.map((x) => (
-            <option key={x}>{x}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Sector"
-          value={s}
-          onChange={(e) => setS(e.target.value)}
-          className={sel}
-        >
-          <option value="">All sectors</option>
-          {SECTORS.map((x) => (
-            <option key={x}>{x}</option>
-          ))}
-        </select>
+        <div className="w-48"><SearchSelect aria-label="District" value={d} onChange={setD} placeholder="All districts" options={DISTRICTS.map((x) => ({ value: x, label: x }))} /></div>
+        <div className="w-48"><SearchSelect aria-label="Sector" value={s} onChange={setS} placeholder="All sectors" options={SECTORS.map((x) => ({ value: x, label: x }))} /></div>
         <label className="flex items-center gap-2 px-2 text-sm">
           <input type="checkbox" checked={v} onChange={(e) => setV(e.target.checked)} />
           Verified
