@@ -253,16 +253,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     refer: async (oppId, workerId, note) => {
       if (!session) return { ok: false, error: "Sign in to refer someone." };
-      const { error } = await supabase.from("referrals").insert({
-        referrer: session.user.id,
-        referee_worker_id: workerId,
-        opportunity_id: oppId,
-        note: note.slice(0, 500),
+      const { error } = await supabase.rpc("create_referral", {
+        _opportunity_id: oppId,
+        _referee_worker_id: workerId,
+        _note: note.slice(0, 500),
       });
       if (error) {
         if (error.code === "23505") return { ok: false, error: "You've already referred this person here." };
         if (error.code === "42501") return { ok: false, error: "You cannot refer this person for this opportunity." };
-        return { ok: false, error: "We couldn't send the referral. Please try again." };
+        return { ok: false, error: error.message || "We couldn't send the referral. Please try again." };
       }
       await loadPersonal(session);
       return { ok: true };
