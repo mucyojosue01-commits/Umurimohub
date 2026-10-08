@@ -60,7 +60,22 @@ function Page() {
   };
 
   useEffect(() => {
-    if (!session) {
+    useEffect(() => {
+    if (!session) return;
+    if (search.conversation) {
+      setActiveId(search.conversation);
+      return;
+    }
+    if (!search.user || search.user === session.user.id) return;
+    void getOrCreateDirectConversation(search.user)
+      .then(async (id) => {
+        await reloadConversations();
+        setActiveId(id);
+      })
+      .catch((e) => toast.error((e as Error).message || "Couldn't start conversation."));
+  }, [search.conversation, search.user, session]);
+
+  if (!session) {
       setConversations([]);
       setMessages([]);
       setLoading(false);
@@ -111,21 +126,6 @@ function Page() {
       toast.error((e as Error).message || "Couldn't send message.");
     }
   };
-  useEffect(() => {
-    if (!session) return;
-    if (search.conversation) {
-      setActiveId(search.conversation);
-      return;
-    }
-    if (!search.user || search.user === session.user.id) return;
-    void getOrCreateDirectConversation(search.user)
-      .then(async (id) => {
-        await reloadConversations();
-        setActiveId(id);
-      })
-      .catch((e) => toast.error((e as Error).message || "Couldn't start conversation."));
-  }, [search.conversation, search.user, session]);
-
   return (
     <div className="container-page py-10">
       <PageHeader title="Messages" desc="Persistent, real-time conversations with UmurimoHub members." />
