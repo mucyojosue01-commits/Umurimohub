@@ -339,9 +339,7 @@ export function CompletionPanel({ contracts }: { contracts: Contract[] }) {
     return (
       <div className="mt-6 space-y-4">
         <Card>
-          <p className="text-sm text-destructive">
-            Couldn’t load completion workflow. Try again shortly.
-          </p>
+          <div className="flex items-center gap-2 text-sm text-destructive"><span>Could not load completion workflow. Please try again.</span><Button size="sm" variant="outline" onClick={() => { void completionsQuery.refetch(); void milestonesQuery.refetch(); void experiencesQuery.refetch(); }}>Retry</Button></div>
         </Card>
       </div>
     );
