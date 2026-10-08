@@ -1313,6 +1313,114 @@ export type Database = {
           },
         ]
       }
+      training_applications: {
+        Row: {
+          accepted_at: string | null
+          applicant_user_id: string
+          applied_at: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          note: string
+          shortlisted_at: string | null
+          status: string
+          training_id: string
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          applicant_user_id: string
+          applied_at?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          note?: string
+          shortlisted_at?: string | null
+          status?: string
+          training_id: string
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          applicant_user_id?: string
+          applied_at?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          note?: string
+          shortlisted_at?: string | null
+          status?: string
+          training_id?: string
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_applications_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_applications_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_experiences: {
+        Row: {
+          completed_at: string
+          created_at: string
+          description: string
+          id: string
+          provider_user_id: string
+          title: string
+          training_id: string
+          worker_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          description?: string
+          id?: string
+          provider_user_id: string
+          title: string
+          training_id: string
+          worker_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          description?: string
+          id?: string
+          provider_user_id?: string
+          title?: string
+          training_id?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_experiences_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_experiences_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_programs: {
         Row: {
           created_at: string
@@ -1625,6 +1733,10 @@ export type Database = {
         }
         Returns: string
       }
+      apply_training: {
+        Args: { _note?: string; _training_id: string }
+        Returns: string
+      }
       approve_milestone: {
         Args: { _milestone_id: string }
         Returns: Database["public"]["Enums"]["milestone_status"]
@@ -1667,6 +1779,10 @@ export type Database = {
             }
             Returns: Json
           }
+      complete_training_application: {
+        Args: { _application_id: string }
+        Returns: string
+      }
       confirm_completion: {
         Args: { _contract_id: string; _note?: string }
         Returns: Database["public"]["Enums"]["completion_status"]
@@ -1772,6 +1888,14 @@ export type Database = {
       respond_to_opportunity_change: {
         Args: { _accept: boolean; _application_id: string }
         Returns: boolean
+      }
+      respond_training_application: {
+        Args: { _accept: boolean; _application_id: string; _note?: string }
+        Returns: string
+      }
+      shortlist_training_application: {
+        Args: { _application_id: string }
+        Returns: string
       }
       submit_milestone: {
         Args: { _milestone_id: string; _submission_note?: string }
