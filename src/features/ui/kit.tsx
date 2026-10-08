@@ -226,7 +226,7 @@ export function OpportunityCard({ o }: { o: Opportunity }) {
   const { getBusiness, workers, workerUserIds } = useCatalog();
   const b = getBusiness(o.businessId);
   const author = o.authorType === "user" ? workers.find((w) => workerUserIds[w.id] === o.createdBy) : undefined;
-  const { saved, toggleSave } = useApp();
+  const { saved, toggleSave, user } = useApp();
   const isSaved = saved.includes(o.id);
   return (
     <Card className="group flex flex-col transition hover:-translate-y-0.5 hover:shadow-lift">
@@ -241,13 +241,20 @@ export function OpportunityCard({ o }: { o: Opportunity }) {
             </Pill>
           )}
         </div>
-        <button
-          aria-label={isSaved ? "Unsave" : "Save"}
-          onClick={() => toggleSave(o.id)}
-          className="rounded-full p-1.5 hover:bg-muted"
-        >
-          <Bookmark className={cn("size-4", isSaved && "fill-primary text-primary")} />
-        </button>
+        <div className="flex items-center gap-1">
+          {(o.createdBy === user?.id || (o.businessId && user?.businessIds.includes(o.businessId))) && (
+            <Link to="/opportunities/$id/edit" params={{ id: o.id }} aria-label="Edit opportunity" className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
+              <Info className="size-4" />
+            </Link>
+          )}
+          <button
+            aria-label={isSaved ? "Unsave" : "Save"}
+            onClick={() => toggleSave(o.id)}
+            className="rounded-full p-1.5 hover:bg-muted"
+          >
+            <Bookmark className={cn("size-4", isSaved && "fill-primary text-primary")} />
+          </button>
+        </div>
       </div>
       <Link
         to="/opportunities/$id"
