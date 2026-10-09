@@ -125,7 +125,7 @@ function Page() {
             }
           />
         </div>
-      )}
+      ))}
     </div>
   );
 }
