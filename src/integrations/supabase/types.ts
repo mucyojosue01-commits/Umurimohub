@@ -43,6 +43,7 @@ export type Database = {
         }
         Update: {
           applicant_user_id?: string
+          accepted_at?: string | null
           created_at?: string
           id?: string
           kind?: string
