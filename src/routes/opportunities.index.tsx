@@ -126,7 +126,6 @@ function Page() {
           />
         </div>
       )}
-      )}
     </div>
   );
 }
