@@ -16,10 +16,6 @@ export type Database = {
     Tables: {
       applications: {
         Row: {
-          accepted_terms_version: number
-          applicant_business_id: string | null
-          applicant_team_id: string | null
-          applicant_type: string
           applicant_user_id: string
           created_at: string
           id: string
@@ -32,14 +28,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          accepted_terms_version?: number
-          applicant_business_id?: string | null
-          applicant_team_id?: string | null
-          applicant_type?: string
           applicant_user_id: string
           created_at?: string
           id?: string
-          kind?: string
+          kind: string
           note?: string
           opportunity_id: string
           referred_by?: string | null
@@ -48,10 +40,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          accepted_terms_version?: number
-          applicant_business_id?: string | null
-          applicant_team_id?: string | null
-          applicant_type?: string
           applicant_user_id?: string
           created_at?: string
           id?: string
@@ -64,20 +52,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "applications_applicant_business_id_fkey"
-            columns: ["applicant_business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "applications_applicant_team_id_fkey"
-            columns: ["applicant_team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "applications_opportunity_id_fkey"
             columns: ["opportunity_id"]
@@ -109,7 +83,7 @@ export type Database = {
           at?: string
           entity: string
           entity_id?: string | null
-          id?: never
+          id?: number
         }
         Update: {
           action?: string
@@ -117,35 +91,9 @@ export type Database = {
           at?: string
           entity?: string
           entity_id?: string | null
-          id?: never
+          id?: number
         }
         Relationships: []
-      }
-      business_districts: {
-        Row: {
-          business_id: string
-          created_at: string
-          district: string
-        }
-        Insert: {
-          business_id: string
-          created_at?: string
-          district: string
-        }
-        Update: {
-          business_id?: string
-          created_at?: string
-          district?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "business_districts_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       business_members: {
         Row: {
@@ -176,7 +124,6 @@ export type Database = {
       businesses: {
         Row: {
           about: string
-          avatar_url: string | null
           created_at: string
           created_by: string | null
           district: string
@@ -186,12 +133,10 @@ export type Database = {
           rating: number
           sector: string
           services: string[]
-          trust_score: number
           verified: boolean
         }
         Insert: {
           about?: string
-          avatar_url?: string | null
           created_at?: string
           created_by?: string | null
           district: string
@@ -201,12 +146,10 @@ export type Database = {
           rating?: number
           sector: string
           services?: string[]
-          trust_score?: number
           verified?: boolean
         }
         Update: {
           about?: string
-          avatar_url?: string | null
           created_at?: string
           created_by?: string | null
           district?: string
@@ -216,61 +159,9 @@ export type Database = {
           rating?: number
           sector?: string
           services?: string[]
-          trust_score?: number
           verified?: boolean
         }
         Relationships: []
-      }
-      completion_events: {
-        Row: {
-          actor: string | null
-          at: string
-          completion_id: string
-          contract_id: string
-          event_type: string
-          from_status: Database["public"]["Enums"]["completion_status"] | null
-          id: number
-          note: string | null
-          to_status: Database["public"]["Enums"]["completion_status"]
-        }
-        Insert: {
-          actor?: string | null
-          at?: string
-          completion_id: string
-          contract_id: string
-          event_type: string
-          from_status?: Database["public"]["Enums"]["completion_status"] | null
-          id?: never
-          note?: string | null
-          to_status: Database["public"]["Enums"]["completion_status"]
-        }
-        Update: {
-          actor?: string | null
-          at?: string
-          completion_id?: string
-          contract_id?: string
-          event_type?: string
-          from_status?: Database["public"]["Enums"]["completion_status"] | null
-          id?: never
-          note?: string | null
-          to_status?: Database["public"]["Enums"]["completion_status"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "completion_events_completion_id_fkey"
-            columns: ["completion_id"]
-            isOneToOne: false
-            referencedRelation: "contract_completions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "completion_events_contract_id_fkey"
-            columns: ["contract_id"]
-            isOneToOne: false
-            referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       connections: {
         Row: {
@@ -298,65 +189,6 @@ export type Database = {
           status?: string
         }
         Relationships: []
-      }
-      contract_completions: {
-        Row: {
-          completed_at: string | null
-          confirmed_at: string | null
-          confirmed_by: string | null
-          contract_id: string
-          created_at: string
-          id: string
-          rejected_at: string | null
-          rejected_by: string | null
-          rejection_note: string | null
-          request_note: string | null
-          requested_at: string
-          requested_by: string
-          status: Database["public"]["Enums"]["completion_status"]
-          updated_at: string
-        }
-        Insert: {
-          completed_at?: string | null
-          confirmed_at?: string | null
-          confirmed_by?: string | null
-          contract_id: string
-          created_at?: string
-          id?: string
-          rejected_at?: string | null
-          rejected_by?: string | null
-          rejection_note?: string | null
-          request_note?: string | null
-          requested_at?: string
-          requested_by: string
-          status?: Database["public"]["Enums"]["completion_status"]
-          updated_at?: string
-        }
-        Update: {
-          completed_at?: string | null
-          confirmed_at?: string | null
-          confirmed_by?: string | null
-          contract_id?: string
-          created_at?: string
-          id?: string
-          rejected_at?: string | null
-          rejected_by?: string | null
-          rejection_note?: string | null
-          request_note?: string | null
-          requested_at?: string
-          requested_by?: string
-          status?: Database["public"]["Enums"]["completion_status"]
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contract_completions_contract_id_fkey"
-            columns: ["contract_id"]
-            isOneToOne: true
-            referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       contract_events: {
         Row: {
@@ -392,127 +224,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contract_events_contract_id_fkey"
-            columns: ["contract_id"]
-            isOneToOne: false
-            referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contract_payments: {
-        Row: {
-          amount_rwf: number
-          confirmed_at: string | null
-          contract_id: string
-          created_at: string
-          id: string
-          note: string
-          paid_at: string | null
-          payer_business_id: string
-          payment_reference: string | null
-          recipient_team_id: string | null
-          recipient_worker_id: string | null
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          amount_rwf: number
-          confirmed_at?: string | null
-          contract_id: string
-          created_at?: string
-          id?: string
-          note?: string
-          paid_at?: string | null
-          payer_business_id: string
-          payment_reference?: string | null
-          recipient_team_id?: string | null
-          recipient_worker_id?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          amount_rwf?: number
-          confirmed_at?: string | null
-          contract_id?: string
-          created_at?: string
-          id?: string
-          note?: string
-          paid_at?: string | null
-          payer_business_id?: string
-          payment_reference?: string | null
-          recipient_team_id?: string | null
-          recipient_worker_id?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contract_payments_contract_id_fkey"
-            columns: ["contract_id"]
-            isOneToOne: false
-            referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contract_payments_payer_business_id_fkey"
-            columns: ["payer_business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contract_payments_recipient_team_id_fkey"
-            columns: ["recipient_team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contract_payments_recipient_worker_id_fkey"
-            columns: ["recipient_worker_id"]
-            isOneToOne: false
-            referencedRelation: "worker_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contract_ratings: {
-        Row: {
-          contract_id: string
-          created_at: string
-          id: string
-          rater_user_id: string
-          review: string
-          score: number
-          subject_id: string
-          subject_type: string
-          updated_at: string
-        }
-        Insert: {
-          contract_id: string
-          created_at?: string
-          id?: string
-          rater_user_id: string
-          review?: string
-          score: number
-          subject_id: string
-          subject_type: string
-          updated_at?: string
-        }
-        Update: {
-          contract_id?: string
-          created_at?: string
-          id?: string
-          rater_user_id?: string
-          review?: string
-          score?: number
-          subject_id?: string
-          subject_type?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contract_ratings_contract_id_fkey"
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
@@ -637,232 +348,6 @@ export type Database = {
           },
         ]
       }
-      conversation_members: {
-        Row: {
-          conversation_id: string
-          joined_at: string
-          user_id: string
-        }
-        Insert: {
-          conversation_id: string
-          joined_at?: string
-          user_id: string
-        }
-        Update: {
-          conversation_id?: string
-          joined_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "conversation_members_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      conversations: {
-        Row: {
-          created_at: string
-          created_by: string
-          id: string
-          opportunity_id: string | null
-          subject: string | null
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          id?: string
-          opportunity_id?: string | null
-          subject?: string | null
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          id?: string
-          opportunity_id?: string | null
-          subject?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "conversations_opportunity_id_fkey"
-            columns: ["opportunity_id"]
-            isOneToOne: false
-            referencedRelation: "opportunities"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      message_reads: {
-        Row: {
-          message_id: string
-          read_at: string
-          user_id: string
-        }
-        Insert: {
-          message_id: string
-          read_at?: string
-          user_id: string
-        }
-        Update: {
-          message_id?: string
-          read_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "message_reads_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "messages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
-        Row: {
-          body: string
-          conversation_id: string
-          created_at: string
-          id: string
-          sender_id: string
-        }
-        Insert: {
-          body: string
-          conversation_id: string
-          created_at?: string
-          id?: string
-          sender_id: string
-        }
-        Update: {
-          body?: string
-          conversation_id?: string
-          created_at?: string
-          id?: string
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      milestone_events: {
-        Row: {
-          actor: string | null
-          at: string
-          contract_id: string
-          event_type: string
-          from_status: Database["public"]["Enums"]["milestone_status"] | null
-          id: number
-          milestone_id: string
-          note: string | null
-          to_status: Database["public"]["Enums"]["milestone_status"]
-        }
-        Insert: {
-          actor?: string | null
-          at?: string
-          contract_id: string
-          event_type: string
-          from_status?: Database["public"]["Enums"]["milestone_status"] | null
-          id?: never
-          milestone_id: string
-          note?: string | null
-          to_status: Database["public"]["Enums"]["milestone_status"]
-        }
-        Update: {
-          actor?: string | null
-          at?: string
-          contract_id?: string
-          event_type?: string
-          from_status?: Database["public"]["Enums"]["milestone_status"] | null
-          id?: never
-          milestone_id?: string
-          note?: string | null
-          to_status?: Database["public"]["Enums"]["milestone_status"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "milestone_events_contract_id_fkey"
-            columns: ["contract_id"]
-            isOneToOne: false
-            referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "milestone_events_milestone_id_fkey"
-            columns: ["milestone_id"]
-            isOneToOne: false
-            referencedRelation: "milestones"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      milestones: {
-        Row: {
-          amount_rwf: number
-          approved_at: string | null
-          contract_id: string
-          created_at: string
-          description: string
-          disputed_at: string | null
-          due_date: string
-          id: string
-          sequence: number
-          status: Database["public"]["Enums"]["milestone_status"]
-          submission_note: string | null
-          submitted_at: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          amount_rwf: number
-          approved_at?: string | null
-          contract_id: string
-          created_at?: string
-          description: string
-          disputed_at?: string | null
-          due_date: string
-          id?: string
-          sequence: number
-          status?: Database["public"]["Enums"]["milestone_status"]
-          submission_note?: string | null
-          submitted_at?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          amount_rwf?: number
-          approved_at?: string | null
-          contract_id?: string
-          created_at?: string
-          description?: string
-          disputed_at?: string | null
-          due_date?: string
-          id?: string
-          sequence?: number
-          status?: Database["public"]["Enums"]["milestone_status"]
-          submission_note?: string | null
-          submitted_at?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "milestones_contract_id_fkey"
-            columns: ["contract_id"]
-            isOneToOne: false
-            referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       notifications: {
         Row: {
           created_at: string
@@ -895,15 +380,12 @@ export type Database = {
       }
       opportunities: {
         Row: {
-          author_type: string
-          business_id: string | null
-          change_note: string | null
+          business_id: string
           created_at: string
           created_by: string | null
           deadline: string
           district: string
           duration: string
-          eligible_actor_types: string[]
           featured: boolean
           id: string
           is_demo: boolean
@@ -918,22 +400,16 @@ export type Database = {
           summary: string
           team_allowed: boolean
           team_size: number | null
-          terms_version: number
           title: string
           type: string
-          updated_at: string
-          version: number
         }
         Insert: {
-          author_type?: string
-          business_id?: string | null
-          change_note?: string | null
+          business_id: string
           created_at?: string
           created_by?: string | null
           deadline: string
           district: string
           duration?: string
-          eligible_actor_types?: string[]
           featured?: boolean
           id?: string
           is_demo?: boolean
@@ -948,22 +424,16 @@ export type Database = {
           summary?: string
           team_allowed?: boolean
           team_size?: number | null
-          terms_version?: number
           title: string
           type: string
-          updated_at?: string
-          version?: number
         }
         Update: {
-          author_type?: string
-          business_id?: string | null
-          change_note?: string | null
+          business_id?: string
           created_at?: string
           created_by?: string | null
           deadline?: string
           district?: string
           duration?: string
-          eligible_actor_types?: string[]
           featured?: boolean
           id?: string
           is_demo?: boolean
@@ -978,11 +448,8 @@ export type Database = {
           summary?: string
           team_allowed?: boolean
           team_size?: number | null
-          terms_version?: number
           title?: string
           type?: string
-          updated_at?: string
-          version?: number
         }
         Relationships: [
           {
@@ -994,98 +461,8 @@ export type Database = {
           },
         ]
       }
-      opportunity_attachments: {
-        Row: {
-          created_at: string
-          file_name: string
-          id: string
-          mime_type: string
-          opportunity_id: string
-          size_bytes: number
-          storage_path: string
-          uploaded_by: string
-        }
-        Insert: {
-          created_at?: string
-          file_name: string
-          id?: string
-          mime_type: string
-          opportunity_id: string
-          size_bytes: number
-          storage_path: string
-          uploaded_by: string
-        }
-        Update: {
-          created_at?: string
-          file_name?: string
-          id?: string
-          mime_type?: string
-          opportunity_id?: string
-          size_bytes?: number
-          storage_path?: string
-          uploaded_by?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "opportunity_attachments_opportunity_id_fkey"
-            columns: ["opportunity_id"]
-            isOneToOne: false
-            referencedRelation: "opportunities"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      opportunity_change_acknowledgements: {
-        Row: {
-          application_id: string
-          created_at: string
-          decision: string
-          id: string
-          opportunity_id: string
-          responded_at: string | null
-          user_id: string
-          version: number
-        }
-        Insert: {
-          application_id: string
-          created_at?: string
-          decision: string
-          id?: string
-          opportunity_id: string
-          responded_at?: string | null
-          user_id: string
-          version: number
-        }
-        Update: {
-          application_id?: string
-          created_at?: string
-          decision?: string
-          id?: string
-          opportunity_id?: string
-          responded_at?: string | null
-          user_id?: string
-          version?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "opportunity_change_acknowledgements_application_id_fkey"
-            columns: ["application_id"]
-            isOneToOne: false
-            referencedRelation: "applications"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "opportunity_change_acknowledgements_opportunity_id_fkey"
-            columns: ["opportunity_id"]
-            isOneToOne: false
-            referencedRelation: "opportunities"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
-          avatar_url: string | null
           created_at: string
           display_name: string
           district: string | null
@@ -1096,7 +473,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          avatar_url?: string | null
           created_at?: string
           display_name: string
           district?: string | null
@@ -1107,7 +483,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          avatar_url?: string | null
           created_at?: string
           display_name?: string
           district?: string | null
@@ -1191,60 +566,6 @@ export type Database = {
           },
         ]
       }
-      reputation_evidence: {
-        Row: {
-          created_at: string
-          evidence_type: string
-          id: string
-          metadata: Json
-          occurred_at: string
-          source_contract_id: string | null
-          source_event_id: number | null
-          source_experience_id: string | null
-          subject_id: string
-          subject_type: string
-        }
-        Insert: {
-          created_at?: string
-          evidence_type: string
-          id?: string
-          metadata?: Json
-          occurred_at: string
-          source_contract_id?: string | null
-          source_event_id?: number | null
-          source_experience_id?: string | null
-          subject_id: string
-          subject_type: string
-        }
-        Update: {
-          created_at?: string
-          evidence_type?: string
-          id?: string
-          metadata?: Json
-          occurred_at?: string
-          source_contract_id?: string | null
-          source_event_id?: number | null
-          source_experience_id?: string | null
-          subject_id?: string
-          subject_type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reputation_evidence_source_contract_id_fkey"
-            columns: ["source_contract_id"]
-            isOneToOne: false
-            referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reputation_evidence_source_experience_id_fkey"
-            columns: ["source_experience_id"]
-            isOneToOne: false
-            referencedRelation: "verified_experiences"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       saved_opportunities: {
         Row: {
           created_at: string
@@ -1267,32 +588,6 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      team_districts: {
-        Row: {
-          created_at: string
-          district: string
-          team_id: string
-        }
-        Insert: {
-          created_at?: string
-          district: string
-          team_id: string
-        }
-        Update: {
-          created_at?: string
-          district?: string
-          team_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "team_districts_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -1336,53 +631,10 @@ export type Database = {
           },
         ]
       }
-      team_removal_events: {
-        Row: {
-          created_at: string
-          id: string
-          reason: string
-          removed_by: string
-          team_id: string
-          worker_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          reason: string
-          removed_by: string
-          team_id: string
-          worker_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          reason?: string
-          removed_by?: string
-          team_id?: string
-          worker_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "team_removal_events_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "team_removal_events_worker_id_fkey"
-            columns: ["worker_id"]
-            isOneToOne: false
-            referencedRelation: "worker_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       teams: {
         Row: {
           areas: string[]
           available: boolean
-          avatar_url: string | null
           created_at: string
           id: string
           is_demo: boolean
@@ -1394,12 +646,10 @@ export type Database = {
           sector: string
           skills: string[]
           summary: string
-          trust_score: number
         }
         Insert: {
           areas?: string[]
           available?: boolean
-          avatar_url?: string | null
           created_at?: string
           id?: string
           is_demo?: boolean
@@ -1411,12 +661,10 @@ export type Database = {
           sector: string
           skills?: string[]
           summary?: string
-          trust_score?: number
         }
         Update: {
           areas?: string[]
           available?: boolean
-          avatar_url?: string | null
           created_at?: string
           id?: string
           is_demo?: boolean
@@ -1428,7 +676,6 @@ export type Database = {
           sector?: string
           skills?: string[]
           summary?: string
-          trust_score?: number
         }
         Relationships: [
           {
@@ -1439,153 +686,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      training_applications: {
-        Row: {
-          accepted_at: string | null
-          applicant_user_id: string
-          applied_at: string
-          completed_at: string | null
-          created_at: string
-          id: string
-          note: string
-          shortlisted_at: string | null
-          status: string
-          training_id: string
-          updated_at: string
-          worker_id: string
-        }
-        Insert: {
-          accepted_at?: string | null
-          applicant_user_id: string
-          applied_at?: string
-          completed_at?: string | null
-          created_at?: string
-          id?: string
-          note?: string
-          shortlisted_at?: string | null
-          status?: string
-          training_id: string
-          updated_at?: string
-          worker_id: string
-        }
-        Update: {
-          accepted_at?: string | null
-          applicant_user_id?: string
-          applied_at?: string
-          completed_at?: string | null
-          created_at?: string
-          id?: string
-          note?: string
-          shortlisted_at?: string | null
-          status?: string
-          training_id?: string
-          updated_at?: string
-          worker_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "training_applications_training_id_fkey"
-            columns: ["training_id"]
-            isOneToOne: false
-            referencedRelation: "training_programs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "training_applications_worker_id_fkey"
-            columns: ["worker_id"]
-            isOneToOne: false
-            referencedRelation: "worker_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      training_experiences: {
-        Row: {
-          completed_at: string
-          created_at: string
-          description: string
-          id: string
-          provider_user_id: string
-          title: string
-          training_id: string
-          worker_id: string
-        }
-        Insert: {
-          completed_at?: string
-          created_at?: string
-          description?: string
-          id?: string
-          provider_user_id: string
-          title: string
-          training_id: string
-          worker_id: string
-        }
-        Update: {
-          completed_at?: string
-          created_at?: string
-          description?: string
-          id?: string
-          provider_user_id?: string
-          title?: string
-          training_id?: string
-          worker_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "training_experiences_training_id_fkey"
-            columns: ["training_id"]
-            isOneToOne: false
-            referencedRelation: "training_programs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "training_experiences_worker_id_fkey"
-            columns: ["worker_id"]
-            isOneToOne: false
-            referencedRelation: "worker_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      training_programs: {
-        Row: {
-          created_at: string
-          created_by: string
-          description: string
-          district: string
-          id: string
-          is_demo: boolean
-          provider_type: string
-          status: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          description?: string
-          district: string
-          id?: string
-          is_demo?: boolean
-          provider_type?: string
-          status?: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          description?: string
-          district?: string
-          id?: string
-          is_demo?: boolean
-          provider_type?: string
-          status?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       user_roles: {
         Row: {
@@ -1608,142 +708,9 @@ export type Database = {
         }
         Relationships: []
       }
-      verified_experiences: {
-        Row: {
-          amount_rwf: number
-          approved_milestone_count: number
-          business_id: string
-          completed_at: string
-          completion_id: string
-          contract_id: string
-          created_at: string
-          currency: string
-          end_date: string | null
-          id: string
-          milestone_count: number
-          opportunity_id: string
-          scope: string
-          start_date: string | null
-          team_id: string | null
-          title: string
-          verified_at: string
-          worker_id: string | null
-        }
-        Insert: {
-          amount_rwf: number
-          approved_milestone_count?: number
-          business_id: string
-          completed_at: string
-          completion_id: string
-          contract_id: string
-          created_at?: string
-          currency?: string
-          end_date?: string | null
-          id?: string
-          milestone_count?: number
-          opportunity_id: string
-          scope: string
-          start_date?: string | null
-          team_id?: string | null
-          title: string
-          verified_at?: string
-          worker_id?: string | null
-        }
-        Update: {
-          amount_rwf?: number
-          approved_milestone_count?: number
-          business_id?: string
-          completed_at?: string
-          completion_id?: string
-          contract_id?: string
-          created_at?: string
-          currency?: string
-          end_date?: string | null
-          id?: string
-          milestone_count?: number
-          opportunity_id?: string
-          scope?: string
-          start_date?: string | null
-          team_id?: string | null
-          title?: string
-          verified_at?: string
-          worker_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "verified_experiences_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "verified_experiences_completion_id_fkey"
-            columns: ["completion_id"]
-            isOneToOne: true
-            referencedRelation: "contract_completions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "verified_experiences_contract_id_fkey"
-            columns: ["contract_id"]
-            isOneToOne: true
-            referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "verified_experiences_opportunity_id_fkey"
-            columns: ["opportunity_id"]
-            isOneToOne: false
-            referencedRelation: "opportunities"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "verified_experiences_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "verified_experiences_worker_id_fkey"
-            columns: ["worker_id"]
-            isOneToOne: false
-            referencedRelation: "worker_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      worker_districts: {
-        Row: {
-          created_at: string
-          district: string
-          worker_id: string
-        }
-        Insert: {
-          created_at?: string
-          district: string
-          worker_id: string
-        }
-        Update: {
-          created_at?: string
-          district?: string
-          worker_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "worker_districts_worker_id_fkey"
-            columns: ["worker_id"]
-            isOneToOne: false
-            referencedRelation: "worker_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       worker_profiles: {
         Row: {
           available: boolean
-          avatar_url: string | null
           bio: string
           created_at: string
           district: string
@@ -1758,7 +725,6 @@ export type Database = {
           reviews: number
           sector: string
           title: string
-          trust_score: number
           user_id: string | null
           verified: boolean
           visibility: string
@@ -1766,7 +732,6 @@ export type Database = {
         }
         Insert: {
           available?: boolean
-          avatar_url?: string | null
           bio?: string
           created_at?: string
           district: string
@@ -1781,7 +746,6 @@ export type Database = {
           reviews?: number
           sector: string
           title?: string
-          trust_score?: number
           user_id?: string | null
           verified?: boolean
           visibility?: string
@@ -1789,7 +753,6 @@ export type Database = {
         }
         Update: {
           available?: boolean
-          avatar_url?: string | null
           bio?: string
           created_at?: string
           district?: string
@@ -1804,7 +767,6 @@ export type Database = {
           reviews?: number
           sector?: string
           title?: string
-          trust_score?: number
           user_id?: string | null
           verified?: boolean
           visibility?: string
@@ -1849,81 +811,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      accept_team_invitation: {
-        Args: { _team_id: string; _worker_id: string }
-        Returns: undefined
-      }
-      apply_as_actor: {
-        Args: {
-          _applicant_type: string
-          _business_id?: string
-          _note?: string
-          _opportunity_id: string
-          _team_id?: string
-        }
-        Returns: string
-      }
-      apply_training: {
-        Args: { _note?: string; _training_id: string }
-        Returns: string
-      }
-      approve_milestone: {
-        Args: { _milestone_id: string }
-        Returns: Database["public"]["Enums"]["milestone_status"]
-      }
       are_connected: { Args: { _a: string; _b: string }; Returns: boolean }
       cancel_contract: {
         Args: { _contract_id: string; _note?: string }
         Returns: Database["public"]["Enums"]["contract_status"]
-      }
-      complete_onboarding:
-        | {
-            Args: {
-              _business_name?: string
-              _display_name: string
-              _district: string
-              _phone: string
-              _rate_rwf?: number
-              _roles: Database["public"]["Enums"]["app_role"][]
-              _sector?: string
-              _skills?: string[]
-              _team_name?: string
-              _title?: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              _business_name?: string
-              _create_new_business?: boolean
-              _create_new_team?: boolean
-              _display_name: string
-              _district: string
-              _phone: string
-              _rate_rwf?: number
-              _roles: Database["public"]["Enums"]["app_role"][]
-              _sector?: string
-              _skills?: string[]
-              _team_name?: string
-              _title?: string
-            }
-            Returns: Json
-          }
-      complete_training_application: {
-        Args: { _application_id: string }
-        Returns: string
-      }
-      confirm_completion: {
-        Args: { _contract_id: string; _note?: string }
-        Returns: Database["public"]["Enums"]["completion_status"]
-      }
-      confirm_contract_payment_received: {
-        Args: { _payment_id: string }
-        Returns: string
-      }
-      confirm_opportunity_change: {
-        Args: { _application_id: string; _decision: string }
-        Returns: undefined
       }
       contract_counterparty_user: { Args: { _cid: string }; Returns: string }
       create_contract: {
@@ -1935,46 +826,6 @@ export type Database = {
           _start_date?: string
           _terms?: string
           _title: string
-        }
-        Returns: string
-      }
-      create_contract_payment: {
-        Args: { _contract_id: string }
-        Returns: string
-      }
-      create_milestone: {
-        Args: {
-          _amount_rwf: number
-          _contract_id: string
-          _description: string
-          _due_date: string
-          _sequence: number
-          _title: string
-        }
-        Returns: string
-      }
-      create_referral: {
-        Args: {
-          _note?: string
-          _opportunity_id: string
-          _referee_worker_id: string
-        }
-        Returns: string
-      }
-      delete_contract: { Args: { _contract_id: string }; Returns: undefined }
-      delete_pending_milestone: {
-        Args: { _milestone_id: string }
-        Returns: undefined
-      }
-      dispute_milestone: {
-        Args: { _milestone_id: string; _note?: string }
-        Returns: Database["public"]["Enums"]["milestone_status"]
-      }
-      get_or_create_direct_conversation: {
-        Args: {
-          _opportunity_id?: string
-          _other_user: string
-          _subject?: string
         }
         Returns: string
       }
@@ -1990,101 +841,15 @@ export type Database = {
         Returns: boolean
       }
       is_contract_party: { Args: { _cid: string }; Returns: boolean }
-      is_conversation_member: {
-        Args: { _conversation_id: string; _user_id?: string }
-        Returns: boolean
-      }
-      is_team_lead:
-        | { Args: { _team_id: string; _user_id?: string }; Returns: boolean }
-        | { Args: { _tid: string }; Returns: boolean }
-      is_team_member: {
-        Args: { _team_id: string; _user_id?: string }
-        Returns: boolean
-      }
-      mark_all_notifications_read: { Args: never; Returns: number }
-      mark_contract_payment_paid: {
-        Args: { _payment_id: string; _reference?: string }
-        Returns: string
-      }
-      mark_notification_read: {
-        Args: { _notification_id: string }
-        Returns: boolean
-      }
+      is_team_lead: { Args: { _tid: string }; Returns: boolean }
       my_worker_id: { Args: never; Returns: string }
-      rate_completed_contract: {
-        Args: { _contract_id: string; _review?: string; _score: number }
-        Returns: string
-      }
-      reaccept_cancelled_contract: {
-        Args: { _contract_id: string }
-        Returns: Database["public"]["Enums"]["contract_status"]
-      }
-      recalculate_actor_trust: {
-        Args: { _subject_id: string; _subject_type: string }
-        Returns: number
-      }
-      reject_completion: {
-        Args: { _contract_id: string; _note?: string }
-        Returns: Database["public"]["Enums"]["completion_status"]
-      }
-      remove_team_member: {
-        Args: { _reason: string; _team_id: string; _worker_id: string }
+      notify_business: {
+        Args: { _bid: string; _kind: string; _link: string; _text: string }
         Returns: undefined
-      }
-      request_completion: {
-        Args: { _contract_id: string; _request_note?: string }
-        Returns: string
       }
       respond_contract: {
         Args: { _accept: boolean; _contract_id: string; _note?: string }
         Returns: Database["public"]["Enums"]["contract_status"]
-      }
-      respond_referral: {
-        Args: { _accept: boolean; _referral_id: string }
-        Returns: string
-      }
-      respond_to_opportunity_change: {
-        Args: { _accept: boolean; _application_id: string }
-        Returns: boolean
-      }
-      respond_training_application: {
-        Args: { _accept: boolean; _application_id: string; _note?: string }
-        Returns: string
-      }
-      shortlist_training_application: {
-        Args: { _application_id: string }
-        Returns: string
-      }
-      submit_milestone: {
-        Args: { _milestone_id: string; _submission_note?: string }
-        Returns: Database["public"]["Enums"]["milestone_status"]
-      }
-      update_contract: {
-        Args: {
-          _amount_rwf: number
-          _contract_id: string
-          _end_date?: string
-          _scope: string
-          _start_date?: string
-          _terms?: string
-          _title: string
-        }
-        Returns: Database["public"]["Enums"]["contract_status"]
-      }
-      update_pending_milestone: {
-        Args: {
-          _amount_rwf: number
-          _description: string
-          _due_date: string
-          _milestone_id: string
-          _sequence: number
-          _title: string
-        }
-        Returns: undefined
-      }
-      withdraw_completion_request: {
-        Args: { _contract_id: string; _note?: string }
-        Returns: Database["public"]["Enums"]["completion_status"]
       }
       worker_network_count: { Args: { _worker_id: string }; Returns: number }
     }
@@ -2103,14 +868,12 @@ export type Database = {
         | "rejected"
         | "accepted"
         | "withdrawn"
-      completion_status: "requested" | "rejected" | "confirmed" | "withdrawn"
       contract_status:
         | "proposed"
         | "active"
         | "declined"
         | "cancelled"
         | "completed"
-      milestone_status: "pending" | "submitted" | "disputed" | "approved"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2254,7 +1017,6 @@ export const Constants = {
         "accepted",
         "withdrawn",
       ],
-      completion_status: ["requested", "rejected", "confirmed", "withdrawn"],
       contract_status: [
         "proposed",
         "active",
@@ -2262,7 +1024,6 @@ export const Constants = {
         "cancelled",
         "completed",
       ],
-      milestone_status: ["pending", "submitted", "disputed", "approved"],
     },
   },
 } as const
