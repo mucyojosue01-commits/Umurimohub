@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/businesses/$id")({
-  validateSearch: (search: Record<string, unknown>) => ({ edit: search.edit === "1" }),
+  validateSearch: (search: Record<string, unknown>) => ({ edit: search.edit === "1" || search.edit === true }),
   component: Page,
 });
 
@@ -66,6 +66,23 @@ function Page() {
     if (error) toast.error("This business cannot be deleted while it has opportunities, contracts, or other dependent records.");
     else window.location.href = "/businesses";
   };
+  if (editing && canManage) {
+    return (
+      <div className="container-page max-w-2xl py-10">
+        <Link to="/businesses/$id" params={{ id }} search={{ edit: false }} className="text-sm text-muted-foreground">← Back to business</Link>
+        <div className="mt-4"><PageHeader eyebrow="Business settings" title={"Edit " + business.name} desc="Only this business is being edited." /></div>
+        <Card className="mt-4">
+          <div className="grid gap-4">
+            <label className="text-sm">Business name<input className="mt-1 h-10 w-full rounded-xl border bg-card px-3" value={name} onChange={(e) => setName(e.target.value)} /></label>
+            <label className="text-sm">About<textarea rows={4} className="mt-1 w-full rounded-xl border bg-card p-3" value={about} onChange={(e) => setAbout(e.target.value)} /></label>
+            <label className="text-sm">Services<input className="mt-1 h-10 w-full rounded-xl border bg-card px-3" value={services} onChange={(e) => setServices(e.target.value)} /></label>
+            <label className="text-sm">Business picture<input type="file" accept="image/*" className="mt-1 block w-full rounded-xl border bg-card p-2 text-sm" onChange={(e) => setBusinessImage(e.target.files?.[0] ?? null)} /><span className="mt-1 block text-xs text-muted-foreground">Upload a new image or keep the current one.</span></label>
+            <div className="flex gap-2"><Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button><Button variant="outline" onClick={() => { window.location.href = "/businesses/" + id; }}>Cancel</Button></div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
   return <div className="container-page py-10">
     <Link to="/businesses" className="text-sm text-muted-foreground">← Businesses</Link>
     <Card className="mt-4 p-7">

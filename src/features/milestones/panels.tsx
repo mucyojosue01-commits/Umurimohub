@@ -395,6 +395,39 @@ export function MilestonesPanel({ contracts }: { contracts: Contract[] }) {
               </div>
             </div>
 
+            <div className="mt-4 rounded-2xl border bg-muted/20 p-4" aria-label="Project workflow flowchart">
+              <h3 className="font-semibold">Project flowchart</h3>
+              <div className="mt-3 grid gap-3 md:grid-cols-4">
+                <div className="rounded-xl border bg-card p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Start node</p>
+                  <p className="mt-1 font-medium">Contract</p>
+                  <Pill tone={contract.status === "active" ? "success" : "muted"}>{contract.status}</Pill>
+                </div>
+                <div className="rounded-xl border bg-card p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Work nodes</p>
+                  <p className="mt-1 font-medium">{milestones.length} milestone{milestones.length === 1 ? "" : "s"}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Each milestone can be opened and, while pending, edited or deleted below.</p>
+                </div>
+                <div className="rounded-xl border bg-card p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Decision branches</p>
+                  <p className="mt-1 text-sm">Pending → submit</p>
+                  <p className="text-sm">Submitted → approve or dispute</p>
+                  <p className="text-sm">Disputed → resolve before continuing</p>
+                </div>
+                <div className="rounded-xl border bg-card p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">End nodes</p>
+                  <p className="mt-1 font-medium">Completion → payment → rating</p>
+                  <Pill tone={contract.status === "completed" ? "success" : "muted"}>{contract.status === "completed" ? "Completed" : "Waiting for completion"}</Pill>
+                </div>
+              </div>
+              {milestones.length > 0 && <div className="mt-3 flex flex-wrap items-center gap-2">
+                {milestones.map((milestone, index) => <div key={milestone.id} className="flex items-center gap-2">
+                  {index > 0 && <span aria-hidden="true" className="text-muted-foreground">→</span>}
+                  <span className="rounded-full border bg-card px-3 py-1 text-xs">{milestone.sequence}. {milestone.title} · {milestone.status}</span>
+                </div>)}
+              </div>}
+            </div>
+
             {contract.status === "active" && business && (
               addingContractId === contract.id ? (
                 <MilestoneForm

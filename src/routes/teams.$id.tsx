@@ -45,7 +45,7 @@ export const Route = createFileRoute("/teams/$id")({
       ],
     };
   },
-  validateSearch: (search: Record<string, unknown>) => ({ edit: search.edit === "1" }),
+  validateSearch: (search: Record<string, unknown>) => ({ edit: search.edit === "1" || search.edit === true }),
   component: Page,
   errorComponent: () => (
     <div className="container-page py-20 text-center">Couldn't load this team.</div>
@@ -74,6 +74,23 @@ function Page() {
   const save = async () => { setBusy(true); const { error } = await supabase.from("teams").update({ name: name.trim(), summary: summary.trim(), areas: areas.split(",").map((x) => x.trim()).filter(Boolean) }).eq("id", t.id); setBusy(false); if (error) toast.error(error.message); else { toast.success("Team updated"); setEditing(false); window.location.reload(); } };
   const removeMember = async (workerId: string, workerName: string) => { const reason = window.prompt("Reason for removing " + workerName + " from the team:"); if (!reason?.trim()) return; const { error } = await supabase.rpc("remove_team_member", { _team_id: t.id, _worker_id: workerId, _reason: reason.trim() }); if (error) toast.error(error.message); else { toast.success(workerName + " was removed and notified."); window.location.reload(); } };
   const remove = async () => { if (!window.confirm("Delete this team? This cannot be undone.")) return; setBusy(true); const { error } = await supabase.from("teams").delete().eq("id", t.id); setBusy(false); if (error) toast.error("This team cannot be deleted while it has dependent work or members."); else window.location.href = "/teams"; };
+  if (editing && isLead) {
+    return (
+      <div className="container-page max-w-2xl py-10">
+        <Link to="/teams/$id" params={{ id: t.id }} search={{ edit: false }} className="text-sm text-muted-foreground">← Back to team</Link>
+        <div className="mt-4"><h1 className="text-2xl font-display font-bold">Edit {t.name}</h1><p className="mt-1 text-sm text-muted-foreground">Only this team is being edited.</p></div>
+        <Card className="mt-4">
+          <div className="grid gap-3">
+            <label className="text-sm">Team name<input className="mt-1 h-10 w-full rounded-xl border bg-card px-3" value={name} onChange={(e) => setName(e.target.value)} /></label>
+            <label className="text-sm">Summary<textarea className="mt-1 w-full rounded-xl border bg-card p-3" rows={4} value={summary} onChange={(e) => setSummary(e.target.value)} /></label>
+            <label className="text-sm">Service areas<input className="mt-1 h-10 w-full rounded-xl border bg-card px-3" value={areas} onChange={(e) => setAreas(e.target.value)} /></label>
+            <div className="flex gap-2"><Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button><Button variant="outline" onClick={() => { window.location.href = "/teams/" + t.id; }}>Cancel</Button></div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container-page py-10">
       <Card className="p-6 md:p-8">

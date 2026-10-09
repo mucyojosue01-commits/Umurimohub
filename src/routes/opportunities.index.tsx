@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SearchSelect } from "@/components/search-select";
 import { DISTRICTS, SECTORS } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
+import { useCatalog } from "@/features/data/catalog";
 import { EmptyState, OpportunityCard, PageHeader } from "@/features/ui/kit";
 
 const search = z.object({
@@ -41,7 +42,8 @@ const sel = "h-10 rounded-full border bg-card px-3 text-sm";
 function Page() {
   const s = Route.useSearch();
   const nav = Route.useNavigate();
-  const { allOpps, user } = useApp();
+  const { user } = useApp();
+  const { opportunities: allOpps, loading, error } = useCatalog();
   const ownBusinessIds = new Set(user?.businessIds ?? []);
   const set = (k: string, v: unknown) =>
     nav({ search: (p) => ({ ...p, [k]: v || undefined }), replace: true });
@@ -102,8 +104,9 @@ function Page() {
           Teams welcome
         </label>
       </div>
-      <p className="mt-6 text-sm text-muted-foreground">{list.length} results</p>
-      {list.length ? (
+      {loading ? <p className="mt-6 text-sm text-muted-foreground">Loading opportunities…</p> : error ? <p className="mt-6 text-sm text-destructive">Opportunities could not be loaded. Please refresh and try again.</p> : <p className="mt-6 text-sm text-muted-foreground">{list.length} results</p>}
+      {!loading && !error && (
+      list.length ? (
         <div className="mt-3 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {list.map((o) => (
             <OpportunityCard key={o.id} o={o} />
@@ -122,7 +125,7 @@ function Page() {
             }
           />
         </div>
-      )}
+      ))}
     </div>
   );
 }

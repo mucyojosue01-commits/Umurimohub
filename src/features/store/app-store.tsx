@@ -29,6 +29,7 @@ export type Application = {
   status: string;
   note: string;
   at: string;
+  acceptedAt?: string | null;
   teamId?: string | null;
   businessId?: string | null;
   acceptedTermsVersion?: number;
@@ -183,6 +184,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         status: cap(x.status),
         note: x.note,
         at: new Date(x.created_at).toLocaleDateString(),
+        acceptedAt: x.accepted_at ?? null,
         teamId: x.team_id,
         businessId: x.applicant_business_id,
         acceptedTermsVersion: x.accepted_terms_version,
