@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/businesses/$id")({
-  validateSearch: (search: Record<string, unknown>) => ({ edit: search.edit === "1" }),
+  validateSearch: (search: Record<string, unknown>) => ({ edit: search.edit === "1" || search.edit === true }),
   component: Page,
 });
 
