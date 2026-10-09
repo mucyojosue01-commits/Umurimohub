@@ -8,6 +8,7 @@ import { useCatalog } from "@/features/data/catalog";
 import { useApp } from "@/features/store/app-store";
 import { Avatar, Card, Pill } from "@/features/ui/kit";
 import { CreateContractForm } from "@/features/contracts/panels";
+import { MoreVertical } from "lucide-react";
 
 type Status = "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" | "withdrawn";
 
@@ -307,5 +308,99 @@ export function TeamInvites() {
         ))}
       </ul>
     </Card>
+  );
+}
+
+
+export function MyOpportunities() {
+  const { user, session } = useApp();
+  const qc = useQueryClient();
+  const [menuId, setMenuId] = useState<string | null>(null);
+  const q = useQuery({
+    queryKey: ["my-opportunities", session?.user.id, user?.businessIds],
+    enabled: !!session && !!user,
+    queryFn: async () => {
+      if (!session || !user) return [];
+      const businessIds = user.businessIds;
+      let request = supabase.from("opportunities")
+        .select("id,title,status,created_at,deadline,business_id")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      request = businessIds.length
+        ? request.or("created_by.eq." + session.user.id + ",business_id.in.(" + businessIds.join(",") + ")")
+        : request.eq("created_by", session.user.id);
+      const { data, error } = await request;
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  if (!user || !session) return null;
+
+  const changeStatus = async (id: string, status: string) => {
+    const action = status === "closed" ? "end this opportunity" : status === "paused" ? "hide this opportunity temporarily" : "reopen this opportunity";
+    if (!window.confirm("Are you sure you want to " + action + "?")) return;
+    const { error } = await supabase.from("opportunities").update({ status }).eq("id", id);
+    if (error) toast.error("Could not update opportunity: " + error.message);
+    else {
+      toast.success(status === "open" ? "Opportunity is visible again" : status === "closed" ? "Opportunity ended" : "Opportunity hidden temporarily");
+      setMenuId(null);
+      await Promise.all([q.refetch(), qc.invalidateQueries({ queryKey: ["catalog"] })]);
+    }
+  };
+  const removeOpportunity = async (id: string, title: string) => {
+    if (!window.confirm('Delete "' + title + '"? This cannot be undone.')) return;
+    const { error } = await supabase.from("opportunities").delete().eq("id", id);
+    if (error) toast.error("Could not delete opportunity: " + error.message);
+    else {
+      toast.success("Opportunity deleted");
+      setMenuId(null);
+      await Promise.all([q.refetch(), qc.invalidateQueries({ queryKey: ["catalog"] })]);
+    }
+  };
+
+  return (
+    <section className="mt-6" id="my-opportunities">
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-bold">My opportunities</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Manage postings, review applicants, and control visibility.</p>
+          </div>
+          <Button size="sm" asChild><Link to="/opportunities/new">Post opportunity</Link></Button>
+        </div>
+        {q.isLoading ? <p className="mt-4 text-sm text-muted-foreground">Loading your opportunities…</p> :
+         q.isError ? <p className="mt-4 text-sm text-destructive">Could not load your opportunities.</p> :
+         !q.data?.length ? <p className="mt-4 text-sm text-muted-foreground">You have not posted any opportunities yet.</p> :
+         <ul className="mt-3 divide-y">
+           {q.data.map((o) => (
+             <li key={o.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+               <div className="min-w-0">
+                 <Link to="/opportunities/$id" params={{ id: o.id }} className="font-medium hover:text-primary">{o.title}</Link>
+                 <p className="mt-1 text-xs text-muted-foreground">Posted {new Date(o.created_at).toLocaleDateString()} · Deadline {o.deadline} · {o.status}</p>
+               </div>
+               <div className="flex items-center gap-2">
+                 <Button size="sm" variant="outline" asChild><Link to="/opportunities/$id" params={{ id: o.id }}>Info & applicants</Link></Button>
+                 <div className="relative">
+                   <Button size="icon" variant="ghost" aria-label={"Actions for " + o.title} onClick={() => setMenuId(menuId === o.id ? null : o.id)}><MoreVertical className="size-4" /></Button>
+                   {menuId === o.id && <div className="absolute right-0 top-10 z-30 w-48 rounded-2xl border bg-popover p-1 shadow-xl">
+                     <Link to="/opportunities/$id/edit" params={{ id: o.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenuId(null)}>Edit</Link>
+                     {o.status === "open" ? <>
+                       <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => void changeStatus(o.id, "paused")}>Hide temporarily</button>
+                       <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => void changeStatus(o.id, "closed")}>End posting</button>
+                     </> : <>
+                       <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => void changeStatus(o.id, "open")}>Publish / show again</button>
+                     </>}
+                     <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => void removeOpportunity(o.id, o.title)}>Delete</button>
+                   </div>}
+                 </div>
+               </div>
+             </li>
+           ))}
+         </ul>}
+      </Card>
+      <div className="mt-4">
+        <IncomingApplications />
+      </div>
+    </section>
   );
 }
