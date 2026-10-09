@@ -29,13 +29,14 @@ function Page() {
     queryKey: ["network", me],
     enabled: !!me,
     queryFn: async () => {
-      const [c, r, p, workers] = await Promise.all([
+      const [c, r, p, workers, opportunities] = await Promise.all([
         supabase.from("connections").select("*").order("created_at", { ascending: false }),
         supabase.from("referrals").select("*").order("created_at", { ascending: false }),
         supabase.from("profiles").select("id,display_name,avatar_url"),
         supabase.from("worker_profiles").select("id,user_id,name,avatar_url"),
+        supabase.from("opportunities").select("id,title"),
       ]);
-      return { connections: c.data ?? [], referrals: r.data ?? [], profiles: p.data ?? [], workers: workers.data ?? [] };
+      return { connections: c.data ?? [], referrals: r.data ?? [], profiles: p.data ?? [], workers: workers.data ?? [], opportunities: opportunities.data ?? [] };
     },
   });
   if (!authReady)
@@ -159,10 +160,11 @@ function Page() {
                   <div className="flex items-center gap-3">
                     <Avatar initials={(referee?.name ?? "Applicant").slice(0,2).toUpperCase()} src={referee?.avatar_url} alt={referee?.name ?? "Applicant"} size="md" />
                     <div>
-                      <Link to="/opportunities/$id" params={{ id: r.opportunity_id }} className="font-medium hover:text-primary">Referral for opportunity</Link>
+                      <Link to="/opportunities/$id" params={{ id: r.opportunity_id }} className="font-medium hover:text-primary">{q.data?.opportunities.find((o) => o.id === r.opportunity_id)?.title ?? "Opportunity"}</Link>
                       <p className="text-xs text-muted-foreground">
                         {r.referrer === me ? "You referred " + (referee?.name ?? "someone") : "Referred by " + (referrer?.name ?? referrerProfile?.display_name ?? "a trusted member")}
                       </p>
+                      {r.referrer !== me && <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><Avatar initials={(referrer?.name ?? referrerProfile?.display_name ?? "R").slice(0, 2).toUpperCase()} src={referrer?.avatar_url ?? referrerProfile?.avatar_url} alt={referrer?.name ?? referrerProfile?.display_name ?? "Referrer"} size="sm" />Referrer profile</div>}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
