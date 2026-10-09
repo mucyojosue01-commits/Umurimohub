@@ -18,7 +18,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
   head: () => ({ meta: [{ title: "Authorize access — UmurimoHub" }] }),
   validateSearch: (s: Record<string, unknown>) => ({
-    authorization_id: typeof s.authorization_id === "string" ? s.authorization_id : "",
+    authorization_id: typeof s["authorization_id"] === "string" ? s["authorization_id"] : "",
   }),
   beforeLoad: async ({ search, location }) => {
     if (!search.authorization_id) throw new Error("Missing authorization_id");
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
   component: Consent,
   errorComponent: ({ error }) => (
     <div className="container-page max-w-md py-16">
-      <Card className="p-6">Could not load this authorization request: {error.message}</Card>
+      <Card className="p-6">Could not load this authorization request: {String((error as Error)?.message ?? error)}</Card>
     </div>
   ),
 });
