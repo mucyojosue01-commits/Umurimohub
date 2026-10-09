@@ -1,29 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DemoNotice, PageHeader } from "@/features/ui/kit";
+import { InfoPage } from "@/features/ui/info-pages";
 
 export const Route = createFileRoute("/help")({
-  head: () => ({
-    meta: [
-      { title: "Help centre — UmurimoHub" },
-      {
-        name: "description",
-        content: "Answers on profiles, applications, teams, payments and verification.",
-      },
-      { property: "og:title", content: "Help centre — UmurimoHub" },
-      {
-        property: "og:description",
-        content: "Answers on profiles, applications, teams, payments and verification.",
-      },
-    ],
-  }),
-  component: () => (
-    <div className="container-page py-10">
-      <PageHeader
-        eyebrow="UmurimoHub"
-        title="Help centre"
-        desc="Answers on profiles, applications, teams, payments and verification."
-      />
-      <DemoNotice />
-    </div>
-  ),
+  head: () => ({ meta: [
+    { title: "Help Centre — UmurimoHub" },
+    { name: "description", content: "Search practical answers about UmurimoHub accounts, opportunities, referrals, training, work agreements, and privacy." },
+    { property: "og:title", content: "Help Centre — UmurimoHub" },
+    { property: "og:description", content: "Practical guidance for using UmurimoHub." },
+  ] }),
+  component: () => <InfoPage page="help" />,
 });
