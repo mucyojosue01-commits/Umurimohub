@@ -62,7 +62,7 @@ function Page() {
             <Card className="mt-6">
         <div className="flex items-center justify-between gap-3">
           <div><h2 className="font-bold">My businesses & teams</h2><p className="mt-1 text-sm text-muted-foreground">Manage the entities you own from one place.</p></div>
-          <div className="flex gap-2"><Button size="sm" variant="outline" asChild><Link to="/register?create=business">+ Business</Link></Button><Button size="sm" variant="outline" asChild><Link to="/register?create=team">+ Team</Link></Button></div>
+          <div className="flex gap-2"><Button size="sm" variant="outline" asChild><a href="/register?create=business">+ Business</a></Button><Button size="sm" variant="outline" asChild><a href="/register?create=team">+ Team</a></Button></div>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <div className="space-y-2">
