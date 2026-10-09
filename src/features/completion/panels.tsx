@@ -126,7 +126,7 @@ function CompletionCard({
           </p>
         ) : (
           <p className="mt-1 text-muted-foreground">
-            No milestones — direct two-party confirmation is available.
+            No milestones — completion requires approval by the other contract party.
           </p>
         )}
         {!readiness.eligible && <p className="mt-1 text-destructive">{readiness.reason}</p>}
@@ -198,7 +198,7 @@ function CompletionCard({
                     act(() => confirmCompletion(contract.id, note), "Contract completed")
                   }
                 >
-                  Confirm completion
+                  Approve & complete contract
                 </Button>
                 <Button
                   size="sm"
