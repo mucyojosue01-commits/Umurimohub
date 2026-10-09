@@ -45,7 +45,7 @@ export const Route = createFileRoute("/teams/$id")({
       ],
     };
   },
-  validateSearch: (search: Record<string, unknown>) => ({ edit: search.edit === "1" }),
+  validateSearch: (search: Record<string, unknown>) => ({ edit: search.edit === "1" || search.edit === true }),
   component: Page,
   errorComponent: () => (
     <div className="container-page py-20 text-center">Couldn't load this team.</div>
