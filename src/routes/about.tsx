@@ -1,29 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DemoNotice, PageHeader } from "@/features/ui/kit";
+import { InfoPage } from "@/features/ui/info-pages";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About — UmurimoHub" },
-      {
-        name: "description",
-        content: "A Rwanda-focused platform turning demand into trusted, verified work.",
-      },
-      { property: "og:title", content: "About — UmurimoHub" },
-      {
-        property: "og:description",
-        content: "A Rwanda-focused platform turning demand into trusted, verified work.",
-      },
+      { title: "About UmurimoHub — Skills into meaningful work" },
+      { name: "description", content: "Learn how UmurimoHub aims to connect people, teams, businesses, and productive opportunities across Rwanda." },
+      { property: "og:title", content: "About UmurimoHub" },
+      { property: "og:description", content: "A Rwanda-focused economic opportunity platform connecting skills, trusted relationships, and productive work." },
     ],
   }),
-  component: () => (
-    <div className="container-page py-10">
-      <PageHeader
-        eyebrow="UmurimoHub"
-        title="About"
-        desc="A Rwanda-focused platform turning demand into trusted, verified work."
-      />
-      <DemoNotice />
-    </div>
-  ),
+  component: () => <InfoPage page="about" />,
 });
