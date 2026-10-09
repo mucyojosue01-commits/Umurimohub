@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Briefcase, CheckCircle2, Wallet, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
-import { IncomingApplications, MyApplications, TeamInvites } from "@/features/dashboard/panels";
+import { MyApplications, MyOpportunities, TeamInvites } from "@/features/dashboard/panels";
 import { ContractsPanel, useContracts } from "@/features/contracts/panels";
 import { Avatar, Card, OpportunityCard, PageHeader, Stat } from "@/features/ui/kit";
 import { useCatalog } from "@/features/data/catalog";
@@ -56,7 +56,7 @@ function Page() {
         <Stat icon={Wallet} label="Payment status" value="Not enabled yet" hint="Payments come after project verification." />
       </div>
       <TeamInvites />
-      <IncomingApplications />
+      <MyOpportunities />
       <MyApplications />
       <ContractsPanel />
             <Card className="mt-6">
