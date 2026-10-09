@@ -165,10 +165,8 @@ export function IncomingApplications() {
       </div>
       {q.isLoading ? (
         <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-      ) : !q.data?.apps.length ? (
-        <p className="mt-2 text-sm text-muted-foreground">
-          No applicants yet. You have {q.data?.opps.length ?? 0} posted opportunities.
-        </p>
+      ) : !q.data?.opps.length ? (
+        <p className="mt-2 text-sm text-muted-foreground">You have not posted any opportunities yet.</p>
       ) : (
         <div className="mt-4 space-y-5">
           {(q.data.opps ?? []).map((opp) => {
