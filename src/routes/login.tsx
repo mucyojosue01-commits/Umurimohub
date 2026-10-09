@@ -16,6 +16,10 @@ export const Route = createFileRoute("/login")({
       { property: "og:description", content: "Access your work dashboard." },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { next?: string } =>
+    typeof s["next"] === "string" && s["next"].startsWith("/") && !s["next"].startsWith("//")
+      ? { next: s["next"] }
+      : {},
   component: Page,
 });
 
@@ -28,6 +32,8 @@ const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
 function Page() {
   const { user, authReady } = useApp();
   const nav = useNavigate();
+  const { next } = Route.useSearch();
+  const back = next ? window.location.origin + next : null;
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,8 +41,9 @@ function Page() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
+    if (authReady && user && next) { window.location.href = next; return; }
     if (authReady && user) nav({ to: user.onboarded ? "/dashboard" : "/register", replace: true });
-  }, [authReady, user, nav]);
+  }, [authReady, user, nav, next]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +59,7 @@ function Page() {
         ? await supabase.auth.signInWithPassword(p.data)
         : await supabase.auth.signUp({
             ...p.data,
-            options: { emailRedirectTo: `${window.location.origin}/register` },
+            options: { emailRedirectTo: back ?? `${window.location.origin}/register` },
           });
     setBusy(false);
     if (r.error) {
@@ -80,7 +87,7 @@ function Page() {
           onClick={async () => {
             const r = await supabase.auth.signInWithOAuth({
               provider: "google",
-              options: { redirectTo: window.location.origin + "/register" },
+              options: { redirectTo: back ?? window.location.origin + "/register" },
             });
             if (r.error) setErr(r.error.message ?? "Google sign-in failed");
           }}

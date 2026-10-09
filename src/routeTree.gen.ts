@@ -21,6 +21,7 @@ import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MatchRouteImport } from './routes/match'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as NetworkRouteImport } from './routes/network'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -29,6 +30,9 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrainingRouteImport } from './routes/training'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as BusinessesIdRouteImport } from './routes/businesses.$id'
+import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as OpportunitiesNewRouteImport } from './routes/opportunities.new'
@@ -36,6 +40,8 @@ import { Route as TeamsIndexRouteImport } from './routes/teams.index'
 import { Route as TeamsIdRouteImport } from './routes/teams.$id'
 import { Route as WorkersIndexRouteImport } from './routes/workers.index'
 import { Route as WorkersIdRouteImport } from './routes/workers.$id'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as OpportunitiesIdEditRouteImport } from './routes/opportunities.$id.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -97,6 +103,11 @@ const MatchRoute = MatchRouteImport.update({
   path: '/match',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MessagesRoute = MessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
@@ -137,6 +148,22 @@ const TrainingRoute = TrainingRouteImport.update({
   path: '/training',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BusinessesIdRoute = BusinessesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => BusinessesRoute,
+} as any)
+const ContractsIdRoute = ContractsIdRouteImport.update({
+  id: '/contracts/$id',
+  path: '/contracts/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OpportunitiesIndexRoute = OpportunitiesIndexRouteImport.update({
   id: '/opportunities/',
   path: '/opportunities/',
@@ -172,12 +199,22 @@ const WorkersIdRoute = WorkersIdRouteImport.update({
   path: '/workers/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpportunitiesIdEditRoute = OpportunitiesIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => OpportunitiesIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
-  '/businesses': typeof BusinessesRoute
+  '/businesses': typeof BusinessesRouteWithChildren
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/grow': typeof GrowRoute
@@ -186,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
+  '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
   '/network': typeof NetworkRoute
   '/notifications': typeof NotificationsRoute
@@ -194,19 +232,24 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
-  '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/businesses/$id': typeof BusinessesIdRoute
+  '/contracts/$id': typeof ContractsIdRoute
+  '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
   '/workers/$id': typeof WorkersIdRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/teams/': typeof TeamsIndexRoute
   '/workers/': typeof WorkersIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
-  '/businesses': typeof BusinessesRoute
+  '/businesses': typeof BusinessesRouteWithChildren
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/grow': typeof GrowRoute
@@ -215,6 +258,7 @@ export interface FileRoutesByTo {
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
+  '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
   '/network': typeof NetworkRoute
   '/notifications': typeof NotificationsRoute
@@ -223,20 +267,25 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
-  '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/businesses/$id': typeof BusinessesIdRoute
+  '/contracts/$id': typeof ContractsIdRoute
+  '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
   '/workers/$id': typeof WorkersIdRoute
   '/opportunities': typeof OpportunitiesIndexRoute
   '/teams': typeof TeamsIndexRoute
   '/workers': typeof WorkersIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
-  '/businesses': typeof BusinessesRoute
+  '/businesses': typeof BusinessesRouteWithChildren
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/grow': typeof GrowRoute
@@ -245,6 +294,7 @@ export interface FileRoutesById {
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
+  '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
   '/network': typeof NetworkRoute
   '/notifications': typeof NotificationsRoute
@@ -253,13 +303,18 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
-  '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/businesses/$id': typeof BusinessesIdRoute
+  '/contracts/$id': typeof ContractsIdRoute
+  '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
   '/workers/$id': typeof WorkersIdRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
   '/teams/': typeof TeamsIndexRoute
   '/workers/': typeof WorkersIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -276,6 +331,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/login'
     | '/match'
+    | '/mcp'
     | '/messages'
     | '/network'
     | '/notifications'
@@ -284,6 +340,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/terms'
     | '/training'
+    | '/.well-known/oauth-protected-resource'
+    | '/businesses/$id'
+    | '/contracts/$id'
     | '/opportunities/$id'
     | '/opportunities/new'
     | '/teams/$id'
@@ -291,6 +350,8 @@ export interface FileRouteTypes {
     | '/opportunities/'
     | '/teams/'
     | '/workers/'
+    | '/.lovable/oauth/consent'
+    | '/opportunities/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -305,6 +366,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/login'
     | '/match'
+    | '/mcp'
     | '/messages'
     | '/network'
     | '/notifications'
@@ -313,6 +375,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/terms'
     | '/training'
+    | '/.well-known/oauth-protected-resource'
+    | '/businesses/$id'
+    | '/contracts/$id'
     | '/opportunities/$id'
     | '/opportunities/new'
     | '/teams/$id'
@@ -320,6 +385,8 @@ export interface FileRouteTypes {
     | '/opportunities'
     | '/teams'
     | '/workers'
+    | '/.lovable/oauth/consent'
+    | '/opportunities/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -334,6 +401,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/login'
     | '/match'
+    | '/mcp'
     | '/messages'
     | '/network'
     | '/notifications'
@@ -342,6 +410,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/terms'
     | '/training'
+    | '/.well-known/oauth-protected-resource'
+    | '/businesses/$id'
+    | '/contracts/$id'
     | '/opportunities/$id'
     | '/opportunities/new'
     | '/teams/$id'
@@ -349,13 +420,15 @@ export interface FileRouteTypes {
     | '/opportunities/'
     | '/teams/'
     | '/workers/'
+    | '/.lovable/oauth/consent'
+    | '/opportunities/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AgricultureRoute: typeof AgricultureRoute
-  BusinessesRoute: typeof BusinessesRoute
+  BusinessesRoute: typeof BusinessesRouteWithChildren
   CompanyRoute: typeof CompanyRoute
   DashboardRoute: typeof DashboardRoute
   GrowRoute: typeof GrowRoute
@@ -364,6 +437,7 @@ export interface RootRouteChildren {
   InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
   MatchRoute: typeof MatchRoute
+  McpRoute: typeof McpRoute
   MessagesRoute: typeof MessagesRoute
   NetworkRoute: typeof NetworkRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -372,13 +446,16 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
   TrainingRoute: typeof TrainingRoute
-  OpportunitiesIdRoute: typeof OpportunitiesIdRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ContractsIdRoute: typeof ContractsIdRoute
+  OpportunitiesIdRoute: typeof OpportunitiesIdRouteWithChildren
   OpportunitiesNewRoute: typeof OpportunitiesNewRoute
   TeamsIdRoute: typeof TeamsIdRoute
   WorkersIdRoute: typeof WorkersIdRoute
   OpportunitiesIndexRoute: typeof OpportunitiesIndexRoute
   TeamsIndexRoute: typeof TeamsIndexRoute
   WorkersIndexRoute: typeof WorkersIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -467,6 +544,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MatchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/messages': {
       id: '/messages'
       path: '/messages'
@@ -523,6 +607,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrainingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/businesses/$id': {
+      id: '/businesses/$id'
+      path: '/$id'
+      fullPath: '/businesses/$id'
+      preLoaderRoute: typeof BusinessesIdRouteImport
+      parentRoute: typeof BusinessesRoute
+    }
+    '/contracts/$id': {
+      id: '/contracts/$id'
+      path: '/contracts/$id'
+      fullPath: '/contracts/$id'
+      preLoaderRoute: typeof ContractsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/opportunities/': {
       id: '/opportunities/'
       path: '/opportunities'
@@ -572,14 +677,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkersIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/opportunities/$id/edit': {
+      id: '/opportunities/$id/edit'
+      path: '/edit'
+      fullPath: '/opportunities/$id/edit'
+      preLoaderRoute: typeof OpportunitiesIdEditRouteImport
+      parentRoute: typeof OpportunitiesIdRoute
+    }
   }
 }
+
+interface BusinessesRouteChildren {
+  BusinessesIdRoute: typeof BusinessesIdRoute
+}
+
+const BusinessesRouteChildren: BusinessesRouteChildren = {
+  BusinessesIdRoute: BusinessesIdRoute,
+}
+
+const BusinessesRouteWithChildren = BusinessesRoute._addFileChildren(
+  BusinessesRouteChildren,
+)
+
+interface OpportunitiesIdRouteChildren {
+  OpportunitiesIdEditRoute: typeof OpportunitiesIdEditRoute
+}
+
+const OpportunitiesIdRouteChildren: OpportunitiesIdRouteChildren = {
+  OpportunitiesIdEditRoute: OpportunitiesIdEditRoute,
+}
+
+const OpportunitiesIdRouteWithChildren = OpportunitiesIdRoute._addFileChildren(
+  OpportunitiesIdRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AgricultureRoute: AgricultureRoute,
-  BusinessesRoute: BusinessesRoute,
+  BusinessesRoute: BusinessesRouteWithChildren,
   CompanyRoute: CompanyRoute,
   DashboardRoute: DashboardRoute,
   GrowRoute: GrowRoute,
@@ -588,6 +731,7 @@ const rootRouteChildren: RootRouteChildren = {
   InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
   MatchRoute: MatchRoute,
+  McpRoute: McpRoute,
   MessagesRoute: MessagesRoute,
   NetworkRoute: NetworkRoute,
   NotificationsRoute: NotificationsRoute,
@@ -596,13 +740,17 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
   TrainingRoute: TrainingRoute,
-  OpportunitiesIdRoute: OpportunitiesIdRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ContractsIdRoute: ContractsIdRoute,
+  OpportunitiesIdRoute: OpportunitiesIdRouteWithChildren,
   OpportunitiesNewRoute: OpportunitiesNewRoute,
   TeamsIdRoute: TeamsIdRoute,
   WorkersIdRoute: WorkersIdRoute,
   OpportunitiesIndexRoute: OpportunitiesIndexRoute,
   TeamsIndexRoute: TeamsIndexRoute,
   WorkersIndexRoute: WorkersIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
