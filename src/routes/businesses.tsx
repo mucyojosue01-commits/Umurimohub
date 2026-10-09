@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { useApp } from "@/features/store/app-store";
 import { useCatalog } from "@/features/data/catalog";
 import { BusinessCard, PageHeader } from "@/features/ui/kit";
 
@@ -19,16 +21,24 @@ export const Route = createFileRoute("/businesses")({
 
 function Page() {
   const { businesses } = useCatalog();
+  const { user } = useApp();
   return (
     <div className="container-page py-10">
       <PageHeader
         eyebrow="Discover"
         title="Businesses"
         desc="Verified employers, cooperatives and MSMEs."
+        actions={user ? <Button asChild><Link to="/register" search={{ create: "business" }}>+ Add business</Link></Button> : undefined}
       />
       <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{businesses.length === 0 && <p className="col-span-full py-12 text-center text-sm text-muted-foreground">No businesses have joined yet.</p>}
         {businesses.map((b) => (
-          <BusinessCard key={b.id} b={b} />
+          <div key={b.id} className="min-w-0">
+            <BusinessCard b={b} />
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" asChild><Link to="/businesses/$id" params={{ id: b.id }}>View business</Link></Button>
+              {user?.businessIds.includes(b.id) && <Button size="sm" variant="secondary" asChild><Link to="/businesses/$id" params={{ id: b.id }} search={{ edit: true }}>Edit business</Link></Button>}
+            </div>
+          </div>
         ))}
       </div>
     </div>
