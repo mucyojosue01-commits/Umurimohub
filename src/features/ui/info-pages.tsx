@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowDownRight, ArrowRight, BookOpen, BriefcaseBusiness, CheckCircle2,
@@ -12,7 +12,7 @@ type PageKey = "about" | "how" | "help" | "terms" | "privacy";
 const motionClass = "animate-[page-rise_.65s_cubic-bezier(.2,.75,.25,1)_both]";
 const cardClass = "group rounded-3xl border bg-card p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none";
 
-function PageHero({ eyebrow, title, lead, image = "/images/pages/opportunity-hero.webp" }: { eyebrow: string; title: string; lead: string; image?: string }) {
+function PageHero({ eyebrow, title, lead, image = "/images/pages/opportunity-hero.svg" }: { eyebrow: string; title: string; lead: string; image?: string }) {
   return <section className={`relative isolate overflow-hidden rounded-[2rem] border bg-[linear-gradient(120deg,hsl(var(--primary)/.10),transparent_62%)] ${motionClass}`}>
     <div className="grid items-center gap-8 p-7 sm:p-10 lg:grid-cols-[1.1fr_.9fr] lg:p-14">
       <div className="relative z-10">
@@ -40,7 +40,7 @@ function SectionHeading({ eyebrow, title, lead }: { eyebrow?: string; title: str
   return <div className="mb-7 max-w-3xl"><p className="text-xs font-bold uppercase tracking-[.18em] text-primary">{eyebrow ?? "Built for progress"}</p><h2 className="mt-2 text-3xl font-bold tracking-tight [font-family:var(--font-display)] sm:text-4xl">{title}</h2>{lead && <p className="mt-3 leading-7 text-muted-foreground">{lead}</p>}</div>;
 }
 
-function Card({ icon: Icon, title, children }: { icon: typeof Users; title: string; children: React.ReactNode }) {
+function Card({ icon: Icon, title, children }: { icon: typeof Users; title: string; children: ReactNode }) {
   return <article className={cardClass}><div className="mb-4 inline-flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary transition duration-300 group-hover:rotate-3 group-hover:scale-110 motion-reduce:transform-none"><Icon className="size-5" /></div><h3 className="text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{children}</p></article>;
 }
 
@@ -124,5 +124,5 @@ export function InfoPage({ page }: { page: PageKey }) {
   terms: { eyebrow: "Platform guidelines", title: "Terms of Service", lead: "Understand the responsibilities and expectations that guide use of UmurimoHub." },
   privacy: { eyebrow: "Your information matters", title: "Privacy Policy", lead: "Learn how information is intended to be handled when you use UmurimoHub, and what still requires confirmation before publication." },
  }[page];
- return <main className="container-page py-8 sm:py-12"><PageHero {...content} image={page==="privacy"?"/images/pages/privacy-hero.webp":page==="help"?"/images/pages/help-hero.webp":page==="terms"?"/images/pages/agreements-hero.webp":"/images/pages/opportunity-hero.webp"}/>{page==="about"?<AboutContent/>:page==="how"?<HowContent/>:page==="help"?<HelpContent/>:<LegalContent page={page}/>}<div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t pt-6 text-sm text-muted-foreground"><p>UmurimoHub · Economic opportunity through trusted connections</p><div className="flex flex-wrap gap-4"><Link to="/about" className="hover:text-primary">About</Link><Link to="/how-it-works" className="hover:text-primary">How it works</Link><Link to="/help" className="hover:text-primary">Help</Link><Link to="/terms" className="hover:text-primary">Terms</Link><Link to="/privacy" className="hover:text-primary">Privacy</Link></div></div></main>;
+ return <main className="container-page py-8 sm:py-12"><PageHero {...content} image={page==="privacy"?"/images/pages/privacy-hero.svg":page==="help"?"/images/pages/help-hero.svg":page==="terms"?"/images/pages/agreements-hero.svg":"/images/pages/opportunity-hero.webp"}/>{page==="about"?<AboutContent/>:page==="how"?<HowContent/>:page==="help"?<HelpContent/>:<LegalContent page={page}/>}<div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t pt-6 text-sm text-muted-foreground"><p>UmurimoHub · Economic opportunity through trusted connections</p><div className="flex flex-wrap gap-4"><Link to="/about" className="hover:text-primary">About</Link><Link to="/how-it-works" className="hover:text-primary">How it works</Link><Link to="/help" className="hover:text-primary">Help</Link><Link to="/terms" className="hover:text-primary">Terms</Link><Link to="/privacy" className="hover:text-primary">Privacy</Link></div></div></main>;
 }
