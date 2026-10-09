@@ -59,11 +59,15 @@ function Page() {
   };
   const respondReferral = async (id: string, accept: boolean) => {
     const { error } = await supabase.rpc("respond_referral", { _referral_id: id, _accept: accept });
-    if (error) toast.error(error.message);
-    else {
-      toast.success(accept ? "Referral accepted — your application was submitted" : "Referral declined");
-      void qc.invalidateQueries({ queryKey: ["network"] });
+    if (error) {
+      toast.error(error.message);
+      return;
     }
+    toast.success(accept ? "Referral accepted — your application was submitted" : "Referral declined");
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ["network"] }),
+      qc.invalidateQueries({ queryKey: ["catalog"] }),
+    ]);
   };
 
   const cons = q.data?.connections ?? [];
