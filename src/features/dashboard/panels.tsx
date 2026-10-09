@@ -112,20 +112,21 @@ export function MyApplications() {
 }
 
 export function IncomingApplications() {
-  const { user } = useApp();
+  const { user, session } = useApp();
   const qc = useQueryClient();
   const ids = user?.businessIds ?? [];
   const q = useQuery({
     queryKey: ["incoming", ids],
-    enabled: ids.length > 0,
+    enabled: !!user && !!session,
     queryFn: async () => {
-      const { data: opps } = await supabase
-        .from("opportunities")
-        .select("id,title,status")
-        .in("business_id", ids);
+      let opportunitiesQuery = supabase.from("opportunities").select("id,title,status,created_by,business_id");
+      opportunitiesQuery = ids.length
+        ? opportunitiesQuery.or("created_by.eq." + session!.user.id + ",business_id.in.(" + ids.join(",") + ")")
+        : opportunitiesQuery.eq("created_by", session!.user.id);
+      const { data: opps } = await opportunitiesQuery;
       const oppIds = (opps ?? []).map((o) => o.id);
       if (!oppIds.length) return { opps: opps ?? [], apps: [] };
-      const { data: apps } = await supabase.from("applications").select("*").in("opportunity_id", oppIds).order("created_at", { ascending: false });
+      const { data: apps } = await supabase.from("applications").select("*").in("opportunity_id", oppIds).order("created_at", { ascending: true });
       const rows = apps ?? [];
       const userIds = [...new Set(rows.map((a) => a.applicant_user_id).filter(Boolean))];
       const businessIds = [...new Set(rows.map((a) => a.applicant_business_id).filter(Boolean))];
@@ -133,7 +134,7 @@ export function IncomingApplications() {
       const referrerIds = [...new Set(rows.map((a) => a.referred_by).filter(Boolean))];
       const [profiles, workers, businesses, teams, contracts, referrerProfiles, referrerWorkers, connections] = await Promise.all([
         userIds.length ? supabase.from("profiles").select("id,display_name,avatar_url").in("id", userIds) : Promise.resolve({ data: [] as { id: string; display_name: string; avatar_url: string | null }[] }),
-        userIds.length ? supabase.from("worker_profiles").select("id,user_id,name,avatar_url").in("user_id", userIds) : Promise.resolve({ data: [] as { id: string; user_id: string | null; name: string; avatar_url: string | null }[] }),
+        userIds.length ? supabase.from("worker_profiles").select("id,user_id,name,avatar_url,trust_score,years,rep").in("user_id", userIds) : Promise.resolve({ data: [] as { id: string; user_id: string | null; name: string; avatar_url: string | null }[] }),
         businessIds.length ? supabase.from("businesses").select("id,name,avatar_url").in("id", businessIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
         teamIds.length ? supabase.from("teams").select("id,name,avatar_url").in("id", teamIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
         supabase.from("contracts").select("id,application_id,opportunity_id").in("opportunity_id", oppIds),
@@ -145,7 +146,7 @@ export function IncomingApplications() {
     },
   });
   const [contractApplication, setContractApplication] = useState<string | null>(null);
-  if (!ids.length) return null;
+  if (!user || !session) return null;
   const setStatus = async (id: string, status: Status) => {
     const { error } = await supabase.from("applications").update({ status }).eq("id", id);
     if (error) toast.error(error.message);
@@ -172,7 +173,6 @@ export function IncomingApplications() {
         <div className="mt-4 space-y-5">
           {(q.data.opps ?? []).map((opp) => {
             const apps = q.data.apps.filter((a) => a.opportunity_id === opp.id);
-            if (!apps.length) return null;
             const groups = [
               ["business", "Businesses", apps.filter((a) => a.applicant_type === "business")],
               ["team", "Teams", apps.filter((a) => a.applicant_type === "team")],
@@ -184,12 +184,24 @@ export function IncomingApplications() {
                   <Link to="/opportunities/$id" params={{ id: opp.id }} className="font-semibold hover:text-primary">{opp.title}</Link>
                   <Pill>{apps.length} applicant{apps.length === 1 ? "" : "s"}</Pill>
                 </div>
-                <div className="mt-4 space-y-4">
+                {apps.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No applicants yet. Applications and referrals will appear here.</p> : <div className="mt-4 space-y-4">
                   {groups.map(([kind, label, group]) => group.length ? (
                     <div key={kind}>
                       <h3 className="mb-2 text-sm font-semibold text-muted-foreground">{label}</h3>
                       <ul className="divide-y rounded-xl border">
-                        {group.map((a) => {
+                        {group.slice().sort((a, b) => {
+                          const connected = (id: string) => q.data!.connections.some((x) => x.status === "accepted" && ((x.requester === user.id && x.addressee === id) || (x.addressee === user.id && x.requester === id)));
+                          const aConnected = connected(a.applicant_user_id);
+                          const bConnected = connected(b.applicant_user_id);
+                          if (aConnected !== bConnected) return aConnected ? -1 : 1;
+                          const aw = q.data!.workers.find((w) => w.user_id === a.applicant_user_id);
+                          const bw = q.data!.workers.find((w) => w.user_id === b.applicant_user_id);
+                          const trustDiff = Number(bw?.trust_score ?? 0) - Number(aw?.trust_score ?? 0);
+                          if (trustDiff) return trustDiff;
+                          const experienceDiff = Number(bw?.years ?? 0) - Number(aw?.years ?? 0);
+                          if (experienceDiff) return experienceDiff;
+                          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                        }).map((a) => {
                           const profile = q.data.profiles.find((x) => x.id === a.applicant_user_id);
                           const worker = q.data.workers.find((x) => x.user_id === a.applicant_user_id);
                           const business = a.applicant_business_id ? q.data.businesses.find((x) => x.id === a.applicant_business_id) : undefined;
@@ -219,6 +231,12 @@ export function IncomingApplications() {
                                   <p className="font-medium">{displayName}</p>
                                   <p className="text-xs text-muted-foreground">{a.applicant_type ?? a.kind} · {a.status}</p>
                                   {a.note && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{a.note}</p>}
+                                  {a.referred_by && (() => {
+                                    const rp = q.data.referrerProfiles.find((x) => x.id === a.referred_by);
+                                    const rw = q.data.referrerWorkers.find((x) => x.user_id === a.referred_by);
+                                    const referrerName = rw?.name ?? rp?.display_name ?? "Trusted referrer";
+                                    return <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><Avatar initials={referrerName.slice(0, 2).toUpperCase()} src={rw?.avatar_url ?? rp?.avatar_url} alt={referrerName} size="sm" /><span>Referred by {referrerName}</span></div>;
+                                  })()}
                                 </div>
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
@@ -247,7 +265,7 @@ export function IncomingApplications() {
                       </ul>
                     </div>
                   ) : null)}
-                </div>
+                </div>}
               </section>
             );
           })}
