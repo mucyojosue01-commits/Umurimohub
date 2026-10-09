@@ -76,6 +76,11 @@ export function MyApplications() {
                 >
                   {a.status}
                 </Pill>
+                {a.acceptedAt && a.status === "Accepted" && (
+                  <span className="text-xs text-muted-foreground">
+                    Accepted {new Date(a.acceptedAt).toLocaleString()}
+                  </span>
+                )}
                 {session && !["Withdrawn", "Accepted", "Rejected"].includes(a.status) && (
                   <Button
                     size="sm"
