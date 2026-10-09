@@ -105,8 +105,8 @@ function Page() {
         </label>
       </div>
       {loading ? <p className="mt-6 text-sm text-muted-foreground">Loading opportunities…</p> : error ? <p className="mt-6 text-sm text-destructive">Opportunities could not be loaded. Please refresh and try again.</p> : <p className="mt-6 text-sm text-muted-foreground">{list.length} results</p>}
-      {!loading && !error &&
-      {list.length ? (
+      {!loading && !error && (
+      list.length ? (
         <div className="mt-3 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {list.map((o) => (
             <OpportunityCard key={o.id} o={o} />
@@ -125,6 +125,7 @@ function Page() {
             }
           />
         </div>
+      )}
       )}
     </div>
   );
