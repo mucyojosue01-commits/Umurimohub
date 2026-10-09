@@ -77,7 +77,7 @@ export function MyApplications() {
                 >
                   {a.status}
                 </Pill>
-                {a.acceptedAt && a.status === "Accepted" && (
+                {a.acceptedAt && a.status.toLowerCase() === "accepted" && (
                   <span className="text-xs text-muted-foreground">
                     Accepted {new Date(a.acceptedAt).toLocaleString()}
                   </span>
