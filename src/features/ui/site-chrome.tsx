@@ -100,7 +100,7 @@ export function SiteFooter() {
   const cols = [
     ["Platform", [["/opportunities","Opportunities"],["/workers","Workers"],["/teams","Teams"],["/businesses","Businesses"]]],
     ["Grow", [["/training","Training"],["/agriculture","Agriculture"],["/insights","Economic insights"],["/pricing","Business plans"]]],
-    ["Company", [["/about","About"],["/how-it-works","How it works"],["/help","Help"],["/terms","Terms & privacy"]]],
+    ["Company", [["/about","About"],["/how-it-works","How it works"],["/help","Help"],["/terms","Terms of Service"],["/privacy","Privacy Policy"]]],
   ] as const;
   return <footer className="mt-24 border-t bg-card"><div className="container-page grid gap-10 py-12 md:grid-cols-4"><div><Logo /><p className="mt-3 text-sm text-muted-foreground">Turning demand into trusted work across Rwanda's 30 districts.</p></div>{cols.map(([h,links])=><div key={h}><h4 className="text-sm font-semibold">{h}</h4><ul className="mt-3 space-y-2 text-sm text-muted-foreground">{links.map(([to,l])=><li key={to}><Link to={to} className="hover:text-foreground">{l}</Link></li>)}</ul></div>)}</div><div className="container-page border-t py-5 text-xs text-muted-foreground">UmurimoHub is a work platform, not a bank. Payments will be processed by licensed partners. Live platform. Data shown is created by UmurimoHub members.</div></footer>;
 }
