@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -191,7 +190,6 @@ function MilestoneCard({
   const [disputeNote, setDisputeNote] = useState("");
   const [editing, setEditing] = useState(false);
   const [history, setHistory] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const act = async (fn: () => Promise<unknown>, message: string) => {
     setBusy(true);
@@ -232,16 +230,11 @@ function MilestoneCard({
             {rwf(milestone.amount_rwf)} · Due {milestone.due_date}
           </p>
         </div>
-        <div className="relative flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <Pill tone={tone(milestone.status)}>{milestone.status}</Pill>
-          <Button size="icon" variant="ghost" aria-label="Milestone actions" onClick={() => setMenuOpen((v) => !v)}><MoreVertical className="size-4" /></Button>
-          {menuOpen && (
-            <div className="absolute right-0 top-9 z-30 w-44 rounded-2xl border bg-popover p-1 shadow-xl">
-              {isBusiness && milestone.status === "pending" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setEditing(true); setMenuOpen(false); }}>Edit</button>}
-              {isBusiness && milestone.status === "pending" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => { setMenuOpen(false); void act(() => deletePendingMilestone(milestone.id), "Milestone deleted"); }}>Delete</button>}
-              <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setHistory((v) => !v); setMenuOpen(false); }}>{history ? "Hide history" : "View history"}</button>
-            </div>
-          )}
+          {isBusiness && milestone.status === "pending" && <Button size="sm" variant="outline" disabled={busy} onClick={() => setEditing(true)}>Edit</Button>}
+          {isBusiness && milestone.status === "pending" && <Button size="sm" variant="destructive" disabled={busy} onClick={() => { if (window.confirm("Delete this pending milestone?")) void act(() => deletePendingMilestone(milestone.id), "Milestone deleted"); }}>Delete</Button>}
+          <Button size="sm" variant="ghost" onClick={() => setHistory((v) => !v)}>{history ? "Hide history" : "View history"}</Button>
         </div>
       </div>
 
