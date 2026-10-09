@@ -41,7 +41,7 @@ begin
     raise exception 'A contract already exists for this application' using errcode = '23505';
   end if;
 
-  if a.team_id is null and a.applicant_type <> 'team' then
+  if a.team_id is null then
     select id into wid from public.worker_profiles where user_id = a.applicant_user_id limit 1;
     if wid is null then raise exception 'Applicant has no worker profile'; end if;
   end if;
