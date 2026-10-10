@@ -32,6 +32,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrainingRouteImport } from './routes/training'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as BusinessesIdRouteImport } from './routes/businesses.$id'
+import { Route as BusinessesIdEditRouteImport } from './routes/businesses.$id.edit'
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
@@ -159,6 +160,11 @@ const BusinessesIdRoute = BusinessesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => BusinessesRoute,
 } as any)
+const BusinessesIdEditRoute = BusinessesIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => BusinessesIdRoute,
+} as any)
 const ContractsIdRoute = ContractsIdRouteImport.update({
   id: '/contracts/$id',
   path: '/contracts/$id',
@@ -233,7 +239,8 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/businesses/$id': typeof BusinessesIdRoute
+  '/businesses/$id': typeof BusinessesIdRouteWithChildren
+  '/businesses/$id/edit': typeof BusinessesIdEditRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
@@ -342,6 +349,7 @@ export interface FileRouteTypes {
     | '/training'
     | '/.well-known/oauth-protected-resource'
     | '/businesses/$id'
+    | '/businesses/$id/edit'
     | '/contracts/$id'
     | '/opportunities/$id'
     | '/opportunities/new'
@@ -621,6 +629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessesIdRouteImport
       parentRoute: typeof BusinessesRoute
     }
+    '/businesses/$id/edit': {
+      id: '/businesses/$id/edit'
+      path: '/edit'
+      fullPath: '/businesses/$id/edit'
+      preLoaderRoute: typeof BusinessesIdEditRouteImport
+      parentRoute: typeof BusinessesIdRoute
+    }
     '/contracts/$id': {
       id: '/contracts/$id'
       path: '/contracts/$id'
@@ -694,12 +709,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BusinessesIdRouteChildren {
+  BusinessesIdEditRoute: typeof BusinessesIdEditRoute
+}
+
+const BusinessesIdRouteChildren: BusinessesIdRouteChildren = {
+  BusinessesIdEditRoute: BusinessesIdEditRoute,
+}
+
+const BusinessesIdRouteWithChildren = BusinessesIdRoute._addFileChildren(BusinessesIdRouteChildren)
+
 interface BusinessesRouteChildren {
-  BusinessesIdRoute: typeof BusinessesIdRoute
+  BusinessesIdRoute: typeof BusinessesIdRouteWithChildren
 }
 
 const BusinessesRouteChildren: BusinessesRouteChildren = {
-  BusinessesIdRoute: BusinessesIdRoute,
+  BusinessesIdRoute: BusinessesIdRouteWithChildren,
 }
 
 const BusinessesRouteWithChildren = BusinessesRoute._addFileChildren(
