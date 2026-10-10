@@ -29,10 +29,12 @@ export function MyApplications() {
     },
   });
   const title = (id: string) => allOpps.find((o) => o.id === id)?.title ?? "Opportunity";
+  const linkedContractsQ = useQuery({ queryKey: ["my-application-contracts", session?.user.id, applications.map(a=>a.id)], enabled: !!session && applications.length > 0, queryFn: async () => { const { data, error } = await supabase.from("contracts").select("application_id").in("application_id", applications.map(a=>a.id)); if (error) throw error; return new Set((data ?? []).map(c=>c.application_id)); } });
+  const visibleApplications = applications.filter(a => !(a.status.toLowerCase() === "accepted" && linkedContractsQ.data?.has(a.id)));
   return (
     <Card className="mt-6">
       <h2 className="font-bold">My applications</h2>
-      {!applications.length ? (
+      {!visibleApplications.length ? (
         <p className="mt-2 text-sm text-muted-foreground">
           No applications yet.{" "}
           <Link to="/opportunities" className="text-primary">
@@ -41,7 +43,7 @@ export function MyApplications() {
         </p>
       ) : (
         <ul className="mt-3 divide-y">
-          {applications.map((a) => {
+          {visibleApplications.map((a) => {
             const business = actorsQ.data?.businesses.find((x) => x.id === a.businessId);
             const team = actorsQ.data?.teams.find((x) => x.id === a.teamId);
             const displayName = business?.name ?? team?.name ?? actorsQ.data?.profile?.display_name ?? "Applicant";
@@ -237,20 +239,13 @@ export function IncomingApplications() {
                                   })()}
                                 </div>
                               </div>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Pill tone={a.status === "accepted" ? "success" : a.status === "shortlisted" ? "primary" : "muted"}>{a.status}</Pill>
-                                {a.status !== "withdrawn" && (["viewed", "shortlisted", "accepted", "rejected"] as Status[]).filter((s) => s !== a.status).map((s) => (
-                                  <Button key={s} size="sm" variant="outline" onClick={() => setStatus(a.id, s)}>{s}</Button>
-                                ))}
-                                {a.status === "accepted" && (
-                                  <Button size="sm" onClick={() => {
-                                    const existing = q.data.contracts.find((contract) => contract.opportunity_id === a.opportunity_id);
-                                    if (existing && !window.confirm("Are you sure you want to make this other contract?")) return;
-                                    setContractApplication(a.id);
-                                  }}>
-                                    {q.data.contracts.some((contract) => contract.opportunity_id === a.opportunity_id) ? "Create another contract" : "Create contract"}
-                                  </Button>
-                                )}
+                              <div className="relative">
+                                <Button size="icon" variant="outline" aria-label={"Applicant actions for " + displayName} onClick={() => setContractApplication(contractApplication === "menu:" + a.id ? null : "menu:" + a.id)}><MoreVertical className="size-4" /></Button>
+                                {contractApplication === "menu:" + a.id && <div className="absolute right-0 top-10 z-30 w-52 rounded-2xl border bg-popover p-1 shadow-xl">
+                                  <div className="px-3 py-2"><Pill tone={a.status === "accepted" ? "success" : a.status === "shortlisted" ? "primary" : "muted"}>{a.status}</Pill></div>
+                                  {a.status !== "withdrawn" && (["viewed", "shortlisted", "accepted", "rejected"] as Status[]).filter((s) => s !== a.status).map((s) => <button key={s} className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setContractApplication(null); void setStatus(a.id, s); }}>{s}</button>)}
+                                  {a.status === "accepted" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setContractApplication(a.id); }}>Create contract</button>}
+                                </div>}
                               </div>
                               {a.status === "accepted" && contractApplication === a.id && (
                                 <div className="w-full">

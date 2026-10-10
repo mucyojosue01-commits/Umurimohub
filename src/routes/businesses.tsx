@@ -34,10 +34,6 @@ function Page() {
         {businesses.map((b) => (
           <div key={b.id} className="min-w-0">
             <BusinessCard b={b} />
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" asChild><Link to="/businesses/$id" params={{ id: b.id }}>View business</Link></Button>
-              {user?.businessIds.includes(b.id) && <Button size="sm" variant="secondary" asChild><Link to="/businesses/$id" params={{ id: b.id }} search={{ edit: true }}>Edit business</Link></Button>}
-            </div>
           </div>
         ))}
       </div>
