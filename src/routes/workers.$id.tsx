@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { BadgeCheck, MapPin, MessageSquare, Star, Briefcase, Users } from "lucide-react";
+import { BadgeCheck, MapPin, MessageSquare, Star, Briefcase, Users, CheckCircle2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -63,7 +63,7 @@ function Page() {
       const uid = workerUserIds[w.id]!;
       const [experiences, trainingExperiences, connections, teams] = await Promise.all([
         supabase.from("verified_experiences").select("id,title,scope,completed_at,amount_rwf,business_id,team_id").eq("worker_id", w.id).order("completed_at", { ascending: false }),
-        supabase.from("training_experiences").select("id,training_id,title,description,completed_at,provider_user_id").eq("worker_id", w.id).order("completed_at", { ascending: false }),
+        supabase.from("training_experiences").select("id,training_id,title,description,skills,completed_at,provider_user_id").eq("worker_id", w.id).order("completed_at", { ascending: false }),
         supabase.from("connections").select("*").or("requester.eq." + uid + ",addressee.eq." + uid).eq("status", "accepted"),
         supabase.from("team_members").select("team_id,role,status").eq("worker_id", w.id).eq("status", "active"),
       ]);
@@ -174,6 +174,7 @@ function Page() {
                     <p className="font-medium">{x.title}</p>
                     <p className="mt-1 text-sm text-muted-foreground">{x.description}</p>
                     <p className="mt-1 text-xs text-muted-foreground">Completed {new Date(x.completed_at).toLocaleDateString()}</p>
+                    {!!x.skills?.length && <div className="mt-3"><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Skills acquired</p><ul className="mt-2 flex flex-wrap gap-2">{x.skills.map((skill: string) => <li key={skill} className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs"><CheckCircle2 className="size-3.5 text-primary" />{skill}</li>)}</ul></div>}
                   </li>
                 ))}
               </ul>
