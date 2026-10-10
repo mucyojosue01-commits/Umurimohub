@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AgricultureRouteImport } from './routes/agriculture'
+import { Route as BizzRouteImport } from './routes/bizz'
+import { Route as BizzIdRouteImport } from './routes/bizz.$id'
+import { Route as BizzIdEditRouteImport } from './routes/bizz.$id.edit'
 import { Route as BusinessesRouteImport } from './routes/businesses'
 import { Route as CompanyRouteImport } from './routes/company'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -55,6 +58,21 @@ const AboutRoute = AboutRouteImport.update({
 const AgricultureRoute = AgricultureRouteImport.update({
   id: '/agriculture',
   path: '/agriculture',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BizzRoute = BizzRouteImport.update({
+  id: '/bizz',
+  path: '/bizz',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BizzIdRoute = BizzIdRouteImport.update({
+  id: '/bizz/$id',
+  path: '/bizz/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BizzIdEditRoute = BizzIdEditRouteImport.update({
+  id: '/bizz/$id/edit',
+  path: '/bizz/$id/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BusinessesRoute = BusinessesRouteImport.update({
@@ -208,6 +226,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
+  '/bizz': typeof BizzRoute
+  '/bizz/$id': typeof BizzIdRoute
+  '/bizz/$id/edit': typeof BizzIdEditRoute
   '/businesses': typeof BusinessesRoute
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
@@ -242,6 +263,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
+  '/bizz': typeof BizzRoute
+  '/bizz/$id': typeof BizzIdRoute
+  '/bizz/$id/edit': typeof BizzIdEditRoute
   '/businesses': typeof BusinessesRoute
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
@@ -277,6 +301,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
+  '/bizz': typeof BizzRoute
+  '/bizz/$id': typeof BizzIdRoute
+  '/bizz/$id/edit': typeof BizzIdEditRoute
   '/businesses': typeof BusinessesRoute
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
@@ -313,6 +340,9 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/agriculture'
+    | '/bizz'
+    | '/bizz/$id'
+    | '/bizz/$id/edit'
     | '/businesses'
     | '/company'
     | '/dashboard'
@@ -347,6 +377,9 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/agriculture'
+    | '/bizz'
+    | '/bizz/$id'
+    | '/bizz/$id/edit'
     | '/businesses'
     | '/company'
     | '/dashboard'
@@ -381,6 +414,9 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/agriculture'
+    | '/bizz'
+    | '/bizz/$id'
+    | '/bizz/$id/edit'
     | '/businesses'
     | '/company'
     | '/dashboard'
@@ -416,6 +452,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AgricultureRoute: typeof AgricultureRoute
+  BizzRoute: typeof BizzRoute
+  BizzIdRoute: typeof BizzIdRoute
+  BizzIdEditRoute: typeof BizzIdEditRoute
   BusinessesRoute: typeof BusinessesRoute
   CompanyRoute: typeof CompanyRoute
   DashboardRoute: typeof DashboardRoute
@@ -467,6 +506,27 @@ declare module '@tanstack/react-router' {
       path: '/agriculture'
       fullPath: '/agriculture'
       preLoaderRoute: typeof AgricultureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bizz': {
+      id: '/bizz'
+      path: '/bizz'
+      fullPath: '/bizz'
+      preLoaderRoute: typeof BizzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bizz/$id': {
+      id: '/bizz/$id'
+      path: '/bizz/$id'
+      fullPath: '/bizz/$id'
+      preLoaderRoute: typeof BizzIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bizz/$id/edit': {
+      id: '/bizz/$id/edit'
+      path: '/bizz/$id/edit'
+      fullPath: '/bizz/$id/edit'
+      preLoaderRoute: typeof BizzIdEditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/businesses': {
@@ -691,6 +751,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AgricultureRoute: AgricultureRoute,
+  BizzRoute: BizzRoute,
+  BizzIdRoute: BizzIdRoute,
+  BizzIdEditRoute: BizzIdEditRoute,
   BusinessesRoute: BusinessesRoute,
   CompanyRoute: CompanyRoute,
   DashboardRoute: DashboardRoute,
