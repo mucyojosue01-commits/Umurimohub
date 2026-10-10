@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-/** Keep old directory bookmarks working while routing directly to Bizz. */
+/** Preserve legacy directory bookmarks and route to the original business directory. */
 export const Route = createFileRoute("/businesses")({
-  beforeLoad: () => { throw redirect({ to: "/bizz", replace: true }); },
+  beforeLoad: () => { throw redirect({ to: "/company/businesses", replace: true }); },
 });
