@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-/** Keep legacy business profile links working with the canonical Bizz profile. */
+/** Preserve legacy business profile links. */
 export const Route = createFileRoute("/businesses/$id")({
-  beforeLoad: ({ params }) => { throw redirect({ to: "/bizz/$id", params: { id: params.id }, replace: true }); },
+  beforeLoad: ({ params }) => { throw redirect({ to: "/company/$id", params: { id: params.id }, replace: true }); },
 });
