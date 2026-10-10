@@ -36,7 +36,12 @@ function Page() {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const [financeBusy, setFinanceBusy] = useState(false);
-  const opportunityQ = useQuery({\n    queryKey: ["contract-opportunity", contract?.opportunity_id],\n    enabled: !!contract?.opportunity_id,\n    queryFn: async () => { const { data, error } = await supabase.from("opportunities").select("id,title").eq("id", contract!.opportunity_id).maybeSingle(); if (error) throw error; return data; },\n  });\n  const paymentQ = useQuery({
+  const opportunityQ = useQuery({
+    queryKey: ["contract-opportunity", contract?.opportunity_id],
+    enabled: !!contract?.opportunity_id,
+    queryFn: async () => { const { data, error } = await supabase.from("opportunities").select("id,title").eq("id", contract!.opportunity_id).maybeSingle(); if (error) throw error; return data; },
+  });
+  const paymentQ = useQuery({
     queryKey: ["contract-payment", contract?.id],
     enabled: !!contract,
     queryFn: async () => {
