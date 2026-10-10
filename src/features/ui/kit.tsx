@@ -370,7 +370,7 @@ export function TeamCard({ t }: { t: Team }) {
 
 export function BusinessCard({ b }: { b: Business }) {
   return (
-    <Link to="/businesses/$id" params={{ id: b.id }} className="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+    <a href={"/businesses/" + b.id} className="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
     <Card className="h-full transition group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-lift">
       <div className="flex items-center gap-3">
         <Avatar initials={b.name.slice(0,2).toUpperCase()} src={b.avatarUrl} alt={b.name} size="md" />
@@ -394,7 +394,7 @@ export function BusinessCard({ b }: { b: Business }) {
         </span>
       </div>
     </Card>
-    </Link>
+    </a>
   );
 }
 
