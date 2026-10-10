@@ -44,7 +44,7 @@ function Page() {
   const data = q.data;
   return (
     <div className="container-page py-10">
-      <PageHeader eyebrow="Company" title="Your business workspace" desc="Manage real hiring activity, applicants, contracts and milestones." actions={<div className="flex flex-wrap gap-2"><Button variant="outline" asChild><Link to="/company/businesses">Company directory</Link></Button><Button asChild><Link to="/opportunities/new">Post opportunity</Link></Button></div>} />
+      <PageHeader eyebrow="Company" title="Your business workspace" desc="Manage real hiring activity, applicants, contracts and milestones." actions={<div className="flex flex-wrap gap-2"><Button variant="outline" asChild><Link to="/bizz">Company directory</Link></Button><Button asChild><Link to="/opportunities/new">Post opportunity</Link></Button></div>} />
       <div className="grid gap-4 md:grid-cols-4">
         <Stat icon={Briefcase} label="Open opportunities" value={String(data?.opportunities.filter((x) => x.status === "open").length ?? 0)} />
         <Stat icon={Users} label="Applications" value={String(data?.applications.length ?? 0)} />
