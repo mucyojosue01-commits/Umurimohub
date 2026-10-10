@@ -239,20 +239,13 @@ export function IncomingApplications() {
                                   })()}
                                 </div>
                               </div>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Pill tone={a.status === "accepted" ? "success" : a.status === "shortlisted" ? "primary" : "muted"}>{a.status}</Pill>
-                                {a.status !== "withdrawn" && (["viewed", "shortlisted", "accepted", "rejected"] as Status[]).filter((s) => s !== a.status).map((s) => (
-                                  <Button key={s} size="sm" variant="outline" onClick={() => setStatus(a.id, s)}>{s}</Button>
-                                ))}
-                                {a.status === "accepted" && (
-                                  <Button size="sm" onClick={() => {
-                                    const existing = q.data.contracts.find((contract) => contract.opportunity_id === a.opportunity_id);
-                                    if (existing && !window.confirm("Are you sure you want to make this other contract?")) return;
-                                    setContractApplication(a.id);
-                                  }}>
-                                    {q.data.contracts.some((contract) => contract.opportunity_id === a.opportunity_id) ? "Create another contract" : "Create contract"}
-                                  </Button>
-                                )}
+                              <div className="relative">
+                                <Button size="icon" variant="outline" aria-label={"Applicant actions for " + displayName} onClick={() => setContractApplication(contractApplication === "menu:" + a.id ? null : "menu:" + a.id)}><MoreVertical className="size-4" /></Button>
+                                {contractApplication === "menu:" + a.id && <div className="absolute right-0 top-10 z-30 w-52 rounded-2xl border bg-popover p-1 shadow-xl">
+                                  <div className="px-3 py-2"><Pill tone={a.status === "accepted" ? "success" : a.status === "shortlisted" ? "primary" : "muted"}>{a.status}</Pill></div>
+                                  {a.status !== "withdrawn" && (["viewed", "shortlisted", "accepted", "rejected"] as Status[]).filter((s) => s !== a.status).map((s) => <button key={s} className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setContractApplication(null); void setStatus(a.id, s); }}>{s}</button>)}
+                                  {a.status === "accepted" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setContractApplication(a.id); }}>Create contract</button>}
+                                </div>}
                               </div>
                               {a.status === "accepted" && contractApplication === a.id && (
                                 <div className="w-full">
