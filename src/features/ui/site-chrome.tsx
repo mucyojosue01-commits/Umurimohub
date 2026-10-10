@@ -14,7 +14,7 @@ const NAV = [
   { to: "/agriculture", label: "Agriculture" },
   { to: "/training", label: "Training" },
   { to: "/grow", label: "Grow" },
-  { to: "/company/businesses", label: "Companies" },
+  { to: "/bizz", label: "Bizz" },
   { to: "/pricing", label: "For business" },
 ] as const;
 
@@ -98,7 +98,7 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   const cols = [
-    ["Platform", [["/opportunities","Opportunities"],["/workers","Workers"],["/teams","Teams"],["/company/businesses","Businesses"]]],
+    ["Platform", [["/opportunities","Opportunities"],["/workers","Workers"],["/teams","Teams"],["/bizz","Bizz directory"]]],
     ["Grow", [["/training","Training"],["/agriculture","Agriculture"],["/insights","Economic insights"],["/pricing","Business plans"]]],
     ["Company", [["/about","About"],["/how-it-works","How it works"],["/help","Help"],["/terms","Terms of Service"],["/privacy","Privacy Policy"]]],
   ] as const;
