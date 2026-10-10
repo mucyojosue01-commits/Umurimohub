@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { rwf } from "@/features/data/demo";
 import { catalogQuery, useCatalog } from "@/features/data/catalog";
 import { ConnectButton } from "@/features/network/connect-button";
+import { useApp } from "@/features/store/app-store";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, Card, DemoNotice, Pill, TrustMeter } from "@/features/ui/kit";
 
@@ -53,7 +54,8 @@ const vTone = {
 
 function Page() {
   const { w: loaded } = Route.useLoaderData();
-  const { getTeam, getWorker, workerUserIds } = useCatalog();
+  const { getTeam, getWorker, workerUserIds, businesses } = useCatalog();
+  const { user } = useApp();
   const w = getWorker(loaded.id) ?? loaded;
   const nav = useNavigate();
   const detailQ = useQuery({
@@ -87,6 +89,27 @@ function Page() {
       return { experiences: experiences.data ?? [], trainingExperiences: trainingExperiences.data ?? [], connections: connections.data ?? [], profiles: profiles.data ?? [], connectionWorkers: connectionWorkers.data ?? [], businesses: businessRows.data ?? [], teams: teamRows.data ?? [] };
     },
   });
+  const employmentQ = useQuery({
+    queryKey: ["worker-employment", w.id, workerUserIds[w.id]],
+    enabled: !!workerUserIds[w.id],
+    queryFn: async () => {
+      const workerUserId = workerUserIds[w.id]!;
+      const [active, offers] = await Promise.all([
+        supabase.from("company_employments").select("id,business_id,position_name,employment_type,started_at,status").eq("worker_id", w.id).eq("status", "active").order("started_at", { ascending: false }),
+        user?.id === workerUserId
+          ? supabase.from("employment_offers").select("id,business_id,position_name,employment_type,details,status,created_at").eq("worker_user_id", workerUserId).eq("status", "pending").order("created_at", { ascending: false })
+          : Promise.resolve({ data: [] as { id: string; business_id: string; position_name: string; employment_type: string; details: string; status: string; created_at: string }[] }),
+      ]);
+      return { active: active.data ?? [], offers: offers.data ?? [] };
+    },
+  });
+  const respondToOffer = async (offerId: string, decision: "accepted" | "declined") => {
+    const { error } = await supabase.rpc("respond_to_employment_offer", { _offer_id: offerId, _decision: decision });
+    if (error) { toast.error(error.message); return; }
+    toast.success(decision === "accepted" ? "Employment accepted. Your profile now shows this position." : "Offer declined.");
+    await employmentQ.refetch();
+  };
+
   return (
     <div className="container-page py-10">
       <Card className="p-6 md:p-8">
@@ -111,6 +134,7 @@ function Page() {
                 <Briefcase className="size-4" />
                 {w.years} yrs
               </span>
+              <span className="font-semibold text-primary">{detailQ.data?.experiences.length ?? 0} completed projects</span>
             </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -181,8 +205,15 @@ function Page() {
             )}
           </Card>
           <Card>
+            <h2 className="font-bold">Employment</h2>
+            {!employmentQ.data?.active.length && !employmentQ.data?.offers.length ? <p className="mt-2 text-sm text-muted-foreground">No current company positions recorded.</p> : <div className="mt-3 divide-y">
+              {employmentQ.data?.active.map((employment) => { const company = businesses.find((b) => b.id === employment.business_id); return <div key={employment.id} className="py-3"><p className="font-semibold">{employment.position_name}</p><p className="text-sm text-muted-foreground">{company?.name ?? "Company"} · {employment.employment_type.replaceAll("_", " ")}</p><p className="mt-1 text-xs text-muted-foreground">Since {new Date(employment.started_at).toLocaleDateString()}</p>{company && <Link to="/business/$id" params={{ id: company.id }} className="mt-2 inline-block text-sm text-primary hover:underline">View company</Link>}</div>; })}
+              {user?.id === workerUserIds[w.id] && employmentQ.data?.offers.map((offer) => { const company = businesses.find((b) => b.id === offer.business_id); return <div key={offer.id} className="py-3"><p className="text-xs font-semibold uppercase tracking-wide text-primary">Employment offer</p><p className="mt-1 font-semibold">{offer.position_name}</p><p className="text-sm text-muted-foreground">{company?.name ?? "Company"} · {offer.employment_type.replaceAll("_", " ")}</p>{offer.details && <p className="mt-2 text-sm">{offer.details}</p>}<div className="mt-3 flex gap-2"><Button size="sm" onClick={() => void respondToOffer(offer.id, "accepted")}>Accept offer</Button><Button size="sm" variant="outline" onClick={() => void respondToOffer(offer.id, "declined")}>Decline</Button></div></div>; })}
+            </div>}
+          </Card>
+          <Card>
             <h2 className="font-bold">Past verified projects</h2>
-            {detailQ.isLoading ? <p className="mt-2 text-sm text-muted-foreground">Loading projects…</p> : detailQ.isError ? <p className="mt-2 text-sm text-destructive">Could not load projects. Please try again.</p> : !detailQ.data?.experiences.length ? <p className="mt-2 text-sm text-muted-foreground">No verified projects yet.</p> : <ul className="mt-3 divide-y">{detailQ.data.experiences.map((x) => { const business = detailQ.data?.businesses.find((b) => b.id === x.business_id); const team = x.team_id ? detailQ.data?.teams.find((t) => t.id === x.team_id) : undefined; return <li key={x.id} className="py-3"><p className="font-medium">{x.title}</p><p className="text-sm text-muted-foreground">{x.scope}</p><div className="mt-2 flex flex-wrap gap-2">{business && <Link to="/businesses/$id" params={{ id: business.id }} className="inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs hover:bg-muted"><Avatar initials={business.name.slice(0,2).toUpperCase()} src={business.avatar_url} alt={business.name} size="sm" />{business.name}</Link>}{team && <Link to="/teams/$id" params={{ id: team.id }} className="inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs hover:bg-muted"><Avatar initials={team.name.slice(0,2).toUpperCase()} src={team.avatar_url} alt={team.name} size="sm" />{team.name}</Link>}</div><p className="mt-1 text-xs text-muted-foreground">{new Date(x.completed_at).toLocaleDateString()} · {rwf(x.amount_rwf)}</p></li>; })}</ul>}
+            {detailQ.isLoading ? <p className="mt-2 text-sm text-muted-foreground">Loading projects…</p> : detailQ.isError ? <p className="mt-2 text-sm text-destructive">Could not load projects. Please try again.</p> : !detailQ.data?.experiences.length ? <p className="mt-2 text-sm text-muted-foreground">No verified projects yet.</p> : <ul className="mt-3 divide-y">{detailQ.data.experiences.map((x) => { const business = detailQ.data?.businesses.find((b) => b.id === x.business_id); const team = x.team_id ? detailQ.data?.teams.find((t) => t.id === x.team_id) : undefined; return <li key={x.id} className="py-3"><p className="font-medium">{x.title}</p><p className="mt-1 text-sm text-muted-foreground">{x.scope}</p><div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>Completed {x.completed_at ? new Date(x.completed_at).toLocaleDateString() : "date not recorded"}</span>{x.amount_rwf != null && <span>· {rwf(x.amount_rwf)}</span>}</div><div className="mt-2 flex flex-wrap gap-2">{business && <Link to="/businesses/$id" params={{ id: business.id }} className="inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs hover:bg-muted"><Avatar initials={business.name.slice(0,2).toUpperCase()} src={business.avatar_url} alt={business.name} size="sm" />{business.name}</Link>}{team && <Link to="/teams/$id" params={{ id: team.id }} className="inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs hover:bg-muted"><Avatar initials={team.name.slice(0,2).toUpperCase()} src={team.avatar_url} alt={team.name} size="sm" />{team.name}</Link>}</div><p className="mt-1 text-xs text-muted-foreground">{new Date(x.completed_at).toLocaleDateString()} · {rwf(x.amount_rwf)}</p></li>; })}</ul>}
           </Card>
           <Card>
             <h2 className="flex items-center gap-2 font-bold">

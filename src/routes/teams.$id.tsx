@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { Star, Users } from "lucide-react";
+import { MoreVertical, Star, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { mapWorker, mapTeam } from "@/features/data/mappers";
@@ -96,8 +96,8 @@ function Page() {
       <Card className="p-6 md:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="flex items-center gap-3"><Avatar initials={t.name.slice(0,2).toUpperCase()} src={t.avatarUrl} alt={t.name} /><div><Pill tone="primary">{t.sector}</Pill><h1 className="mt-2 text-3xl font-extrabold">{t.name}</h1>
-            <p className="mt-1 text-muted-foreground">{t.summary}</p></div></div>
+            <div className="flex items-start gap-3"><Avatar initials={t.name.slice(0,2).toUpperCase()} src={t.avatarUrl} alt={t.name} /><div className="min-w-0 flex-1"><h1 className="text-3xl font-extrabold">{t.name}</h1><div className="mt-2"><Pill tone="primary">{t.sector}</Pill></div>
+            <p className="mt-2 text-muted-foreground">{t.summary}</p></div>{isLead && <details className="relative shrink-0"><summary aria-label="Team management menu" title="Team management" className="flex size-10 cursor-pointer list-none items-center justify-center rounded-xl border bg-background hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><MoreVertical className="size-5" /></summary><div className="absolute right-0 top-12 z-20 min-w-44 rounded-xl border bg-card p-1.5 shadow-lg"><button type="button" onClick={() => setEditing((v) => !v)} className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted">{editing ? "Cancel edit" : "Edit team"}</button><button type="button" onClick={remove} disabled={busy} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-destructive hover:bg-muted disabled:opacity-50"><Trash2 className="size-4" />Delete team</button></div></details>}</div>
             <div className="mt-3 flex flex-wrap gap-4 text-sm">
               <span className="flex items-center gap-1">
                 <Star className="size-4 fill-accent text-accent" />
@@ -110,7 +110,7 @@ function Page() {
               </span>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">{isLead && <><Button size="sm" variant="outline" onClick={() => setEditing((v) => !v)}>{editing ? "Cancel edit" : "Edit team"}</Button><Button size="sm" variant="outline" onClick={remove} disabled={busy}>Delete</Button></>}<Button size="lg" onClick={() => toast.success("Hire request sent to " + t.name)} disabled={!t.available}>{t.available ? "Hire team" : "Currently booked"}</Button></div>
+          <div className="flex flex-wrap gap-2"><Button size="lg" onClick={() => toast.success("Hire request sent to " + t.name)} disabled={!t.available}>{t.available ? "Hire team" : "Currently booked"}</Button></div>
         </div>
       </Card>
       {editing && isLead && (
