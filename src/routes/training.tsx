@@ -256,7 +256,7 @@ function Page() {
                   <p className="text-sm font-medium">Your training path</p>
                   <div className="mt-2 flex flex-wrap gap-2 text-xs"><Pill>Applied</Pill>{["shortlisted","accepted","completed"].includes(mine.status) && <Pill tone="primary">Shortlisted</Pill>}{["accepted","completed"].includes(mine.status) && <Pill tone="primary">Accepted</Pill>}{mine.status === "completed" && <Pill tone="success">Completed</Pill>}</div>
                   {mine.status === "shortlisted" && <div className="mt-3 flex gap-2"><Button size="sm" disabled={busy === mine.id} onClick={() => void respond(mine.id, true)}>Accept</Button><Button size="sm" variant="outline" disabled={busy === mine.id} onClick={() => void respond(mine.id, false)}>Decline</Button></div>}
-                  {mine.status === "accepted" && <Button className="mt-3" size="sm" disabled={busy === mine.id} onClick={() => void complete(mine.id)}>{busy === mine.id ? "Saving…" : "Mark training complete"}</Button>}
+                  {mine.status === "accepted" && <p className="mt-3 text-xs text-muted-foreground">Your training provider will confirm completion. Once confirmed, this training and its acquired skills will appear on your profile.</p>}
                   {mine.status === "completed" && <p className="mt-2 text-xs text-success">Completed training is now part of your profile experience.</p>}
                   {mineWorker && <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><Avatar initials={mineWorker.initials} src={mineWorker.avatarUrl} alt={mineWorker.name} size="sm" />{mineWorker.name}</div>}
                 </div>
