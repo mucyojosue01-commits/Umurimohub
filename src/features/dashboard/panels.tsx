@@ -28,11 +28,11 @@ export function MyApplications() {
       return { businesses: businesses.data ?? [], teams: teams.data ?? [], profile: profile.data ?? null, worker: worker.data ?? null };
     },
   });
-  const title = (id: string) => allOpps.find((o) => o.id === id)?.title ?? "Opportunity";
+  const title = (id: string) => allOpps.find((o) => o.id === id)?.title ?? "Opportunity";\n  const linkedContractsQ = useQuery({ queryKey: ["my-application-contracts", session?.user.id, applications.map(a=>a.id)], enabled: !!session && applications.length > 0, queryFn: async () => { const { data, error } = await supabase.from("contracts").select("application_id").in("application_id", applications.map(a=>a.id)); if (error) throw error; return new Set((data ?? []).map(c=>c.application_id)); } });\n  const visibleApplications = applications.filter(a => !(a.status.toLowerCase() === "accepted" && linkedContractsQ.data?.has(a.id)));
   return (
     <Card className="mt-6">
       <h2 className="font-bold">My applications</h2>
-      {!applications.length ? (
+      {!visibleApplications.length ? (
         <p className="mt-2 text-sm text-muted-foreground">
           No applications yet.{" "}
           <Link to="/opportunities" className="text-primary">
@@ -41,7 +41,7 @@ export function MyApplications() {
         </p>
       ) : (
         <ul className="mt-3 divide-y">
-          {applications.map((a) => {
+          {visibleApplications.map((a) => {
             const business = actorsQ.data?.businesses.find((x) => x.id === a.businessId);
             const team = actorsQ.data?.teams.find((x) => x.id === a.teamId);
             const displayName = business?.name ?? team?.name ?? actorsQ.data?.profile?.display_name ?? "Applicant";
