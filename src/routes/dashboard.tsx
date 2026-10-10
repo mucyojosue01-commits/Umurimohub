@@ -68,10 +68,18 @@ function Page() {
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Businesses</p>
             {businesses.filter((b) => user.businessIds.includes(b.id)).length ? businesses.filter((b) => user.businessIds.includes(b.id)).map((b) => (
-              <Link key={b.id} to="/businesses/$id" params={{ id: b.id }} className="flex items-center gap-3 rounded-xl border p-3 transition hover:border-primary/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <Avatar initials={b.name.slice(0,2).toUpperCase()} src={b.avatarUrl} alt={b.name} size="sm" />
-                <div className="min-w-0 flex-1"><p className="truncate font-medium">{b.name}</p><p className="text-xs text-muted-foreground">{b.district} · {b.sector}</p></div>
-              </Link>
+              <div key={b.id} className="relative flex items-center gap-3 rounded-xl border p-3 transition hover:border-primary/40 hover:bg-muted/40">
+                <Link to="/businesses/$id" params={{ id: b.id }} className="flex min-w-0 flex-1 items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                  <Avatar initials={b.name.slice(0,2).toUpperCase()} src={b.avatarUrl} alt={b.name} size="sm" />
+                  <div className="min-w-0 flex-1"><p className="truncate font-medium">{b.name}</p><p className="text-xs text-muted-foreground">{b.district} · {b.sector}</p></div>
+                </Link>
+                <Button size="icon" variant="ghost" aria-label={"Business actions for " + b.name} onClick={() => setMenu(menu === "b:" + b.id ? null : "b:" + b.id)}><MoreVertical className="size-4" /></Button>
+                {menu === "b:" + b.id && <div className="absolute right-2 top-12 z-30 w-44 rounded-2xl border bg-popover p-1 shadow-xl">
+                  <Link to="/businesses/$id" params={{ id: b.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>View profile</Link>
+                  <Link to="/businesses/$id/edit" params={{ id: b.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Edit business</Link>
+                  <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={async () => { setMenu(null); if (!window.confirm("Delete this business? This may be blocked if it has opportunities or contracts.")) return; const { error } = await supabase.from("businesses").delete().eq("id", b.id); if (error) toast.error("This business cannot be deleted while dependent work exists."); else { toast.success("Business deleted"); window.location.reload(); } }}>Delete business</button>
+                </div>}
+              </div>
             )) : <p className="text-sm text-muted-foreground">No businesses yet.</p>}
           </div>
           <div className="space-y-2">
