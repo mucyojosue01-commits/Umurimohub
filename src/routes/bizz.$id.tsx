@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, Outlet, useRouterState } from "@tanstack/react-router";
 import { Building2, MapPin, Pencil, Plus, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
@@ -59,11 +59,13 @@ const money = (value: number) => new Intl.NumberFormat("en-RW", { maximumFractio
 
 function BizzProfilePage() {
   const { id } = Route.useParams();
+  const pathname = useRouterState({ select: (state) => state.location.pathname.replace(/\/+$/, "") });
   const { user } = useApp();
   const { business, openOpportunities } = Route.useLoaderData();
   const isOwner = !!user && user.businessIds.includes(id);
 
-  return <div className="container-page py-8 md:py-10">
+  return <>
+    {pathname === `/bizz/${id}` && <div className="container-page py-8 md:py-10">
     <Link to="/bizz" className="text-sm text-muted-foreground hover:text-foreground">← Company directory</Link>
     <Card className="mt-4 overflow-hidden p-0"><div className="h-2 bg-primary" /><div className="p-5 md:p-8">
       <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between"><div className="flex min-w-0 items-start gap-4"><Avatar initials={business.name.slice(0,2).toUpperCase()} src={business.avatarUrl} alt={business.name} size="lg" /><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><Building2 className="size-5 text-primary" /><h1 className="break-words text-2xl font-display font-bold md:text-3xl">{business.name}</h1>{business.verified && <Pill tone="success"><ShieldCheck className="size-3.5" />Verified company</Pill>}</div><p className="mt-2 flex flex-wrap items-center gap-1 text-sm text-muted-foreground"><MapPin className="size-4" />{business.district || "Rwanda"} · {business.sector}</p></div></div>
@@ -75,5 +77,7 @@ function BizzProfilePage() {
     <section className="mt-9"><PageHeader eyebrow="Work with this company" title="Open opportunities" desc="Current opportunities published by this company." />
       {openOpportunities.length === 0 ? <Card><h2 className="font-semibold">No open opportunities listed</h2><p className="mt-1 text-sm text-muted-foreground">New opportunities will appear here when published.</p>{isOwner && <Button className="mt-4" asChild><Link to="/opportunities/new"><Plus className="mr-2 size-4" />Create opportunity</Link></Button>}</Card> : <div className="grid gap-4 md:grid-cols-2">{openOpportunities.map((item) => <Card key={item.id} className="flex flex-col"><div className="flex items-start justify-between gap-3"><div><h2 className="font-semibold">{item.title}</h2><p className="mt-1 text-sm text-muted-foreground">{item.summary || "See the opportunity for full details."}</p></div><Pill tone="success">Open</Pill></div><div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground"><span>{item.sector}</span><span>{item.district}</span><span>{money(item.payRwf)} / {item.payUnit}</span></div><div className="mt-4 border-t pt-3"><Button variant="outline" size="sm" asChild><Link to="/opportunities/$id" params={{ id: item.id }}>View opportunity</Link></Button></div></Card>)}</div>}
     </section>
-  </div>;
+    </div>}
+    <Outlet />
+  </>; 
 }
