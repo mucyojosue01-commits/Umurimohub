@@ -1,11 +1,56 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Building2, MapPin, Pencil, Plus, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
-import { useCatalog } from "@/features/data/catalog";
+import { mapBusiness, mapOpportunity } from "@/features/data/mappers";
+import { supabase } from "@/integrations/supabase/client";
 import { Avatar, Card, PageHeader, Pill } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/bizz/$id")({
+  loader: async ({ params }) => {
+    const { data: rawBusiness, error: businessError } = await supabase
+      .from("businesses")
+      .select("*")
+      .eq("id", params.id)
+      .eq("is_demo", false)
+      .maybeSingle();
+
+    if (businessError) throw new Error("Company profile could not be loaded: " + businessError.message);
+    if (!rawBusiness) throw notFound();
+
+    const { data: rawOpportunities, error: opportunitiesError } = await supabase
+      .from("opportunities")
+      .select("*")
+      .eq("business_id", params.id)
+      .eq("status", "open")
+      .eq("is_demo", false)
+      .order("created_at", { ascending: false });
+
+    if (opportunitiesError) throw new Error("Company opportunities could not be loaded: " + opportunitiesError.message);
+
+    return {
+      business: mapBusiness(rawBusiness, rawOpportunities ?? []),
+      openOpportunities: (rawOpportunities ?? []).map(mapOpportunity),
+    };
+  },
+  notFoundComponent: () => (
+    <div className="container-page py-12">
+      <Card>
+        <h1 className="font-semibold">Company not found</h1>
+        <p className="mt-2 text-sm text-muted-foreground">This company is unavailable or not publicly listed.</p>
+        <Button variant="outline" className="mt-4" asChild><Link to="/bizz">Browse companies</Link></Button>
+      </Card>
+    </div>
+  ),
+  errorComponent: () => (
+    <div className="container-page py-12">
+      <Card>
+        <h1 className="font-semibold">Company profile could not load</h1>
+        <p className="mt-2 text-sm text-muted-foreground">The profile request failed. Return to the directory or reload this page to retry.</p>
+        <Button variant="outline" className="mt-4" asChild><Link to="/bizz">Company directory</Link></Button>
+      </Card>
+    </div>
+  ),
   head: () => ({ meta: [{ title: "Company profile — UmurimoHub" }, { name: "description", content: "Company information, services and open opportunities on UmurimoHub." }] }),
   component: BizzProfilePage,
 });
@@ -15,14 +60,8 @@ const money = (value: number) => new Intl.NumberFormat("en-RW", { maximumFractio
 function BizzProfilePage() {
   const { id } = Route.useParams();
   const { user } = useApp();
-  const { businesses, opportunities, loading, error, refresh } = useCatalog();
-  const business = businesses.find((item) => item.id === id);
+  const { business, openOpportunities } = Route.useLoaderData();
   const isOwner = !!user && user.businessIds.includes(id);
-  const openOpportunities = opportunities.filter((item) => item.businessId === id);
-
-  if (loading) return <div className="container-page py-16 text-sm text-muted-foreground" role="status">Loading company profile…</div>;
-  if (error) return <div className="container-page py-12"><Card><h1 className="font-semibold">Company profile could not load</h1><p className="mt-2 text-sm text-muted-foreground">Check your connection, then retry. No company data has been changed.</p><div className="mt-4 flex flex-wrap gap-2"><Button onClick={() => void refresh()}>Retry</Button><Button variant="outline" asChild><Link to="/bizz">Company directory</Link></Button></div></Card></div>;
-  if (!business) return <div className="container-page py-12"><Card><h1 className="font-semibold">Company not found</h1><p className="mt-2 text-sm text-muted-foreground">This company is unavailable or not publicly listed.</p><Button className="mt-4" variant="outline" asChild><Link to="/bizz">Browse companies</Link></Button></Card></div>;
 
   return <div className="container-page py-8 md:py-10">
     <Link to="/bizz" className="text-sm text-muted-foreground hover:text-foreground">← Company directory</Link>
