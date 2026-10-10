@@ -31,8 +31,6 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrainingRouteImport } from './routes/training'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as BusinessesIdRouteImport } from './routes/businesses.$id'
-import { Route as BusinessesIdEditRouteImport } from './routes/businesses.$id.edit'
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
@@ -155,16 +153,6 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
-const BusinessesIdRoute = BusinessesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => BusinessesRoute,
-} as any)
-const BusinessesIdEditRoute = BusinessesIdEditRouteImport.update({
-  id: '/edit',
-  path: '/edit',
-  getParentRoute: () => BusinessesIdRoute,
-} as any)
 const ContractsIdRoute = ContractsIdRouteImport.update({
   id: '/contracts/$id',
   path: '/contracts/$id',
@@ -239,9 +227,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/businesses/$id': typeof BusinessesIdRouteWithChildren
-  '/businesses/$id/edit': typeof BusinessesIdEditRoute
-  '/contracts/$id': typeof ContractsIdRoute
+    '/contracts/$id': typeof ContractsIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -436,7 +422,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AgricultureRoute: typeof AgricultureRoute
-  BusinessesRoute: typeof BusinessesRouteWithChildren
+  BusinessesRoute: typeof BusinessesRoute
   CompanyRoute: typeof CompanyRoute
   DashboardRoute: typeof DashboardRoute
   GrowRoute: typeof GrowRoute
@@ -709,28 +695,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface BusinessesIdRouteChildren {
-  BusinessesIdEditRoute: typeof BusinessesIdEditRoute
-}
-
-const BusinessesIdRouteChildren: BusinessesIdRouteChildren = {
-  BusinessesIdEditRoute: BusinessesIdEditRoute,
-}
-
-const BusinessesIdRouteWithChildren = BusinessesIdRoute._addFileChildren(BusinessesIdRouteChildren)
-
-interface BusinessesRouteChildren {
-  BusinessesIdRoute: typeof BusinessesIdRouteWithChildren
-}
-
-const BusinessesRouteChildren: BusinessesRouteChildren = {
-  BusinessesIdRoute: BusinessesIdRouteWithChildren,
-}
-
-const BusinessesRouteWithChildren = BusinessesRoute._addFileChildren(
-  BusinessesRouteChildren,
-)
-
 interface OpportunitiesIdRouteChildren {
   OpportunitiesIdEditRoute: typeof OpportunitiesIdEditRoute
 }
@@ -747,7 +711,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AgricultureRoute: AgricultureRoute,
-  BusinessesRoute: BusinessesRouteWithChildren,
+  BusinessesRoute: BusinessesRoute,
   CompanyRoute: CompanyRoute,
   DashboardRoute: DashboardRoute,
   GrowRoute: GrowRoute,
