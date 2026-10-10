@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Building2, MapPin } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ function Page() {
   if (!business) throw notFound();
   const canManage = user?.businessIds.includes(id) ?? false;
   const [editing, setEditing] = useState(edit);
+  useEffect(() => setEditing(edit), [edit]);
   const [name, setName] = useState(business.name);
   const [about, setAbout] = useState(business.about);
   const [services, setServices] = useState(business.services.join(", "));
@@ -95,7 +96,7 @@ function Page() {
             <Pill className="mt-3">{business.sector}</Pill><Pill tone="success" className="mt-3 ml-2">{Math.round(business.trustScore ?? 0)} trust</Pill>
           </div>
         </div>
-        {canManage && <div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setEditing((v) => !v)}>{editing ? "Cancel edit" : "Edit business"}</Button><Button size="sm" variant="outline" onClick={remove} disabled={busy}>Delete</Button></div>}
+        {canManage && <div className="flex gap-2"><Button size="sm" variant="outline" asChild><Link to="/businesses/$id" params={{ id }} search={{ edit: true }}>Edit business</Link></Button><Button size="sm" variant="outline" onClick={remove} disabled={busy}>Delete</Button></div>}
       </div>
       <p className="mt-6 text-muted-foreground">{business.about || "No business description yet."}</p>
       {business.services.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{business.services.map((s) => <Pill key={s}>{s}</Pill>)}</div>}
