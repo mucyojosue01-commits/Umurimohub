@@ -1,9 +1,9 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader } from "@/features/ui/kit";
 import { useApp } from "@/features/store/app-store";
-import { useCatalog } from "@/features/data/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -11,14 +11,29 @@ export const Route = createFileRoute("/businesses/$id/edit")({ component: Page }
 function Page() {
   const { id } = Route.useParams();
   const { user } = useApp();
-  const { getBusiness } = useCatalog();
-  const business = getBusiness(id);
-  if (!business) throw notFound();
-  const [name,setName] = useState(business.name);
-  const [about,setAbout] = useState(business.about);
-  const [services,setServices] = useState(business.services.join(", "));
+  const businessQ = useQuery({
+    queryKey: ["business-profile", id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("businesses").select("*").eq("id", id).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const business = businessQ.data;
+  const [name,setName] = useState("");
+  const [about,setAbout] = useState("");
+  const [services,setServices] = useState("");
   const [image,setImage] = useState<File|null>(null);
   const [busy,setBusy] = useState(false);
+  const [initialized,setInitialized] = useState("");
+  if (business && initialized !== business.id) {
+    setName(business.name ?? "");
+    setAbout(business.about ?? "");
+    setServices((business.services ?? []).join(", "));
+    setInitialized(business.id);
+  }
+  if (businessQ.isLoading) return <div className="container-page py-16 text-sm text-muted-foreground">Loading business editor…</div>;
+  if (businessQ.isError || !business) return <div className="container-page py-16"><Card><p className="font-semibold">Business could not be loaded.</p><Link className="mt-3 inline-block text-primary" to="/businesses">Return to businesses</Link></Card></div>;
   if (!user?.businessIds.includes(id)) return <div className="container-page py-12">You do not have permission to edit this business. <Link to="/businesses/$id" params={{id}} className="text-primary">Return to profile</Link></div>;
   const save = async () => {
     if (!name.trim()) { toast.error("Business name is required."); return; }
