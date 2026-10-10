@@ -34,10 +34,6 @@ function Page() {
         {teams.map((t) => (
           <div key={t.id} className="min-w-0">
             <TeamCard t={t} />
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" asChild><Link to="/teams/$id" params={{ id: t.id }}>View team</Link></Button>
-              {user?.leadTeamIds.includes(t.id) && <Button size="sm" variant="secondary" asChild><Link to="/teams/$id" params={{ id: t.id }} search={{ edit: true }}>Edit team</Link></Button>}
-            </div>
           </div>
         ))}
       </div>
