@@ -69,4 +69,6 @@ begin
 end;
 $function$;
 
+revoke all on function public.complete_training_application(uuid) from public;
+revoke all on function public.complete_training_application(uuid) from anon;
 grant execute on function public.complete_training_application(uuid) to authenticated;
