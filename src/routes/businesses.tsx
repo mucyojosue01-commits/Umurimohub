@@ -20,23 +20,67 @@ export const Route = createFileRoute("/businesses")({
 });
 
 function Page() {
-  const { businesses } = useCatalog();
+  const { businesses, loading, error, refresh } = useCatalog();
   const { user } = useApp();
+
   return (
     <div className="container-page py-10">
       <PageHeader
         eyebrow="Discover"
         title="Businesses"
-        desc="Verified employers, cooperatives and MSMEs."
-        actions={user ? <Button asChild><Link to="/register" search={{ create: "business" }}>+ Add business</Link></Button> : undefined}
+        desc="Open a business to see its own profile, opportunities, work history and reputation. Owners can manage each business independently."
+        actions={
+          user ? (
+            <Button asChild>
+              <Link to="/register" search={{ create: "business" }}>
+                + Add business
+              </Link>
+            </Button>
+          ) : undefined
+        }
       />
-      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{businesses.length === 0 && <p className="col-span-full py-12 text-center text-sm text-muted-foreground">No businesses have joined yet.</p>}
-        {businesses.map((b) => (
-          <div key={b.id} className="min-w-0">
-            <BusinessCard b={b} />
-          </div>
-        ))}
-      </div>
+      {loading ? (
+        <p className="py-10 text-center text-sm text-muted-foreground">Loading businesses…</p>
+      ) : error ? (
+        <div className="rounded-2xl border p-6 text-center">
+          <p className="font-semibold">Businesses could not be loaded.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Check your connection, then retry.
+          </p>
+          <Button className="mt-4" variant="outline" onClick={() => void refresh()}>
+            Retry businesses
+          </Button>
+        </div>
+      ) : businesses.length === 0 ? (
+        <p className="py-12 text-center text-sm text-muted-foreground">
+          No businesses have joined yet.
+        </p>
+      ) : (
+        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {businesses.map((b) => {
+            const canEdit = !!user?.businessIds.includes(b.id);
+            return (
+              <div key={b.id} className="min-w-0">
+                <BusinessCard b={b} />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to="/businesses/$id" params={{ id: b.id }}>
+                      View business
+                    </Link>
+                  </Button>
+                  {canEdit && (
+                    <Button size="sm" variant="secondary" asChild>
+                      <Link to="/businesses/$id/edit" params={{ id: b.id }}>
+                        Edit business
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
