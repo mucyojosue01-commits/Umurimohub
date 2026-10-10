@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { CheckCircle2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader, Pill, Avatar } from "@/features/ui/kit";
@@ -22,6 +23,7 @@ type Training = {
   district: string;
   provider_type: string;
   status: string;
+  skills?: string[];
 };
 
 type TrainingApplication = {
@@ -39,7 +41,8 @@ function Page() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", district: "", provider_type: "business" });
+  const [form, setForm] = useState({ title: "", description: "", district: "", provider_type: "business", skills: [] as string[] });
+  const [skillDraft, setSkillDraft] = useState("");
 
   const programsQ = useQuery({
     queryKey: ["training-programs"],
@@ -73,12 +76,28 @@ function Page() {
 
   const openCreate = () => {
     setEditing("new");
-    setForm({ title: "", description: "", district: "", provider_type: "business" });
+    setForm({ title: "", description: "", district: "", provider_type: "business", skills: [] });
   };
 
   const openEdit = (x: Training) => {
     setEditing(x.id);
-    setForm({ title: x.title, description: x.description, district: x.district, provider_type: x.provider_type });
+    setForm({ title: x.title, description: x.description, district: x.district, provider_type: x.provider_type, skills: x.skills ?? [] });
+    setSkillDraft("");
+  };
+
+  const addSkill = () => {
+    const skill = skillDraft.trim();
+    if (!skill) return;
+    if (form.skills.some((item) => item.toLocaleLowerCase() === skill.toLocaleLowerCase())) {
+      toast.error("That skill is already listed.");
+      return;
+    }
+    setForm((current) => ({ ...current, skills: [...current.skills, skill] }));
+    setSkillDraft("");
+  };
+
+  const removeSkill = (skill: string) => {
+    setForm((current) => ({ ...current, skills: current.skills.filter((item) => item !== skill) }));
   };
 
   const save = async () => {
@@ -93,6 +112,7 @@ function Page() {
       description: form.description.trim(),
       district: form.district,
       provider_type: form.provider_type,
+      skills: form.skills,
       created_by: session.user.id,
       updated_at: new Date().toISOString(),
     };
@@ -196,6 +216,15 @@ function Page() {
             <label className="text-sm">District<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })}><option value="">Choose district</option>{DISTRICTS.map((d) => <option key={d}>{d}</option>)}</select></label>
             <label className="text-sm">Provider type<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.provider_type} onChange={(e) => setForm({ ...form, provider_type: e.target.value })}><option value="business">Business</option><option value="institution">Institution</option><option value="team">Team</option><option value="community">Community</option></select></label>
             <label className="text-sm md:col-span-2">Description<textarea rows={5} className="mt-1 w-full rounded-xl border bg-card p-3" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label>
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium">Skills earned after completion</label>
+              <p className="mt-1 text-xs text-muted-foreground">List every skill learners should gain. These will appear on a learner’s profile after the training is marked complete.</p>
+              <div className="mt-2 flex gap-2">
+                <input className="h-11 min-w-0 flex-1 rounded-xl border bg-card px-3" placeholder="e.g. Workplace safety" value={skillDraft} onChange={(e) => setSkillDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }} />
+                <Button type="button" variant="outline" onClick={addSkill} disabled={!skillDraft.trim()}><Plus className="mr-1 size-4" />Add skill</Button>
+              </div>
+              {form.skills.length > 0 ? <ul className="mt-3 grid gap-2 sm:grid-cols-2">{form.skills.map((skill) => <li key={skill} className="flex items-center justify-between gap-2 rounded-xl border bg-muted/20 px-3 py-2"><span className="flex min-w-0 items-center gap-2 text-sm"><CheckCircle2 className="size-5 shrink-0 text-primary" />{skill}</span><button type="button" aria-label={`Remove ${skill}`} onClick={() => removeSkill(skill)} className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"><X className="size-4" /></button></li>)}</ul> : <p className="mt-2 rounded-xl border border-dashed p-3 text-sm text-muted-foreground">No skills added yet. Add the skills learners will earn.</p>}
+            </div>
           </div>
           <div className="mt-4 flex gap-2"><Button onClick={() => void save()} disabled={busy === "save"}>{busy === "save" ? "Saving…" : "Save"}</Button><Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button></div>
         </Card>
@@ -217,6 +246,7 @@ function Page() {
                 <Pill tone={mine?.status === "completed" ? "success" : mine ? "primary" : "muted"}>{mine?.status ?? x.status}</Pill>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{x.description || "No description provided."}</p>
+              {!!x.skills?.length && <div className="mt-3"><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Skills earned on completion</p><div className="mt-2 flex flex-wrap gap-2">{x.skills.map((skill) => <span key={skill} className="inline-flex items-center gap-1.5 rounded-full border bg-muted/30 px-2.5 py-1 text-xs"><CheckCircle2 className="size-3.5 text-primary" />{skill}</span>)}</div></div>}
 
               {!provider && !mine && x.status === "published" && (
                 <Button className="mt-4" disabled={busy === x.id} onClick={() => void apply(x.id)}>{busy === x.id ? "Sending…" : "Apply for training"}</Button>
@@ -226,7 +256,7 @@ function Page() {
                   <p className="text-sm font-medium">Your training path</p>
                   <div className="mt-2 flex flex-wrap gap-2 text-xs"><Pill>Applied</Pill>{["shortlisted","accepted","completed"].includes(mine.status) && <Pill tone="primary">Shortlisted</Pill>}{["accepted","completed"].includes(mine.status) && <Pill tone="primary">Accepted</Pill>}{mine.status === "completed" && <Pill tone="success">Completed</Pill>}</div>
                   {mine.status === "shortlisted" && <div className="mt-3 flex gap-2"><Button size="sm" disabled={busy === mine.id} onClick={() => void respond(mine.id, true)}>Accept</Button><Button size="sm" variant="outline" disabled={busy === mine.id} onClick={() => void respond(mine.id, false)}>Decline</Button></div>}
-                  {mine.status === "accepted" && <Button className="mt-3" size="sm" disabled={busy === mine.id} onClick={() => void complete(mine.id)}>{busy === mine.id ? "Saving…" : "Mark training complete"}</Button>}
+                  {mine.status === "accepted" && <p className="mt-3 text-xs text-muted-foreground">Your training provider will confirm completion. Once confirmed, this training and its acquired skills will appear on your profile.</p>}
                   {mine.status === "completed" && <p className="mt-2 text-xs text-success">Completed training is now part of your profile experience.</p>}
                   {mineWorker && <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><Avatar initials={mineWorker.initials} src={mineWorker.avatarUrl} alt={mineWorker.name} size="sm" />{mineWorker.name}</div>}
                 </div>
