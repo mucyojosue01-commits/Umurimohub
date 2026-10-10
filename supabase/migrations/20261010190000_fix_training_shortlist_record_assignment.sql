@@ -13,7 +13,7 @@ begin
     raise exception 'Not authenticated' using errcode = '42501';
   end if;
 
-  select ta.*, tp.title, tp.created_by
+  select ta, tp.title, tp.created_by
     into v_application, v_training_title, v_provider_id
   from public.training_applications as ta
   join public.training_programs as tp on tp.id = ta.training_id
