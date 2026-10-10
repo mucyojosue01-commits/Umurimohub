@@ -28,7 +28,7 @@ function Page() {
       <PageHeader
         eyebrow="Discover"
         title="Businesses"
-        desc="Open a business to see its own profile, opportunities, work history and reputation. Owners can manage each business independently."
+        desc="Explore each business profile, its opportunities, work history and reputation."
         actions={
           user ? (
             <Button asChild>
@@ -57,28 +57,17 @@ function Page() {
         </p>
       ) : (
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {businesses.map((b) => {
-            const canEdit = !!user?.businessIds.includes(b.id);
-            return (
-              <div key={b.id} className="min-w-0">
-                <BusinessCard b={b} />
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Button size="sm" variant="outline" asChild>
-                    <Link to="/businesses/$id" params={{ id: b.id }}>
-                      View business
-                    </Link>
-                  </Button>
-                  {canEdit && (
-                    <Button size="sm" variant="secondary" asChild>
-                      <Link to="/businesses/$id/edit" params={{ id: b.id }}>
-                        Edit business
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {businesses.map((b) => (
+            <Link
+              key={b.id}
+              to="/businesses/$id"
+              params={{ id: b.id }}
+              aria-label={`Open ${b.name} business profile`}
+              className="block min-w-0 rounded-2xl outline-none transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 hover:-translate-y-0.5"
+            >
+              <BusinessCard b={b} />
+            </Link>
+          ))}
         </div>
       )}
     </div>
