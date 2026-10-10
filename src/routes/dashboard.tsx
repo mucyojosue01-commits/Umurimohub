@@ -68,10 +68,14 @@ function Page() {
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Businesses</p>
             {businesses.filter((b) => user.businessIds.includes(b.id)).length ? businesses.filter((b) => user.businessIds.includes(b.id)).map((b) => (
-              <div key={b.id} className="relative flex items-center gap-3 rounded-xl border p-3">
+              <div key={b.id} role="link" tabIndex={0} onClick={() => { window.location.href = "/businesses/" + b.id; }} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); window.location.href = "/businesses/" + b.id; } }} className="relative flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition hover:border-primary/40 hover:bg-muted/40">
                 <Avatar initials={b.name.slice(0,2).toUpperCase()} src={b.avatarUrl} alt={b.name} size="sm" />
-                <Link to="/businesses/$id" params={{ id: b.id }} className="min-w-0 flex-1"><p className="truncate font-medium">{b.name}</p><p className="text-xs text-muted-foreground">{b.district} · {b.sector}</p></Link>
-                <Button size="icon" variant="ghost" aria-label="Business actions" onClick={() => setMenu(menu === "b:" + b.id ? null : "b:" + b.id)}><MoreVertical className="size-4" /></Button>
+                <div className="min-w-0 flex-1"><p className="truncate font-medium">{b.name}</p><p className="text-xs text-muted-foreground">{b.district} · {b.sector}</p><p className="mt-1 text-xs font-medium text-primary">View business profile →</p></div>
+                <div className="flex shrink-0 items-center gap-1" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                  <Button size="sm" variant="outline" asChild><Link to="/businesses/$id" params={{ id: b.id }}>View</Link></Button>
+                  <Button size="sm" variant="secondary" asChild><Link to="/businesses/$id" params={{ id: b.id }} search={{ edit: true }}>Edit business</Link></Button>
+                </div>
+                <Button size="icon" variant="ghost" aria-label="Business actions" onClick={(e) => { e.stopPropagation(); setMenu(menu === "b:" + b.id ? null : "b:" + b.id); }}><MoreVertical className="size-4" /></Button>
                 {menu === "b:" + b.id && <div className="absolute right-2 top-12 z-30 w-40 rounded-2xl border bg-popover p-1 shadow-xl">
                   <Link to="/businesses/$id" params={{ id: b.id }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Info</Link>
                   <Link to="/businesses/$id" params={{ id: b.id }} search={{ edit: true }} className="block rounded-xl px-3 py-2 text-sm hover:bg-muted" onClick={() => setMenu(null)}>Edit</Link>

@@ -370,8 +370,8 @@ export function TeamCard({ t }: { t: Team }) {
 
 export function BusinessCard({ b }: { b: Business }) {
   return (
-    <Link to="/businesses/$id" params={{ id: b.id }} className="block h-full">
-    <Card className="h-full">
+    <Link to="/businesses/$id" params={{ id: b.id }} className="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+    <Card className="h-full transition group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-lift">
       <div className="flex items-center gap-3">
         <Avatar initials={b.name.slice(0,2).toUpperCase()} src={b.avatarUrl} alt={b.name} size="md" />
         <div>
@@ -385,6 +385,7 @@ export function BusinessCard({ b }: { b: Business }) {
         </div>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">{b.about}</p>
+      <p className="mt-3 text-xs font-semibold text-primary">View business profile →</p>
       <div className="mt-4 flex justify-between text-sm">
         <span>{b.hiring} open roles</span>
         <span className="flex items-center gap-1">
