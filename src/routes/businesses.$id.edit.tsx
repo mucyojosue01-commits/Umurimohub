@@ -1,8 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-/** Preserve old edit URLs while routing users to the canonical Company editor. */
+/** Keep legacy edit links working with the canonical Bizz editor. */
 export const Route = createFileRoute("/businesses/$id/edit")({
-  beforeLoad: ({ params }) => {
-    throw redirect({ to: "/company/$id/edit", params: { id: params.id }, replace: true });
-  },
+  beforeLoad: ({ params }) => { throw redirect({ to: "/bizz/$id/edit", params: { id: params.id }, replace: true }); },
 });

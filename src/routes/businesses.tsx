@@ -1,8 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-/** Keep the legacy URL working while making the new Company directory canonical. */
+/** Keep old directory bookmarks working while routing directly to Bizz. */
 export const Route = createFileRoute("/businesses")({
-  beforeLoad: () => {
-    throw redirect({ to: "/company/businesses", replace: true });
-  },
+  beforeLoad: () => { throw redirect({ to: "/bizz", replace: true }); },
 });
