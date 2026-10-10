@@ -13,8 +13,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AgricultureRouteImport } from './routes/agriculture'
 import { Route as BizzRouteImport } from './routes/bizz'
+import { Route as BusinessRouteImport } from './routes/business'
 import { Route as BizzIdRouteImport } from './routes/bizz.$id'
+import { Route as BusinessIdRouteImport } from './routes/business.$id'
 import { Route as BizzIdEditRouteImport } from './routes/bizz.$id.edit'
+import { Route as BusinessIdEditRouteImport } from './routes/business.$id.edit'
 import { Route as BusinessesRouteImport } from './routes/businesses'
 import { Route as CompanyRouteImport } from './routes/company'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -65,14 +68,29 @@ const BizzRoute = BizzRouteImport.update({
   path: '/bizz',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BusinessRoute = BusinessRouteImport.update({
+  id: '/business',
+  path: '/business',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BizzIdRoute = BizzIdRouteImport.update({
   id: '/bizz/$id',
   path: '/bizz/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BusinessIdRoute = BusinessIdRouteImport.update({
+  id: '/business/$id',
+  path: '/business/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BizzIdEditRoute = BizzIdEditRouteImport.update({
   id: '/bizz/$id/edit',
   path: '/bizz/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessIdEditRoute = BusinessIdEditRouteImport.update({
+  id: '/business/$id/edit',
+  path: '/business/$id/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BusinessesRoute = BusinessesRouteImport.update({
@@ -227,8 +245,11 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
   '/bizz': typeof BizzRoute
+  '/business': typeof BusinessRoute
   '/bizz/$id': typeof BizzIdRoute
+  '/business/$id': typeof BusinessIdRoute
   '/bizz/$id/edit': typeof BizzIdEditRoute
+  '/business/$id/edit': typeof BusinessIdEditRoute
   '/businesses': typeof BusinessesRoute
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
@@ -264,8 +285,11 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
   '/bizz': typeof BizzRoute
+  '/business': typeof BusinessRoute
   '/bizz/$id': typeof BizzIdRoute
+  '/business/$id': typeof BusinessIdRoute
   '/bizz/$id/edit': typeof BizzIdEditRoute
+  '/business/$id/edit': typeof BusinessIdEditRoute
   '/businesses': typeof BusinessesRoute
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
@@ -302,8 +326,11 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
   '/bizz': typeof BizzRoute
+  '/business': typeof BusinessRoute
   '/bizz/$id': typeof BizzIdRoute
+  '/business/$id': typeof BusinessIdRoute
   '/bizz/$id/edit': typeof BizzIdEditRoute
+  '/business/$id/edit': typeof BusinessIdEditRoute
   '/businesses': typeof BusinessesRoute
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
@@ -341,8 +368,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/agriculture'
     | '/bizz'
+    | '/business'
     | '/bizz/$id'
+    | '/business/$id'
     | '/bizz/$id/edit'
+    | '/business/$id/edit'
     | '/businesses'
     | '/company'
     | '/dashboard'
@@ -378,8 +408,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/agriculture'
     | '/bizz'
+    | '/business'
     | '/bizz/$id'
+    | '/business/$id'
     | '/bizz/$id/edit'
+    | '/business/$id/edit'
     | '/businesses'
     | '/company'
     | '/dashboard'
@@ -415,8 +448,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/agriculture'
     | '/bizz'
+    | '/business'
     | '/bizz/$id'
+    | '/business/$id'
     | '/bizz/$id/edit'
+    | '/business/$id/edit'
     | '/businesses'
     | '/company'
     | '/dashboard'
@@ -453,8 +489,11 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AgricultureRoute: typeof AgricultureRoute
   BizzRoute: typeof BizzRoute
+  BusinessRoute: typeof BusinessRoute
   BizzIdRoute: typeof BizzIdRoute
+  BusinessIdRoute: typeof BusinessIdRoute
   BizzIdEditRoute: typeof BizzIdEditRoute
+  BusinessIdEditRoute: typeof BusinessIdEditRoute
   BusinessesRoute: typeof BusinessesRoute
   CompanyRoute: typeof CompanyRoute
   DashboardRoute: typeof DashboardRoute
@@ -515,6 +554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BizzRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/business': {
+      id: '/business'
+      path: '/business'
+      fullPath: '/business'
+      preLoaderRoute: typeof BusinessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bizz/$id': {
       id: '/bizz/$id'
       path: '/bizz/$id'
@@ -522,11 +568,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BizzIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/business/$id': {
+      id: '/business/$id'
+      path: '/business/$id'
+      fullPath: '/business/$id'
+      preLoaderRoute: typeof BusinessIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bizz/$id/edit': {
       id: '/bizz/$id/edit'
       path: '/bizz/$id/edit'
       fullPath: '/bizz/$id/edit'
       preLoaderRoute: typeof BizzIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/business/$id/edit': {
+      id: '/business/$id/edit'
+      path: '/business/$id/edit'
+      fullPath: '/business/$id/edit'
+      preLoaderRoute: typeof BusinessIdEditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/businesses': {
@@ -752,8 +812,11 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AgricultureRoute: AgricultureRoute,
   BizzRoute: BizzRoute,
+  BusinessRoute: BusinessRoute,
   BizzIdRoute: BizzIdRoute,
+  BusinessIdRoute: BusinessIdRoute,
   BizzIdEditRoute: BizzIdEditRoute,
+  BusinessIdEditRoute: BusinessIdEditRoute,
   BusinessesRoute: BusinessesRoute,
   CompanyRoute: CompanyRoute,
   DashboardRoute: DashboardRoute,
