@@ -28,7 +28,9 @@ export function MyApplications() {
       return { businesses: businesses.data ?? [], teams: teams.data ?? [], profile: profile.data ?? null, worker: worker.data ?? null };
     },
   });
-  const title = (id: string) => allOpps.find((o) => o.id === id)?.title ?? "Opportunity";\n  const linkedContractsQ = useQuery({ queryKey: ["my-application-contracts", session?.user.id, applications.map(a=>a.id)], enabled: !!session && applications.length > 0, queryFn: async () => { const { data, error } = await supabase.from("contracts").select("application_id").in("application_id", applications.map(a=>a.id)); if (error) throw error; return new Set((data ?? []).map(c=>c.application_id)); } });\n  const visibleApplications = applications.filter(a => !(a.status.toLowerCase() === "accepted" && linkedContractsQ.data?.has(a.id)));
+  const title = (id: string) => allOpps.find((o) => o.id === id)?.title ?? "Opportunity";
+  const linkedContractsQ = useQuery({ queryKey: ["my-application-contracts", session?.user.id, applications.map(a=>a.id)], enabled: !!session && applications.length > 0, queryFn: async () => { const { data, error } = await supabase.from("contracts").select("application_id").in("application_id", applications.map(a=>a.id)); if (error) throw error; return new Set((data ?? []).map(c=>c.application_id)); } });
+  const visibleApplications = applications.filter(a => !(a.status.toLowerCase() === "accepted" && linkedContractsQ.data?.has(a.id)));
   return (
     <Card className="mt-6">
       <h2 className="font-bold">My applications</h2>
