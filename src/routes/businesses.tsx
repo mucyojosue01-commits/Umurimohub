@@ -58,14 +58,7 @@ function Page() {
       ) : (
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {businesses.map((b) => (
-            <a
-              key={b.id}
-              href={`/businesses/${encodeURIComponent(b.id)}`}
-              aria-label={`Open ${b.name} business profile`}
-              className="block min-w-0 rounded-2xl outline-none transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              <BusinessCard b={b} />
-            </a>
+            <BusinessCard key={b.id} b={b} />
           ))}
         </div>
       )}
