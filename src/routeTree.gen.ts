@@ -208,7 +208,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
-  '/businesses': typeof BusinessesRouteWithChildren
+  '/businesses': typeof BusinessesRoute
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/grow': typeof GrowRoute
@@ -242,7 +242,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
-  '/businesses': typeof BusinessesRouteWithChildren
+  '/businesses': typeof BusinessesRoute
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/grow': typeof GrowRoute
@@ -261,7 +261,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/businesses/$id': typeof BusinessesIdRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
@@ -278,7 +277,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
-  '/businesses': typeof BusinessesRouteWithChildren
+  '/businesses': typeof BusinessesRoute
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/grow': typeof GrowRoute
@@ -297,7 +296,6 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/businesses/$id': typeof BusinessesIdRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
@@ -334,8 +332,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/training'
     | '/.well-known/oauth-protected-resource'
-    | '/businesses/$id'
-    | '/businesses/$id/edit'
     | '/contracts/$id'
     | '/opportunities/$id'
     | '/opportunities/new'
@@ -370,7 +366,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/training'
     | '/.well-known/oauth-protected-resource'
-    | '/businesses/$id'
     | '/contracts/$id'
     | '/opportunities/$id'
     | '/opportunities/new'
@@ -405,7 +400,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/training'
     | '/.well-known/oauth-protected-resource'
-    | '/businesses/$id'
     | '/contracts/$id'
     | '/opportunities/$id'
     | '/opportunities/new'
@@ -607,20 +601,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/.well-known/oauth-protected-resource'
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/businesses/$id': {
-      id: '/businesses/$id'
-      path: '/$id'
-      fullPath: '/businesses/$id'
-      preLoaderRoute: typeof BusinessesIdRouteImport
-      parentRoute: typeof BusinessesRoute
-    }
-    '/businesses/$id/edit': {
-      id: '/businesses/$id/edit'
-      path: '/edit'
-      fullPath: '/businesses/$id/edit'
-      preLoaderRoute: typeof BusinessesIdEditRouteImport
-      parentRoute: typeof BusinessesIdRoute
     }
     '/contracts/$id': {
       id: '/contracts/$id'
