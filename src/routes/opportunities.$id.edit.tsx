@@ -18,16 +18,17 @@ function Page() {
   const [form, setForm] = useState({ title: "", summary: "", pay_rwf: "", deadline: "", district: "", sector: "", status: "open" });
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState("");
   useEffect(() => {
     let active = true;
     void supabase.from("opportunities").select("id,title,summary,pay_rwf,deadline,district,sector,status,created_by,business_id").eq("id", id).maybeSingle().then(({ data, error }) => {
       if (!active) return;
-      if (error) { toast.error(error.message); return; }
-      if (!data) { throw notFound(); }
+      if (error) { setLoadError(error.message); toast.error(error.message); return; }
+      if (!data) { setLoadError("This opportunity could not be found."); return; }
       if (data.created_by !== user?.id && (!data.business_id || !user?.businessIds.includes(data.business_id))) { toast.error("You are not allowed to edit this opportunity."); return; }
       setForm({ title: data.title, summary: data.summary, pay_rwf: String(data.pay_rwf), deadline: data.deadline, district: data.district, sector: data.sector, status: data.status });
       setLoaded(true);
-    });
+    }).catch((e) => { if (active) setLoadError((e as Error).message || "Could not load this opportunity."); });
     return () => { active = false; };
   }, [id, user?.id, user?.businessIds]);
 
@@ -59,7 +60,7 @@ function Page() {
   };
 
   if (!user) return <div className="container-page py-16 text-center"><PageHeader title="Edit opportunity" desc="Sign in to manage your opportunity." /><Button asChild><Link to="/login">Sign in</Link></Button></div>;
-  if (!loaded) return <div className="container-page py-16"><p className="text-sm text-muted-foreground">Loading opportunity…</p></div>;
+  if (!loaded) return <div className="container-page py-16"><PageHeader title={loadError ? "Unable to open editor" : "Edit opportunity"} desc={loadError || "Loading opportunity…"} />{loadError && <Button className="mt-4" asChild><Link to="/opportunities/$id" params={{ id }}>Return to opportunity</Link></Button>}</div>;
 
   return <div className="container-page max-w-3xl py-10">
     <PageHeader eyebrow="Manage" title="Edit opportunity" desc="Changes are recorded and active applicants are notified." />

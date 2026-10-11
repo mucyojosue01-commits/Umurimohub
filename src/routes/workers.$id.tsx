@@ -9,6 +9,7 @@ import { ConnectButton } from "@/features/network/connect-button";
 import { useApp } from "@/features/store/app-store";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, Card, DemoNotice, Pill, TrustMeter } from "@/features/ui/kit";
+import { EmploymentOffer } from "@/features/recruitment/employment-offer";
 
 export const Route = createFileRoute("/workers/$id")({
   loader: async ({ params, context }) => {
@@ -161,6 +162,7 @@ function Page() {
       </Card>
       <div className="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-6">
+          {user && user.businessIds.length > 0 && user.id !== workerUserIds[w.id] && <EmploymentOffer workerId={w.id} workerUserId={workerUserIds[w.id] ?? null} />}
           <Card>
             <h2 className="font-bold">About</h2>
             <p className="mt-2 text-muted-foreground">{w.bio}</p>
@@ -284,3 +286,4 @@ function Page() {
     </div>
   );
 }
+

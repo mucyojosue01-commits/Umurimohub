@@ -17,6 +17,8 @@ import {
 } from "@/features/messaging/service";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { SearchSelect } from "@/components/search-select";
+import { Avatar } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/messages")({
   validateSearch: z.object({
@@ -41,6 +43,7 @@ function Page() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [personSearch, setPersonSearch] = useState("");
 
   const active = conversations.find((c) => c.id === activeId);
   const activeWorker = active
@@ -50,6 +53,7 @@ function Page() {
     () => workers.filter((w) => workerUserIds[w.id] && workerUserIds[w.id] !== session?.user.id),
     [workers, workerUserIds, session?.user.id],
   );
+  const personOptions = useMemo(() => availableWorkers.map((worker) => ({ value: workerUserIds[worker.id]!, label: worker.name, description: worker.title + " · " + worker.district, avatarUrl: worker.avatarUrl, initials: worker.initials })), [availableWorkers, workerUserIds]);
 
   const reloadConversations = async () => {
     if (!session) return;
@@ -161,24 +165,9 @@ function Page() {
         <Card className="p-3">
           <div className="mb-3">
             <p className="text-sm font-semibold">Start a conversation</p>
-            <div className="mt-2 flex max-h-32 flex-wrap gap-2 overflow-auto">
-              {availableWorkers.slice(0, 20).map((worker) => {
-                const userId = workerUserIds[worker.id];
-                if (!userId) return null;
-                return (
-                  <Button
-                    key={worker.id}
-                    size="sm"
-                    variant="outline"
-                    onClick={() => void startConversation(userId)}
-                  >
-                    {worker.name}
-                  </Button>
-                );
-              })}
-              {!availableWorkers.length && (
-                <p className="text-xs text-muted-foreground">No other registered workers yet.</p>
-              )}
+            <div className="mt-2 space-y-2">
+              <SearchSelect value={personSearch} onChange={(userId) => { setPersonSearch(userId); if (userId) void startConversation(userId); }} options={personOptions} placeholder="Search people by name or skill…" emptyText="No registered people match that search" />
+              {!availableWorkers.length && <p className="text-xs text-muted-foreground">No other registered workers yet.</p>}
             </div>
           </div>
           <div className="space-y-1">
@@ -192,7 +181,7 @@ function Page() {
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium">{conversation.otherName}</span>
+                  <span className="flex min-w-0 items-center gap-2 font-medium"><Avatar initials={conversation.otherName.slice(0, 2).toUpperCase()} src={workers.find((w) => workerUserIds[w.id] === conversation.otherUserId)?.avatarUrl} alt={conversation.otherName} size="sm" /><span className="truncate">{conversation.otherName}</span></span>
                   {conversation.unreadCount > 0 && (
                     <span className="rounded-full bg-accent px-2 py-0.5 text-xs">
                       {conversation.unreadCount}
