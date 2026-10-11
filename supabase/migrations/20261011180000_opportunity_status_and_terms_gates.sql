@@ -6,17 +6,17 @@ security definer
 set search_path = public
 as $$
 begin
-  if old.status is distinct from new.status and new.status = 'closed' then
+  if old.status is distinct from new.status and new.status in ('closed','ended') then
     insert into public.notifications(user_id, kind, text, link)
     select distinct a.applicant_user_id, 'opportunity_closed',
-      'Recently closed: ' || new.title || '. This opportunity is no longer accepting applications.',
+      case when new.status = 'closed' then 'Recently closed: ' || new.title || '. This opportunity is no longer accepting applications.' else 'Ended: ' || new.title || '. This opportunity has been removed from listings.' end,
       '/opportunities/' || new.id
     from public.applications a
     where a.opportunity_id = new.id and a.status not in ('withdrawn','rejected');
 
     insert into public.notifications(user_id, kind, text, link)
     select distinct r.referrer, 'referral_opportunity_closed',
-      'Recently closed: ' || new.title || '. Your referral is no longer active.',
+      case when new.status = 'closed' then 'Recently closed: ' || new.title || '. Your referral is no longer active.' else 'Ended: ' || new.title || '. Your referral is no longer active.' end,
       '/opportunities'
     from public.referrals r
     where r.opportunity_id = new.id;
