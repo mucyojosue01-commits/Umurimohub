@@ -165,14 +165,9 @@ function Page() {
             <Err k="title" />
           </label>
           <label className="text-sm">
-            Type
+            Position type
             <input type="hidden" value="Job" {...register("type")} />
-            {/* Position creation is always a Job; the general opportunity type selector is intentionally hidden here. */}
-            <select {...register("type")} className={inp} disabled>
-              {["Job", "Project", "Gig", "Seasonal", "Apprenticeship"].map((x) => (
-                <option key={x}>{x}</option>
-              ))}
-            </select>
+            <span className={inp + " flex items-center"}>Job position</span>
           </label>
           <label className="text-sm">
             Publisher business <span className="text-muted-foreground">(optional)</span>
