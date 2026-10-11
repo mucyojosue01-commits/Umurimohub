@@ -12,6 +12,7 @@ import { Card, PageHeader } from "@/features/ui/kit";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/opportunities/new")({
+  validateSearch: z.object({ businessId: z.string().optional(), position: z.boolean().optional() }),
   head: () => ({
     meta: [
       { title: "Post an opportunity — UmurimoHub" },
@@ -50,6 +51,7 @@ const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
 
 function Page() {
   const { createOpp, user, authReady } = useApp();
+  const routeSearch = Route.useSearch();
   const { businesses } = useCatalog();
   const nav = useNavigate();
   const [media, setMedia] = useState<File[]>([]);
@@ -61,13 +63,13 @@ function Page() {
   } = useForm<F>({
     resolver: zodResolver(schema),
     defaultValues: {
-      type: "Project",
+      type: routeSearch.position ? "Job" : "Project",
       payUnit: "project",
       mode: "On-site",
       teamAllowed: true,
       sector: "Construction",
       district: "",
-      businessId: "",
+      businessId: routeSearch.businessId ?? "",
       audience: "any",
     },
   });
@@ -135,7 +137,7 @@ function Page() {
       <div className="container-page max-w-xl py-16 text-center">
         <PageHeader
           eyebrow="Sign in"
-          title="Post an opportunity"
+          title={routeSearch.position ? "Create a company position" : "Post an opportunity"}
           desc="Sign in to publish a real opportunity."
         />
         <Button asChild size="lg">
@@ -153,7 +155,7 @@ function Page() {
       <PageHeader
         eyebrow="Business"
         title="Post an opportunity"
-        desc="Clear scope and fair pay attract the most trusted people."
+        desc={routeSearch.position ? "Publish a role linked to this business. Workers can apply or receive a direct offer." : "Clear scope and fair pay attract the most trusted people."}
       />
       <Card className="p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
@@ -172,7 +174,7 @@ function Page() {
           </label>
           <label className="text-sm">
             Publisher business <span className="text-muted-foreground">(optional)</span>
-            <select {...register("businessId")} className={inp} defaultValue={user?.businessIds[0] ?? ""}>
+            <select {...register("businessId")} className={inp} defaultValue={routeSearch.businessId ?? user?.businessIds[0] ?? ""} disabled={!!routeSearch.businessId}>
               <option value="">Post as me</option>
               {businesses.filter((b) => user?.businessIds.includes(b.id)).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
