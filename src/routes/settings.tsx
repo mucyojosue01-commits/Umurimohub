@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader } from "@/features/ui/kit";
@@ -29,6 +29,20 @@ function Page() {
   const [busy, setBusy] = useState(false);
   const [password, setPassword] = useState("");
   const [avatarBusy, setAvatarBusy] = useState(false);
+
+  useEffect(() => {
+    if (!session || !user?.workerId) return;
+    let active = true;
+    void supabase.from("worker_profiles").select("title,bio,sector,years,rate_rwf").eq("id", user.workerId).maybeSingle().then(({ data }) => {
+      if (!active || !data) return;
+      setTitle(data.title ?? "");
+      setBio(data.bio ?? "");
+      setSector(data.sector ?? "");
+      setYears(String(data.years ?? 0));
+      setRate(String(data.rate_rwf ?? 0));
+    });
+    return () => { active = false; };
+  }, [session?.user.id, user?.workerId]);
 
   if (!session || !user) return <div className="container-page py-16"><PageHeader title="Profile & settings" desc="Sign in to manage your account."/><Button asChild className="mt-4"><Link to="/login">Sign in</Link></Button></div>;
 
