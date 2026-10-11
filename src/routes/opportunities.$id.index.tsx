@@ -56,6 +56,7 @@ function Page() {
   const [applicationTerms, setApplicationTerms] = useState<{id:string; accepted_terms_version:number; status:string} | null>(null);
   const [ownerApplications, setOwnerApplications] = useState<Array<{id:string; applicant_user_id:string; accepted_terms_version:number; status:string; display_name:string}>>([]);
   const [termsBusy, setTermsBusy] = useState(false);
+  const [changedFields, setChangedFields] = useState<Record<string, {old: unknown; new: unknown}>>({});
   const { getBusiness, teams, workers, workerUserIds, businesses } = useCatalog();
   const o = allOpps.find((x) => x.id === id) ?? loaded.o;
   const [teamId, setTeamId] = useState("");
@@ -80,6 +81,15 @@ function Page() {
     return () => { active = false; };
   }, [id, user?.id, loaded.termsVersion]);
   const isOwner = !!user && !!loaded.rawOpportunity && (loaded.rawOpportunity.created_by === user.id || (!!loaded.rawOpportunity.business_id && user.businessIds.includes(loaded.rawOpportunity.business_id)));
+  useEffect(() => {
+    if (!user || loaded.termsVersion < 2) { setChangedFields({}); return; }
+    let active = true;
+    void supabase.from("opportunity_change_history").select("changed_fields").eq("opportunity_id", id).eq("terms_version", loaded.termsVersion).maybeSingle().then(({ data }) => {
+      if (active) setChangedFields((data?.changed_fields as Record<string, {old: unknown; new: unknown}> | undefined) ?? {});
+    });
+    return () => { active = false; };
+  }, [id, user?.id, loaded.termsVersion]);
+
   useEffect(() => {
     if (!isOwner) { setOwnerApplications([]); return; }
     let active = true;
@@ -122,7 +132,7 @@ function Page() {
         ← Opportunities
       </Link>
       {loaded.status === "closed" && <div className="mt-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4"><p className="font-semibold">Recently closed</p><p className="mt-1 text-sm text-muted-foreground">This opportunity is closed and is no longer accepting new applications.</p></div>}{loaded.status === "ended" && <div className="mt-4 rounded-2xl border bg-muted/40 p-4"><p className="font-semibold">Ended</p><p className="mt-1 text-sm text-muted-foreground">This opportunity has ended and is no longer listed for applications.</p></div>}
-      {applicationTerms && loaded.termsVersion > applicationTerms.accepted_terms_version && !["withdrawn","rejected"].includes(applicationTerms.status) && <Card className="mt-4 border-primary/40 p-5"><h2 className="font-bold">The opportunity has been updated</h2><p className="mt-2 text-sm text-muted-foreground">Review the current description, requirements, pay, location and deadline on this page. You must accept the updated terms to continue with your application.</p><div className="mt-4 flex flex-wrap gap-2"><Button disabled={termsBusy} onClick={() => void acceptUpdatedTerms(true)}>{termsBusy ? "Saving…" : "Accept and stay"}</Button><Button variant="outline" disabled={termsBusy} onClick={() => void acceptUpdatedTerms(false)}>Withdraw application</Button></div></Card>}
+      {applicationTerms && loaded.termsVersion > applicationTerms.accepted_terms_version && !["withdrawn","rejected"].includes(applicationTerms.status) && <Card className="mt-4 border-primary/40 p-5"><h2 className="font-bold">The opportunity has been updated</h2><p className="mt-2 text-sm text-muted-foreground">Review the recorded changes below and the full current opportunity details on this page. You must accept the updated terms to continue with your application.</p>{Object.keys(changedFields).length > 0 && <div className="mt-3 space-y-2"><h3 className="text-sm font-semibold">What changed</h3>{Object.entries(changedFields).map(([field, values]) => <div key={field} className="rounded-lg border p-3 text-sm"><p className="font-medium">{field.replaceAll("_"," ").replace(/^./, (s) => s.toUpperCase())}</p><p className="mt-1 text-muted-foreground">Previous: {Array.isArray(values.old) ? values.old.join(", ") : String(values.old ?? "—")}</p><p className="text-foreground">New: {Array.isArray(values.new) ? values.new.join(", ") : String(values.new ?? "—")}</p></div>)}</div>}<div className="mt-4 flex flex-wrap gap-2"><Button disabled={termsBusy} onClick={() => void acceptUpdatedTerms(true)}>{termsBusy ? "Saving…" : "Accept and stay"}</Button><Button variant="outline" disabled={termsBusy} onClick={() => void acceptUpdatedTerms(false)}>Withdraw application</Button></div></Card>}
       <div className="mt-4 grid gap-8 lg:grid-cols-[2fr_1fr]">
         <div>
           <div className="flex flex-wrap gap-2">
