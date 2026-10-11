@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { MoreVertical, Check, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
@@ -17,7 +19,7 @@ export const Route = createFileRoute("/notifications")({
 });
 
 function Page() {
-  const { notifications, markAllRead, session } = useApp();
+  const { notifications, markAllRead, session, reloadUser } = useApp();
   const [busy, setBusy] = useState<string | null>(null);
 
   const markOne = async (id: string) => {
@@ -26,6 +28,7 @@ function Page() {
     try {
       const { error } = await supabase.rpc("mark_notification_read", { _notification_id: id });
       if (error) throw error;
+      await reloadUser();
     } catch (e) {
       toast.error((e as Error).message || "Couldn't mark notification as read.");
     } finally {
@@ -40,7 +43,7 @@ function Page() {
       const { error } = await supabase.from("notifications").delete().eq("id", id).eq("user_id", session.user.id);
       if (error) throw error;
       toast.success("Notification deleted.");
-      window.location.reload();
+      await reloadUser();
     } catch (e) {
       toast.error((e as Error).message || "Could not delete notification.");
     } finally {
@@ -98,9 +101,14 @@ function Page() {
                   </Button>
                 )}
               </div>
-              <div className="flex shrink-0 flex-col gap-1">
-                {!n.read && <Button size="sm" variant="ghost" disabled={busy === n.id} onClick={() => void markOne(n.id)}>{busy === n.id ? "…" : "Mark read"}</Button>}
-                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === n.id} onClick={() => void deleteOne(n.id)}>Delete</Button>
+              <div className="shrink-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label="Notification actions" disabled={busy === n.id}><MoreVertical className="size-4"/></Button></DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {!n.read && <DropdownMenuItem onClick={() => void markOne(n.id)}><Check className="mr-2 size-4"/>Mark read</DropdownMenuItem>}
+                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => void deleteOne(n.id)}><Trash2 className="mr-2 size-4"/>Delete</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           ))
