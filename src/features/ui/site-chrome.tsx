@@ -55,7 +55,7 @@ export function SiteHeader() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild><Link to="/opportunities/new">Post opportunity</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link to="/opportunities/new" search={{ type: "Job" }}>Post position</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/positions/new">Post position</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/training">Create training</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><a href="/register?create=business">Create business</a></DropdownMenuItem>
                   <DropdownMenuItem asChild><a href="/register?create=team">Create team</a></DropdownMenuItem>
@@ -93,7 +93,7 @@ export function SiteHeader() {
           <button className="rounded-full p-2 hover:bg-muted lg:hidden" aria-label="Menu" onClick={() => setOpen(!open)}>{open ? <X className="size-5" /> : <Menu className="size-5" />}</button>
         </div>
       </div>
-      {open && <nav className="border-t lg:hidden"><div className="container-page grid gap-1 py-3">{[...NAV,{to:"/how-it-works",label:"How it works"},{to:"/insights",label:"Insights"}].map((n)=><Link key={n.to} to={n.to} onClick={()=>setOpen(false)} className="rounded-xl px-3 py-2.5 hover:bg-muted">{n.label}</Link>)}{user && <Link to="/settings" onClick={()=>setOpen(false)} className="rounded-xl px-3 py-2.5 hover:bg-muted">Profile & settings</Link>}{user && <button className="rounded-xl px-3 py-2.5 text-left hover:bg-muted" onClick={()=>{void signOut();setOpen(false);nav({to:"/",replace:true});}}>Log out</button>}</div></nav>}
+      {open && <nav className="border-t lg:hidden"><div className="container-page grid gap-1 py-3"><details className="rounded-xl px-3 py-2.5"><summary className="cursor-pointer">Jobs</summary><div className="grid gap-1 pl-3 pt-2"><Link to="/opportunities" onClick={()=>setOpen(false)} className="rounded-lg px-3 py-2 hover:bg-muted">Opportunities</Link><Link to="/positions" onClick={()=>setOpen(false)} className="rounded-lg px-3 py-2 hover:bg-muted">Positions</Link></div></details>{NAV.filter(n=>n.to!=="/positions").map((n)=><Link key={n.to} to={n.to} onClick={()=>setOpen(false)} className="rounded-xl px-3 py-2.5 hover:bg-muted">{n.label}</Link>)}{[{to:"/how-it-works",label:"How it works"},{to:"/insights",label:"Insights"}].map((n)=><Link key={n.to} to={n.to} onClick={()=>setOpen(false)} className="rounded-xl px-3 py-2.5 hover:bg-muted">{n.label}</Link>)}{user && <Link to="/settings" onClick={()=>setOpen(false)} className="rounded-xl px-3 py-2.5 hover:bg-muted">Profile & settings</Link>{user && <button className="rounded-xl px-3 py-2.5 text-left hover:bg-muted" onClick={()=>{void signOut();setOpen(false);nav({to:"/",replace:true});}}>Log out</button>}</div></nav>}
     </header>
   );
 }
