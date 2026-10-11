@@ -12,7 +12,7 @@ import { Card, PageHeader } from "@/features/ui/kit";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/positions/new")({
-  validateSearch: z.object({ businessId: z.string().optional().catch(""), type: z.enum(["Job", "Project", "Gig", "Seasonal", "Apprenticeship"]).optional().catch("Project") }),
+  validateSearch: z.object({ businessId: z.string().optional().catch(""), type: z.enum(["Job", "Project", "Gig", "Seasonal", "Apprenticeship"]).optional().catch("Job") }),
   head: () => ({
     meta: [
       { title: "Create a position — UmurimoHub" },
@@ -166,7 +166,9 @@ function Page() {
           </label>
           <label className="text-sm">
             Type
-            <select {...register("type")} className={inp}>
+            <input type="hidden" value="Job" {...register("type")} />
+            {/* Position creation is always a Job; the general opportunity type selector is intentionally hidden here. */}
+            <select {...register("type")} className={inp} disabled>
               {["Job", "Project", "Gig", "Seasonal", "Apprenticeship"].map((x) => (
                 <option key={x}>{x}</option>
               ))}
