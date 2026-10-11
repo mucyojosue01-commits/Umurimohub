@@ -108,7 +108,6 @@ begin
     select 1 from public.opportunities o
     where o.id = new.opportunity_id and o.status = 'open' and o.deadline < current_date
   ) then
-    update public.opportunities set status = 'closed' where id = new.opportunity_id and status = 'open';
     raise exception 'The application deadline has passed. This opportunity has been closed.' using errcode = '23514';
   end if;
   return new;
