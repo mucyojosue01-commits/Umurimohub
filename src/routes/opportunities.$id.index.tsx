@@ -62,10 +62,12 @@ function Page() {
   const [termsApplication, setTermsApplication] = useState<string | null>(null);
   const [termsNeedAcceptance, setTermsNeedAcceptance] = useState(false);
   const [attachments, setAttachments] = useState<Array<{ id: string; file_name: string; storage_path: string }>>([]);
+  const [applicationCount, setApplicationCount] = useState(0);
   const myTeams = user ? teams.filter((t) => user.leadTeamIds.includes(t.id)) : teams;
   useEffect(() => {
     let active = true;
     if (user?.id) void (async () => { const [{ data: opportunity }, { data: application }] = await Promise.all([supabase.from("opportunities").select("terms_version").eq("id", id).maybeSingle(), supabase.from("applications").select("id,accepted_terms_version,status").eq("opportunity_id", id).eq("applicant_user_id", user.id).not("status", "in", "(withdrawn,rejected)").order("created_at", { ascending: false }).limit(1).maybeSingle()]); if (!active) return; if (application && opportunity && Number(application.accepted_terms_version ?? 1) < Number(opportunity.terms_version ?? 1)) { setTermsApplication(application.id); setTermsNeedAcceptance(true); } else { setTermsApplication(null); setTermsNeedAcceptance(false); } })();
+    void supabase.from("applications").select("id", { count: "exact", head: true }).eq("opportunity_id", id).not("status", "in", "(withdrawn,rejected)").then(({ count }) => { if (active) setApplicationCount(count ?? 0); });
     void supabase.from("opportunity_attachments").select("id,file_name,storage_path").eq("opportunity_id", id).order("created_at").then(({ data }) => {
       if (active) setAttachments(data ?? []);
     });
@@ -96,7 +98,7 @@ function Page() {
               </Pill>
             )}
           </div>
-          <h1 className="mt-3 text-3xl font-extrabold md:text-4xl">{o.title}</h1>
+          <h1 className="mt-3 text-3xl font-extrabold md:text-4xl">{o.title}</h1><p className="mt-2 text-sm font-medium text-muted-foreground">{applicationCount} applicant{applicationCount === 1 ? "" : "s"} so far</p>{user && (o.createdBy === user.id || user.businessIds.includes(o.businessId)) && <Button className="mt-3" variant="outline" asChild><Link to="/opportunities/$id/edit" params={{id:o.id}}>Edit opportunity</Link></Button>}
           {o.status !== "open" && <div className="mt-4 rounded-xl border border-warning/40 bg-warning/10 p-4"><p className="font-semibold">{o.status === "closed" ? "Recently closed" : "Ended"}</p><p className="mt-1 text-sm text-muted-foreground">This opportunity is no longer accepting applications or referrals. You can still review its details and history.</p></div>}
           {termsNeedAcceptance && termsApplication && <div className="mt-4 rounded-xl border border-warning/40 bg-warning/10 p-4"><p className="font-semibold">This opportunity has updated terms</p><p className="mt-1 text-sm text-muted-foreground">Review the latest details. You must accept and stay to continue your application, or withdraw.</p><div className="mt-3 flex flex-wrap gap-2"><Button disabled={busy} onClick={async () => { setBusy(true); const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: termsApplication, _accept: true }); setBusy(false); if (error) toast.error(error.message); else { setTermsNeedAcceptance(false); toast.success("Updated terms accepted. You can continue your application."); } }}>Accept and stay</Button><Button variant="outline" disabled={busy} onClick={async () => { setBusy(true); const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: termsApplication, _accept: false }); setBusy(false); if (error) toast.error(error.message); else { setTermsNeedAcceptance(false); toast.success("Application withdrawn because you declined the updated terms."); } }}>Withdraw</Button></div></div>}
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"><Avatar initials={(author?.initials ?? b?.name ?? "U").slice(0, 2).toUpperCase()} src={author?.avatarUrl ?? b?.avatarUrl} alt={author?.name ?? b?.name ?? "Publisher"} size="sm" /><span>{author?.name ?? b?.name ?? "UmurimoHub member"}</span>{b?.verified && <BadgeCheck className="size-4 text-primary" />}{b && <span>· rated {b.rating}</span>}</div>
@@ -193,18 +195,9 @@ function Page() {
                 <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button>
               ) : null}
               {!audience.includes("individual") && !audience.includes("team") && !audience.includes("business") && <p className="text-sm text-muted-foreground">This opportunity has no eligible applicant type configured.</p>}
-              <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>Refer someone you trust</Button>
+              {o.status === "open" && <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>Refer someone you trust</Button>}
               {!user && <p className="pt-1 text-center text-xs text-muted-foreground"><Link to="/login" className="text-primary">Sign in</Link> to apply for this opportunity.</p>}
             </div>
-          </Card>
-          <Card>
-            <h3 className="text-sm font-semibold">Your network here</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Refer someone you've worked with — referrals are recorded in your trusted network.{" "}
-              <Link to="/network" className="text-primary">
-                View network
-              </Link>
-            </p>
           </Card>
         </aside>
       </div>
@@ -235,8 +228,8 @@ function Page() {
                 Team
                 <SearchSelect
                   value={teamId}
-                  onChange={setTeamId}
-                  options={myTeams.map((t) => ({ value: t.id, label: t.name, description: t.areas.join(", "), avatarUrl: t.avatarUrl, initials: t.name.slice(0, 2).toUpperCase() }))}
+                  onChange={(value) => { setTeamId(value); const selected = myTeams.find((t) => t.id === value); if (selected && o.teamSize && selected.memberIds.length > o.teamSize) toast.error("This team has " + selected.memberIds.length + " members; the opportunity allows at most " + o.teamSize + "."); }}
+                  options={myTeams.map((t) => ({ value: t.id, label: t.name, description: t.memberIds.length + " members · " + t.areas.join(", "), avatarUrl: t.avatarUrl, initials: t.name.slice(0, 2).toUpperCase() }))}
                   placeholder="Search your team…"
                 />
               </label>
@@ -284,9 +277,13 @@ function Page() {
           </label>
           <Button
             disabled={
-              busy || (kind === "Referral" && (!user || !refWorker)) || (kind === "Team" && !teamId)
+              busy || (kind === "Referral" && (!user || !refWorker)) || (kind === "Team" && (!teamId || (!!o.teamSize && (myTeams.find((t) => t.id === teamId)?.memberIds.length ?? 0) > o.teamSize)))
             }
             onClick={async () => {
+              if (kind === "Team" && o.teamSize && (myTeams.find((t) => t.id === teamId)?.memberIds.length ?? 0) > o.teamSize) {
+                toast.error("This team exceeds the maximum allowed size of " + o.teamSize + " members.");
+                return;
+              }
               setBusy(true);
               const r =
                 kind === "Referral"
