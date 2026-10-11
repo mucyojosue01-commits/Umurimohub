@@ -3,7 +3,7 @@ import { BriefcaseBusiness } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCatalog } from "@/features/data/catalog";
 import { useApp } from "@/features/store/app-store";
-import { EmptyState, OpportunityCard, PageHeader } from "@/features/ui/kit";
+import { OpportunityCard, PageHeader } from "@/features/ui/kit";
 
 export const Route = createFileRoute("/positions/")({
   head: () => ({
