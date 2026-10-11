@@ -33,6 +33,21 @@ function Page() {
     }
   };
 
+  const deleteOne = async (id: string) => {
+    if (!session || !window.confirm("Delete this notification? This cannot be undone.")) return;
+    setBusy(id);
+    try {
+      const { error } = await supabase.from("notifications").delete().eq("id", id).eq("user_id", session.user.id);
+      if (error) throw error;
+      toast.success("Notification deleted.");
+      window.location.reload();
+    } catch (e) {
+      toast.error((e as Error).message || "Could not delete notification.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <div className="container-page max-w-2xl py-10">
       <PageHeader
@@ -83,11 +98,10 @@ function Page() {
                   </Button>
                 )}
               </div>
-              {!n.read && (
-                <Button size="sm" variant="ghost" disabled={busy === n.id} onClick={() => void markOne(n.id)}>
-                  {busy === n.id ? "…" : "Mark read"}
-                </Button>
-              )}
+              <div className="flex shrink-0 flex-col gap-1">
+                {!n.read && <Button size="sm" variant="ghost" disabled={busy === n.id} onClick={() => void markOne(n.id)}>{busy === n.id ? "…" : "Mark read"}</Button>}
+                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === n.id} onClick={() => void deleteOne(n.id)}>Delete</Button>
+              </div>
             </div>
           ))
         )}
