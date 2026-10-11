@@ -51,9 +51,10 @@ export const Route = createFileRoute("/opportunities/$id/")({
 
 function Page() {
   const { id } = Route.useParams();
+  const { o: loadedOpportunity } = Route.useLoaderData();
   const { allOpps, apply, refer, applications, user } = useApp();
   const { getBusiness, teams, workers, workerUserIds, businesses } = useCatalog();
-  const o = allOpps.find((x) => x.id === id);
+  const o = allOpps.find((x) => x.id === id) ?? loadedOpportunity;
   const [teamId, setTeamId] = useState("");
   const [businessId, setBusinessId] = useState("");
   const [refWorker, setRefWorker] = useState("");
@@ -93,6 +94,8 @@ function Page() {
             )}
           </div>
           <h1 className="mt-3 text-3xl font-extrabold md:text-4xl">{o.title}</h1>
+          {o.status !== "open" && <div className="mt-4 rounded-xl border border-warning/40 bg-warning/10 p-4"><p className="font-semibold">{o.status === "closed" ? "Recently closed" : "Ended"}</p><p className="mt-1 text-sm text-muted-foreground">This opportunity is no longer accepting applications or referrals. You can still review its details and history.</p></div>}
+          {o.status === "open" && Number((o as typeof o & { termsVersion?: number }).termsVersion ?? 1) > 1 && <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4"><p className="font-semibold">Opportunity updated</p><p className="mt-1 text-sm text-muted-foreground">Review the latest description, requirements and terms before continuing.</p></div>}
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"><Avatar initials={(author?.initials ?? b?.name ?? "U").slice(0, 2).toUpperCase()} src={author?.avatarUrl ?? b?.avatarUrl} alt={author?.name ?? b?.name ?? "Publisher"} size="sm" /><span>{author?.name ?? b?.name ?? "UmurimoHub member"}</span>{b?.verified && <BadgeCheck className="size-4 text-primary" />}{b && <span>· rated {b.rating}</span>}</div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Allowed applicants</span>
@@ -177,13 +180,13 @@ function Page() {
               </div>
             )}
             <div className="space-y-2">
-              {audience.includes("individual") && !applied.some((a) => a.kind === "Individual" || a.kind === "Business") && (
+              {o.status === "open" && audience.includes("individual") && !applied.some((a) => a.kind === "Individual" || a.kind === "Business") && (
                 <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>
               )}
-              {audience.includes("team") && o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
+              {o.status === "open" && audience.includes("team") && o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
                 <Button className="w-full" variant="accent" size="lg" onClick={() => setKind("Team")}><Users />Apply as team</Button>
               )}
-              {audience.includes("business") && user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? (
+              {o.status === "open" && audience.includes("business") && user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? (
                 <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button>
               ) : null}
               {!audience.includes("individual") && !audience.includes("team") && !audience.includes("business") && <p className="text-sm text-muted-foreground">This opportunity has no eligible applicant type configured.</p>}
