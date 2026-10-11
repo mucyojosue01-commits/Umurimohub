@@ -67,6 +67,10 @@ function Page() {
     <Card>
       <div className="grid gap-4 md:grid-cols-2">
         <label className="text-sm md:col-span-2">Title<input className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.title} onChange={(e)=>setForm({...form,title:e.target.value})}/></label>
+        <label className="text-sm">Opportunity type<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.type} onChange={(e)=>setForm({...form,type:e.target.value})}>{["Job","Project","Service","Training","Apprenticeship"].map((v)=><option key={v}>{v}</option>)}</select></label>
+        <label className="text-sm">Pay unit<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.pay_unit} onChange={(e)=>setForm({...form,pay_unit:e.target.value})}>{["hour","day","week","month","project","fixed"].map((v)=><option key={v}>{v}</option>)}</select></label>
+        <label className="text-sm">Work mode<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.mode} onChange={(e)=>setForm({...form,mode:e.target.value})}>{["On-site","Remote","Hybrid","Field"].map((v)=><option key={v}>{v}</option>)}</select></label>
+        <label className="text-sm">Duration<input className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.duration} onChange={(e)=>setForm({...form,duration:e.target.value})}/></label>
         <label className="text-sm">Pay (RWF)<input type="number" className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.pay_rwf} onChange={(e)=>setForm({...form,pay_rwf:e.target.value})}/></label>
         <label className="text-sm">Deadline<input type="date" className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.deadline} onChange={(e)=>setForm({...form,deadline:e.target.value})}/></label>
         <label className="text-sm">District<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.district} onChange={(e)=>setForm({...form,district:e.target.value})}>{DISTRICTS.map((d)=><option key={d}>{d}</option>)}</select></label>
