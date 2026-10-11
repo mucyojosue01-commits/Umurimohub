@@ -48,7 +48,7 @@ function Page() {
   const set = (k: string, v: unknown) =>
     nav({ search: (p) => ({ ...p, [k]: v || undefined }), replace: true });
   const visibleOpps = allOpps.filter((o) => !ownBusinessIds.has(o.businessId));
-  const positions = visibleOpps.filter((o) => o.type.toLowerCase() === "job");
+  const ownOpps = allOpps.filter((o) => ownBusinessIds.has(o.businessId) || o.createdBy === user?.id);
   const list = visibleOpps.filter(
     (o) =>
       (!s.q ||
@@ -74,7 +74,7 @@ function Page() {
           </Button>
         }
       />
-      <section className="mt-6"><div className="mb-3 flex items-end justify-between gap-3"><div><h2 className="text-xl font-bold">Open positions</h2><p className="text-sm text-muted-foreground">Apply directly to a company position or receive an offer from the employer.</p></div><span className="text-sm text-muted-foreground">{positions.length} positions</span></div>{positions.length ? <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{positions.slice(0,6).map(o => <OpportunityCard key={"position-"+o.id} o={o}/>)}</div> : <p className="rounded-xl border p-4 text-sm text-muted-foreground">No open positions match yet. Check back soon.</p>}</section>
+      {user && ownOpps.length > 0 && <section className="mt-6"><div className="mb-3"><h2 className="text-xl font-bold">Your published opportunities</h2><p className="text-sm text-muted-foreground">Manage your listings and update their details.</p></div><div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{ownOpps.map(o => <div key={o.id} className="space-y-2"><OpportunityCard o={o}/><Button variant="outline" size="sm" asChild><Link to="/opportunities/$id/edit" params={{id:o.id}}>Edit opportunity</Link></Button></div>)}</div></section>}
       <div className="mt-6 flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-3">
         <SlidersHorizontal className="ml-1 size-4 text-muted-foreground" />
         <input
