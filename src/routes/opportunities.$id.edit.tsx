@@ -59,10 +59,10 @@ function Page() {
   const remove = async () => {
     if (!window.confirm("Delete this opportunity? This cannot be undone.")) return;
     setBusy(true);
-    const { error } = await supabase.from("opportunities").delete().eq("id", id);
+    const { error } = await supabase.from("opportunities").update({ status: "ended" }).eq("id", id);
     setBusy(false);
-    if (error) { toast.error("This opportunity cannot be deleted while it has dependent records. Close or complete its active work first."); return; }
-    toast.success("Opportunity deleted");
+    if (error) { toast.error("This opportunity could not be ended: " + error.message); return; }
+    toast.success("Opportunity ended and removed from listings.");
     window.location.href = "/opportunities";
   };
 
@@ -82,7 +82,7 @@ function Page() {
         <label className="text-sm">Deadline<input type="date" className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.deadline} onChange={(e)=>setForm({...form,deadline:e.target.value})}/></label>
         <label className="text-sm">District<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.district} onChange={(e)=>setForm({...form,district:e.target.value})}>{DISTRICTS.map((d)=><option key={d}>{d}</option>)}</select></label>
         <label className="text-sm">Sector<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.sector} onChange={(e)=>setForm({...form,sector:e.target.value})}>{SECTORS.map((d)=><option key={d}>{d}</option>)}</select></label>
-        <label className="text-sm">Status<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.status} onChange={(e)=>setForm({...form,status:e.target.value})}><option value="open">Open</option><option value="closed">Closed</option></select></label>
+        <label className="text-sm">Status<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.status} onChange={(e)=>setForm({...form,status:e.target.value})}><option value="open">Open</option><option value="closed">Closed</option><option value="ended">Ended / remove from listings</option></select></label>
         <label className="text-sm md:col-span-2">Description<textarea rows={7} className="mt-1 w-full rounded-xl border bg-card p-3" value={form.summary} onChange={(e)=>setForm({...form,summary:e.target.value})}/></label>
         <label className="text-sm md:col-span-2">Skills (comma-separated)<input className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.skills} onChange={(e)=>setForm({...form,skills:e.target.value})}/></label>
         <label className="text-sm md:col-span-2">Responsibilities (one per line)<textarea rows={3} className="mt-1 w-full rounded-xl border bg-card p-3" value={form.responsibilities} onChange={(e)=>setForm({...form,responsibilities:e.target.value})}/></label>
