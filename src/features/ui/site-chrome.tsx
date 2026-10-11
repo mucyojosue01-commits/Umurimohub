@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Bell, Menu, MessageSquare, Plus, Settings, UserCircle, X, LogOut } from "lucide-react";
+import { Bell, BriefcaseBusiness, ChevronDown, Menu, MessageSquare, Plus, Settings, UserCircle, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const NAV = [
-  { to: "/opportunities", label: "Opportunities" },
+  { to: "/positions", label: "Positions" },
   { to: "/match", label: "AI match" },
   { to: "/workers", label: "Workers" },
   { to: "/teams", label: "Teams" },
@@ -42,6 +42,7 @@ export function SiteHeader() {
         <Logo />
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           {NAV.map((n) => <Link key={n.to} to={n.to} className="rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground" activeProps={{ className: "text-foreground font-semibold" }}>{n.label}</Link>)}
+          <DropdownMenu><DropdownMenuTrigger className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground">Jobs <ChevronDown className="size-4"/></DropdownMenuTrigger><DropdownMenuContent align="start"><DropdownMenuItem asChild><Link to="/opportunities">Opportunities</Link></DropdownMenuItem><DropdownMenuItem asChild><Link to="/positions">Positions</Link></DropdownMenuItem></DropdownMenuContent></DropdownMenu>
         </nav>
         <div className="flex items-center gap-2">
           {user ? (
@@ -54,6 +55,7 @@ export function SiteHeader() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild><Link to="/opportunities/new">Post opportunity</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/opportunities/new" search={{ type: "Job" }}>Post position</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/training">Create training</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><a href="/register?create=business">Create business</a></DropdownMenuItem>
                   <DropdownMenuItem asChild><a href="/register?create=team">Create team</a></DropdownMenuItem>
@@ -98,7 +100,7 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   const cols = [
-    ["Platform", [["/opportunities","Opportunities"],["/workers","Workers"],["/teams","Teams"],["/business","Businesses"]]],
+    ["Platform", [["/opportunities","Opportunities"],["/positions","Positions"],["/workers","Workers"],["/teams","Teams"],["/business","Businesses"]]],
     ["Grow", [["/training","Training"],["/agriculture","Agriculture"],["/insights","Economic insights"],["/pricing","Business plans"]]],
     ["Company", [["/about","About"],["/how-it-works","How it works"],["/help","Help"],["/terms","Terms of Service"],["/privacy","Privacy Policy"]]],
   ] as const;
