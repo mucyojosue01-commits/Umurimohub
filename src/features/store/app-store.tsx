@@ -45,7 +45,7 @@ export type Msg = {
   ref?: string;
 };
 export type Notif = { id: string; text: string; at: string; read: boolean; kind: string; link?: string | null };
-export type NewOpportunity = Omit<Opportunity, "id" | "businessId" | "posted" | "featured"> & { businessId?: string; audience?: "individual" | "team" | "business" | "any" };
+export type NewOpportunity = Omit<Opportunity, "id" | "businessId" | "posted" | "featured"> & { businessId?: string; audience?: "individual" | "team" | "business" | "any"; opportunityType?: "project" | "service" | "company_position" };
 
 type Ctx = {
   user: User | null;
@@ -309,6 +309,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           sector: o.sector,
           district: o.district,
           type: o.type,
+          opportunity_type: o.opportunityType ?? "project",
+          position_name: o.opportunityType === "company_position" ? o.title : null,
           pay_rwf: Math.round(o.payRwf),
           pay_unit: o.payUnit,
           mode: o.mode,
