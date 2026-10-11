@@ -41,7 +41,6 @@ import { Route as CompanyIdRouteImport } from './routes/company.$id'
 import { Route as CompanyBusinessesRouteImport } from './routes/company.businesses'
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
-import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 import { Route as OpportunitiesNewRouteImport } from './routes/opportunities.new'
 import { Route as TeamsIndexRouteImport } from './routes/teams.index'
 import { Route as TeamsIdRouteImport } from './routes/teams.$id'
@@ -52,6 +51,7 @@ import { Route as BizzIdEditRouteImport } from './routes/bizz.$id.edit'
 import { Route as BusinessIdEditRouteImport } from './routes/business.$id.edit'
 import { Route as BusinessesIdEditRouteImport } from './routes/businesses.$id.edit'
 import { Route as CompanyIdEditRouteImport } from './routes/company.$id.edit'
+import { Route as OpportunitiesIdIndexRouteImport } from './routes/opportunities.$id.index'
 import { Route as OpportunitiesIdEditRouteImport } from './routes/opportunities.$id.edit'
 
 const IndexRoute = IndexRouteImport.update({
@@ -215,11 +215,6 @@ const OpportunitiesIndexRoute = OpportunitiesIndexRouteImport.update({
   path: '/opportunities/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OpportunitiesIdRoute = OpportunitiesIdRouteImport.update({
-  id: '/opportunities/$id',
-  path: '/opportunities/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OpportunitiesNewRoute = OpportunitiesNewRouteImport.update({
   id: '/opportunities/new',
   path: '/opportunities/new',
@@ -270,10 +265,15 @@ const CompanyIdEditRoute = CompanyIdEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => CompanyIdRoute,
 } as any)
+const OpportunitiesIdIndexRoute = OpportunitiesIdIndexRouteImport.update({
+  id: '/opportunities/$id/',
+  path: '/opportunities/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OpportunitiesIdEditRoute = OpportunitiesIdEditRouteImport.update({
-  id: '/edit',
-  path: '/edit',
-  getParentRoute: () => OpportunitiesIdRoute,
+  id: '/opportunities/$id/edit',
+  path: '/opportunities/$id/edit',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -308,7 +308,6 @@ export interface FileRoutesByFullPath {
   '/company/$id': typeof CompanyIdRouteWithChildren
   '/company/businesses': typeof CompanyBusinessesRoute
   '/contracts/$id': typeof ContractsIdRoute
-  '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
   '/workers/$id': typeof WorkersIdRoute
@@ -321,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/businesses/$id/edit': typeof BusinessesIdEditRoute
   '/company/$id/edit': typeof CompanyIdEditRoute
   '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
+  '/opportunities/$id/': typeof OpportunitiesIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -354,7 +354,6 @@ export interface FileRoutesByTo {
   '/company/$id': typeof CompanyIdRouteWithChildren
   '/company/businesses': typeof CompanyBusinessesRoute
   '/contracts/$id': typeof ContractsIdRoute
-  '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
   '/workers/$id': typeof WorkersIdRoute
@@ -367,6 +366,7 @@ export interface FileRoutesByTo {
   '/businesses/$id/edit': typeof BusinessesIdEditRoute
   '/company/$id/edit': typeof CompanyIdEditRoute
   '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
+  '/opportunities/$id': typeof OpportunitiesIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -401,7 +401,6 @@ export interface FileRoutesById {
   '/company/$id': typeof CompanyIdRouteWithChildren
   '/company/businesses': typeof CompanyBusinessesRoute
   '/contracts/$id': typeof ContractsIdRoute
-  '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
   '/workers/$id': typeof WorkersIdRoute
@@ -414,6 +413,7 @@ export interface FileRoutesById {
   '/businesses/$id/edit': typeof BusinessesIdEditRoute
   '/company/$id/edit': typeof CompanyIdEditRoute
   '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
+  '/opportunities/$id/': typeof OpportunitiesIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -449,7 +449,6 @@ export interface FileRouteTypes {
     | '/company/$id'
     | '/company/businesses'
     | '/contracts/$id'
-    | '/opportunities/$id'
     | '/opportunities/new'
     | '/teams/$id'
     | '/workers/$id'
@@ -462,6 +461,7 @@ export interface FileRouteTypes {
     | '/businesses/$id/edit'
     | '/company/$id/edit'
     | '/opportunities/$id/edit'
+    | '/opportunities/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -495,7 +495,6 @@ export interface FileRouteTypes {
     | '/company/$id'
     | '/company/businesses'
     | '/contracts/$id'
-    | '/opportunities/$id'
     | '/opportunities/new'
     | '/teams/$id'
     | '/workers/$id'
@@ -508,6 +507,7 @@ export interface FileRouteTypes {
     | '/businesses/$id/edit'
     | '/company/$id/edit'
     | '/opportunities/$id/edit'
+    | '/opportunities/$id'
   id:
     | '__root__'
     | '/'
@@ -541,7 +541,6 @@ export interface FileRouteTypes {
     | '/company/$id'
     | '/company/businesses'
     | '/contracts/$id'
-    | '/opportunities/$id'
     | '/opportunities/new'
     | '/teams/$id'
     | '/workers/$id'
@@ -554,6 +553,7 @@ export interface FileRouteTypes {
     | '/businesses/$id/edit'
     | '/company/$id/edit'
     | '/opportunities/$id/edit'
+    | '/opportunities/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -583,7 +583,6 @@ export interface RootRouteChildren {
   TrainingRoute: typeof TrainingRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ContractsIdRoute: typeof ContractsIdRoute
-  OpportunitiesIdRoute: typeof OpportunitiesIdRouteWithChildren
   OpportunitiesNewRoute: typeof OpportunitiesNewRoute
   TeamsIdRoute: typeof TeamsIdRoute
   WorkersIdRoute: typeof WorkersIdRoute
@@ -591,6 +590,8 @@ export interface RootRouteChildren {
   TeamsIndexRoute: typeof TeamsIndexRoute
   WorkersIndexRoute: typeof WorkersIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  OpportunitiesIdEditRoute: typeof OpportunitiesIdEditRoute
+  OpportunitiesIdIndexRoute: typeof OpportunitiesIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -819,13 +820,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpportunitiesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/opportunities/$id': {
-      id: '/opportunities/$id'
-      path: '/opportunities/$id'
-      fullPath: '/opportunities/$id'
-      preLoaderRoute: typeof OpportunitiesIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/opportunities/new': {
       id: '/opportunities/new'
       path: '/opportunities/new'
@@ -896,12 +890,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanyIdEditRouteImport
       parentRoute: typeof CompanyIdRoute
     }
+    '/opportunities/$id/': {
+      id: '/opportunities/$id/'
+      path: '/opportunities/$id'
+      fullPath: '/opportunities/$id/'
+      preLoaderRoute: typeof OpportunitiesIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/opportunities/$id/edit': {
       id: '/opportunities/$id/edit'
-      path: '/edit'
+      path: '/opportunities/$id/edit'
       fullPath: '/opportunities/$id/edit'
       preLoaderRoute: typeof OpportunitiesIdEditRouteImport
-      parentRoute: typeof OpportunitiesIdRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -1000,18 +1001,6 @@ const CompanyRouteChildren: CompanyRouteChildren = {
 const CompanyRouteWithChildren =
   CompanyRoute._addFileChildren(CompanyRouteChildren)
 
-interface OpportunitiesIdRouteChildren {
-  OpportunitiesIdEditRoute: typeof OpportunitiesIdEditRoute
-}
-
-const OpportunitiesIdRouteChildren: OpportunitiesIdRouteChildren = {
-  OpportunitiesIdEditRoute: OpportunitiesIdEditRoute,
-}
-
-const OpportunitiesIdRouteWithChildren = OpportunitiesIdRoute._addFileChildren(
-  OpportunitiesIdRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -1040,7 +1029,6 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ContractsIdRoute: ContractsIdRoute,
-  OpportunitiesIdRoute: OpportunitiesIdRouteWithChildren,
   OpportunitiesNewRoute: OpportunitiesNewRoute,
   TeamsIdRoute: TeamsIdRoute,
   WorkersIdRoute: WorkersIdRoute,
@@ -1048,6 +1036,8 @@ const rootRouteChildren: RootRouteChildren = {
   TeamsIndexRoute: TeamsIndexRoute,
   WorkersIndexRoute: WorkersIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  OpportunitiesIdEditRoute: OpportunitiesIdEditRoute,
+  OpportunitiesIdIndexRoute: OpportunitiesIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
