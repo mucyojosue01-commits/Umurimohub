@@ -92,7 +92,7 @@ $$;
 
 drop trigger if exists applications_team_size_check on public.applications;
 create trigger applications_team_size_check
-before insert or update of opportunity_id, applicant_team_id, kind, applicant_type
+before insert or update
 on public.applications
 for each row execute function public.enforce_team_opportunity_size();
 
