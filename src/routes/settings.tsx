@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader } from "@/features/ui/kit";
@@ -29,7 +29,7 @@ function Page() {
   const [password, setPassword] = useState("");
   const [avatarBusy, setAvatarBusy] = useState(false);
 
-  useState(() => { void (async () => { const [p, w] = await Promise.all([supabase.from("profiles").select("district,phone").eq("id", session?.user.id ?? "").maybeSingle(), supabase.from("worker_profiles").select("title,bio,district,sector,id").eq("user_id", session?.user.id ?? "").maybeSingle()]); if (p.data) { setDistrict(p.data.district ?? ""); setPhone(p.data.phone ?? ""); } if (w.data) { setTitle(w.data.title ?? ""); setBio(w.data.bio ?? ""); setSector(w.data.sector ?? ""); const { data: sk } = await supabase.from("worker_skills").select("name").eq("worker_id", w.data.id); setSkills((sk ?? []).map(x => x.name).join(", ")); } setProfileLoaded(true); })(); });
+  useEffect(() => { let active = true; void (async () => { const [p, w] = await Promise.all([supabase.from("profiles").select("district,phone").eq("id", session?.user.id ?? "").maybeSingle(), supabase.from("worker_profiles").select("title,bio,district,sector,id").eq("user_id", session?.user.id ?? "").maybeSingle()]); if (!active) return; if (p.data) { setDistrict(p.data.district ?? ""); setPhone(p.data.phone ?? ""); } if (w.data) { setTitle(w.data.title ?? ""); setBio(w.data.bio ?? ""); setSector(w.data.sector ?? ""); const { data: sk } = await supabase.from("worker_skills").select("name").eq("worker_id", w.data.id); if (active) setSkills((sk ?? []).map(x => x.name).join(", ")); } setProfileLoaded(true); })(); return () => { active = false; }; }, [session?.user.id]);
 
   if (!session || !user) return <div className="container-page py-16"><PageHeader title="Profile & settings" desc="Sign in to manage your account."/><Button asChild className="mt-4"><Link to="/login">Sign in</Link></Button></div>;
 
