@@ -147,5 +147,7 @@ export function mapOpportunity(o: Tables<"opportunities">): Opportunity {
     featured: o.featured,
     posted: relTime(o.created_at),
     postedAt: o.created_at,
+    status: o.status,
+    termsVersion: o.terms_version,
   };
 }
