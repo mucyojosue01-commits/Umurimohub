@@ -1,10 +1,8 @@
 import { createFileRoute, Link, notFound, Outlet, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
 import { toast } from "sonner";
 import { Building2, MapPin, Pencil, Plus, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
-import { useCatalog } from "@/features/data/catalog";
 import { mapBusiness, mapOpportunity } from "@/features/data/mappers";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, Card, PageHeader, Pill } from "@/features/ui/kit";
@@ -74,7 +72,6 @@ function BusinessProfilePage() {
   const { id } = Route.useParams();
   const pathname = useRouterState({ select: (state) => state.location.pathname.replace(/\/+$/, "") });
   const { user } = useApp();
-  const { workers, workerUserIds } = useCatalog();
   const { business, openOpportunities, employees, completedProjects } = Route.useLoaderData();
   const isOwner = !!user && user.businessIds.includes(id);
 
