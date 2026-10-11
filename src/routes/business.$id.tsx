@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound, Outlet, useRouterState } from "@tanstack/react-router";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Building2, MapPin, Pencil, Plus, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,35 @@ function BusinessProfilePage() {
   const { user } = useApp();
   const { business, openOpportunities, employees, completedProjects } = Route.useLoaderData();
   const isOwner = !!user && user.businessIds.includes(id);
+  const [showPositionForm, setShowPositionForm] = useState(false);
+  const [positionTitle, setPositionTitle] = useState("");
+  const [positionSummary, setPositionSummary] = useState("");
+  const [positionPay, setPositionPay] = useState("");
+  const [positionDeadline, setPositionDeadline] = useState("");
+  const [positionSkills, setPositionSkills] = useState("");
+  const [positionBusy, setPositionBusy] = useState(false);
+  const createPosition = async () => {
+    if (!user || positionTitle.trim().length < 3 || positionSummary.trim().length < 10 || Number(positionPay) < 0 || !positionDeadline) {
+      toast.error("Complete the position title, description, pay and deadline.");
+      return;
+    }
+    setPositionBusy(true);
+    const { data, error } = await supabase.from("opportunities").insert({
+      business_id: id, created_by: user.id, title: positionTitle.trim(),
+      position_name: positionTitle.trim(), opportunity_type: "company_position", type: "Job",
+      summary: positionSummary.trim(), sector: business.sector || "General",
+      district: business.district || "Kigali", mode: "On-site", duration: "Ongoing",
+      pay_rwf: Math.max(0, Math.round(Number(positionPay) || 0)), pay_unit: "month",
+      deadline: positionDeadline,
+      skills: positionSkills.split(",").map((skill) => skill.trim()).filter(Boolean),
+      responsibilities: [], requirements: [], eligible_actor_types: ["individual"],
+      team_allowed: false, status: "open", is_demo: false,
+    }).select("id").single();
+    setPositionBusy(false);
+    if (error) { toast.error("Position could not be published: " + error.message); return; }
+    toast.success("Position published and listed in Open positions.");
+    window.location.href = "/opportunities/" + data.id;
+  };
 
 
   return <>
@@ -81,7 +111,19 @@ function BusinessProfilePage() {
     <Link to="/business" className="text-sm text-muted-foreground hover:text-foreground">← Company directory</Link>
     <Card className="mt-4 overflow-hidden p-0"><div className="h-2 bg-primary" /><div className="p-5 md:p-8">
       <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between"><div className="flex min-w-0 items-start gap-4"><Avatar initials={business.name.slice(0,2).toUpperCase()} src={business.avatarUrl} alt={business.name} size="lg" /><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><Building2 className="size-5 text-primary" /><h1 className="break-words text-2xl font-display font-bold md:text-3xl">{business.name}</h1>{business.verified && <Pill tone="success"><ShieldCheck className="size-3.5" />Verified company</Pill>}</div><p className="mt-2 flex flex-wrap items-center gap-1 text-sm text-muted-foreground"><MapPin className="size-4" />{business.district || "Rwanda"} · {business.sector}</p></div></div>
-      {isOwner && <div className="flex flex-wrap gap-2"><Button asChild><Link to="/opportunities/new"><Plus className="mr-2 size-4" />Post opportunity</Link></Button><Button variant="outline" asChild><Link to="/business/$id/edit" params={{ id }}><Pencil className="mr-2 size-4" />Edit company</Link></Button></div>}</div>
+      {isOwner && <div className="flex flex-wrap gap-2"><Button onClick={() => setShowPositionForm((shown) => !shown)}><Plus className="mr-2 size-4" />{showPositionForm ? "Cancel position" : "Create position"}</Button><Button variant="outline" asChild><Link to="/opportunities/new"><Plus className="mr-2 size-4" />Post opportunity</Link></Button><Button variant="outline" asChild><Link to="/business/$id/edit" params={{ id }}><Pencil className="mr-2 size-4" />Edit company</Link></Button></div>}</div>
+      {isOwner && showPositionForm && <div className="mt-6 rounded-2xl border bg-muted/20 p-5">
+        <h2 className="font-semibold">Create a company position</h2>
+        <p className="mt-1 text-sm text-muted-foreground">This role will be linked to {business.name}, appear under Open positions, and accept applications as well as direct offers.</p>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <label className="text-sm md:col-span-2">Position title<input value={positionTitle} onChange={(e) => setPositionTitle(e.target.value)} maxLength={120} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" /></label>
+          <label className="text-sm">Monthly pay (RWF)<input type="number" min="0" value={positionPay} onChange={(e) => setPositionPay(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" /></label>
+          <label className="text-sm">Application deadline<input type="date" value={positionDeadline} min={new Date().toISOString().slice(0,10)} onChange={(e) => setPositionDeadline(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" /></label>
+          <label className="text-sm md:col-span-2">Required skills (comma-separated)<input value={positionSkills} onChange={(e) => setPositionSkills(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" /></label>
+          <label className="text-sm md:col-span-2">Role description<textarea value={positionSummary} onChange={(e) => setPositionSummary(e.target.value)} rows={4} className="mt-1 w-full rounded-xl border bg-card p-3" /></label>
+        </div>
+        <Button className="mt-4" disabled={positionBusy} onClick={() => void createPosition()}>{positionBusy ? "Publishing…" : "Publish position"}</Button>
+      </div>}
       <p className="mt-6 whitespace-pre-line leading-7 text-muted-foreground">{business.about || "This company has not added an overview yet."}</p>
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4"><div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">Completed projects</p><p className="mt-1 text-2xl font-bold">{completedProjects}</p></div><div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">Active employees</p><p className="mt-1 text-2xl font-bold">{employees.length}</p></div></div>
       {business.services.length > 0 && <div className="mt-5"><p className="mb-2 text-sm font-semibold">Services & capabilities</p><div className="flex flex-wrap gap-2">{business.services.map((service) => <Pill key={service}>{service}</Pill>)}</div></div>}
