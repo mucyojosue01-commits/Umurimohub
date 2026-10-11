@@ -164,7 +164,7 @@ function Page() {
                       <p className="text-xs text-muted-foreground">
                         {r.referrer === me ? "You referred " + (referee?.name ?? "someone") : "Referred by " + (referrer?.name ?? referrerProfile?.display_name ?? "a trusted member")}
                       </p>
-                      {r.referrer !== me && <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><Avatar initials={(referrer?.name ?? referrerProfile?.display_name ?? "R").slice(0, 2).toUpperCase()} src={referrer?.avatar_url ?? referrerProfile?.avatar_url} alt={referrer?.name ?? referrerProfile?.display_name ?? "Referrer"} size="sm" />Referrer profile</div>}
+                      {r.referrer !== me && <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><Avatar initials={(referrer?.name ?? referrerProfile?.display_name ?? "R").slice(0, 2).toUpperCase()} src={referrer?.avatar_url ?? referrerProfile?.avatar_url} alt={referrer?.name ?? referrerProfile?.display_name ?? "Referrer"} size="sm" />Referred by {referrer?.name ?? referrerProfile?.display_name ?? "a trusted member"}</div>}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
