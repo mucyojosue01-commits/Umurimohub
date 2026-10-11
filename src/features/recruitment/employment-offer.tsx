@@ -32,8 +32,9 @@ export function EmploymentOffer({
     queryFn: async (): Promise<PublishedOpportunity[]> => {
       const { data, error } = await supabase
         .from("opportunities")
-        .select("id,title,business_id")
+        .select("id,title,position_name,business_id,opportunity_type")
         .in("business_id", user!.businessIds)
+        .eq("opportunity_type", "company_position")
         .eq("status", "open")
         .eq("is_demo", false)
         .order("created_at", { ascending: false });
