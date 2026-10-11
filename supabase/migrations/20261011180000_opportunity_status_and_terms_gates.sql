@@ -68,8 +68,8 @@ drop policy if exists "applicants and owners read opportunity change history" on
 create policy "applicants and owners read opportunity change history"
 on public.opportunity_change_history for select to authenticated
 using (
-  exists (select 1 from public.applications a where a.opportunity_id = opportunity_id and a.applicant_user_id = auth.uid())
-  or exists (select 1 from public.opportunities o where o.id = opportunity_id and (o.created_by = auth.uid() or (o.business_id is not null and public.is_business_member(o.business_id))))
+  exists (select 1 from public.applications a where a.opportunity_id = opportunity_change_history.opportunity_id and a.applicant_user_id = auth.uid())
+  or exists (select 1 from public.opportunities o where o.id = opportunity_change_history.opportunity_id and (o.created_by = auth.uid() or (o.business_id is not null and public.is_business_member(o.business_id))))
 );
 
 create or replace function public.log_opportunity_field_changes()
