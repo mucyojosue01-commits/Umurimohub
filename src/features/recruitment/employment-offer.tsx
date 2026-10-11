@@ -35,6 +35,7 @@ export function EmploymentOffer({
         .select("id,title,business_id")
         .in("business_id", user!.businessIds)
         .eq("status", "open")
+        .eq("opportunity_type", "company_position")
         .eq("is_demo", false)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -83,7 +84,7 @@ export function EmploymentOffer({
     <Card>
       <h2 className="font-bold">Send employment offer</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Choose one of your published opportunities. Each option includes its company name.
+        Choose one of your published company positions. Each option includes its company name.
       </p>
       <label className="mt-3 block text-sm">
         Opportunity
