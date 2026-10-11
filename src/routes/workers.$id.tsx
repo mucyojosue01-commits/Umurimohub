@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { BadgeCheck, MapPin, MessageSquare, Star, Briefcase, Users, CheckCircle2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { rwf } from "@/features/data/demo";
@@ -161,6 +162,7 @@ function Page() {
       </Card>
       <div className="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-6">
+          {user && user.businessIds.length > 0 && user.id !== workerUserIds[w.id] && <EmploymentOffer workerId={w.id} workerUserId={workerUserIds[w.id] ?? null} />}
           <Card>
             <h2 className="font-bold">About</h2>
             <p className="mt-2 text-muted-foreground">{w.bio}</p>
@@ -283,4 +285,33 @@ function Page() {
       </div>
     </div>
   );
+}
+
+function EmploymentOffer({ workerId, workerUserId }: { workerId: string; workerUserId: string | null }) {
+  const { user } = useApp();
+  const [opportunityId, setOpportunityId] = useState("");
+  const [employmentType, setEmploymentType] = useState("full_time");
+  const [details, setDetails] = useState("");
+  const [busy, setBusy] = useState(false);
+  const query = useQuery({
+    queryKey: ["published-employment-opportunities", user?.id, user?.businessIds],
+    enabled: !!user && user.businessIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("opportunities").select("id,title,business_id").in("business_id", user!.businessIds).eq("status", "open").eq("is_demo", false);
+      if (error) throw error;
+      const ids = [...new Set((data ?? []).map((item) => item.business_id))];
+      const { data: companies } = ids.length ? await supabase.from("businesses").select("id,name").in("id", ids) : { data: [] };
+      return (data ?? []).map((item) => ({ ...item, companyName: companies?.find((company) => company.id === item.business_id)?.name ?? "Company" }));
+    },
+  });
+  const submit = async () => {
+    const opportunity = query.data?.find((item) => item.id === opportunityId);
+    if (!user || !workerUserId || !opportunity) return;
+    setBusy(true);
+    const { error } = await supabase.from("employment_offers").insert({ business_id: opportunity.business_id, worker_id: workerId, worker_user_id: workerUserId, position_name: opportunity.title, employment_type: employmentType, details: details.trim(), offered_by: user.id });
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else { toast.success("Employment offer sent."); setOpportunityId(""); setDetails(""); }
+  };
+  return <Card><h2 className="font-bold">Send employment offer</h2><p className="mt-1 text-sm text-muted-foreground">Choose one of your published opportunities. Each option includes its company name.</p><label className="mt-3 block text-sm">Opportunity<select value={opportunityId} onChange={(event) => setOpportunityId(event.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3"><option value="">Choose an opportunity</option>{(query.data ?? []).map((item) => <option key={item.id} value={item.id}>{item.title} — {item.companyName}</option>)}</select></label><label className="mt-3 block text-sm">Employment type<select value={employmentType} onChange={(event) => setEmploymentType(event.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3"><option value="full_time">Full-time</option><option value="part_time">Part-time</option><option value="contract">Contract</option><option value="temporary">Temporary</option><option value="apprenticeship">Apprenticeship</option></select></label><label className="mt-3 block text-sm">Details (optional)<textarea value={details} onChange={(event) => setDetails(event.target.value)} rows={2} className="mt-1 w-full rounded-xl border bg-card p-3" /></label><Button className="mt-3" disabled={busy || !opportunityId} onClick={() => void submit()}>{busy ? "Sending…" : "Send offer"}</Button>{query.isError && <p className="mt-2 text-sm text-destructive">Could not load published opportunities.</p>}</Card>;
 }
