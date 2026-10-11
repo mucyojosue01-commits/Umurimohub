@@ -19,7 +19,7 @@ export const Route = createFileRoute("/notifications")({
 });
 
 function Page() {
-  const { notifications, markAllRead, session } = useApp();
+  const { notifications, markAllRead, session, reloadUser } = useApp();
   const [busy, setBusy] = useState<string | null>(null);
 
   const markOne = async (id: string) => {
@@ -28,6 +28,7 @@ function Page() {
     try {
       const { error } = await supabase.rpc("mark_notification_read", { _notification_id: id });
       if (error) throw error;
+      await reloadUser();
     } catch (e) {
       toast.error((e as Error).message || "Couldn't mark notification as read.");
     } finally {
@@ -42,7 +43,7 @@ function Page() {
       const { error } = await supabase.from("notifications").delete().eq("id", id).eq("user_id", session.user.id);
       if (error) throw error;
       toast.success("Notification deleted.");
-      window.location.reload();
+      await reloadUser();
     } catch (e) {
       toast.error((e as Error).message || "Could not delete notification.");
     } finally {
