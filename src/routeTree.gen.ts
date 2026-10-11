@@ -14,10 +14,6 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AgricultureRouteImport } from './routes/agriculture'
 import { Route as BizzRouteImport } from './routes/bizz'
 import { Route as BusinessRouteImport } from './routes/business'
-import { Route as BizzIdRouteImport } from './routes/bizz.$id'
-import { Route as BusinessIdRouteImport } from './routes/business.$id'
-import { Route as BizzIdEditRouteImport } from './routes/bizz.$id.edit'
-import { Route as BusinessIdEditRouteImport } from './routes/business.$id.edit'
 import { Route as BusinessesRouteImport } from './routes/businesses'
 import { Route as CompanyRouteImport } from './routes/company'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -32,11 +28,17 @@ import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as NetworkRouteImport } from './routes/network'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrainingRouteImport } from './routes/training'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as BizzIdRouteImport } from './routes/bizz.$id'
+import { Route as BusinessIdRouteImport } from './routes/business.$id'
+import { Route as BusinessesIdRouteImport } from './routes/businesses.$id'
+import { Route as CompanyIdRouteImport } from './routes/company.$id'
+import { Route as CompanyBusinessesRouteImport } from './routes/company.businesses'
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
@@ -46,6 +48,10 @@ import { Route as TeamsIdRouteImport } from './routes/teams.$id'
 import { Route as WorkersIndexRouteImport } from './routes/workers.index'
 import { Route as WorkersIdRouteImport } from './routes/workers.$id'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as BizzIdEditRouteImport } from './routes/bizz.$id.edit'
+import { Route as BusinessIdEditRouteImport } from './routes/business.$id.edit'
+import { Route as BusinessesIdEditRouteImport } from './routes/businesses.$id.edit'
+import { Route as CompanyIdEditRouteImport } from './routes/company.$id.edit'
 import { Route as OpportunitiesIdEditRouteImport } from './routes/opportunities.$id.edit'
 
 const IndexRoute = IndexRouteImport.update({
@@ -71,26 +77,6 @@ const BizzRoute = BizzRouteImport.update({
 const BusinessRoute = BusinessRouteImport.update({
   id: '/business',
   path: '/business',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BizzIdRoute = BizzIdRouteImport.update({
-  id: '/bizz/$id',
-  path: '/bizz/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BusinessIdRoute = BusinessIdRouteImport.update({
-  id: '/business/$id',
-  path: '/business/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BizzIdEditRoute = BizzIdEditRouteImport.update({
-  id: '/bizz/$id/edit',
-  path: '/bizz/$id/edit',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BusinessIdEditRoute = BusinessIdEditRouteImport.update({
-  id: '/business/$id/edit',
-  path: '/business/$id/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BusinessesRoute = BusinessesRouteImport.update({
@@ -163,6 +149,11 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -189,6 +180,31 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const BizzIdRoute = BizzIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => BizzRoute,
+} as any)
+const BusinessIdRoute = BusinessIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessesIdRoute = BusinessesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => BusinessesRoute,
+} as any)
+const CompanyIdRoute = CompanyIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CompanyRoute,
+} as any)
+const CompanyBusinessesRoute = CompanyBusinessesRouteImport.update({
+  id: '/businesses',
+  path: '/businesses',
+  getParentRoute: () => CompanyRoute,
+} as any)
 const ContractsIdRoute = ContractsIdRouteImport.update({
   id: '/contracts/$id',
   path: '/contracts/$id',
@@ -234,6 +250,26 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BizzIdEditRoute = BizzIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => BizzIdRoute,
+} as any)
+const BusinessIdEditRoute = BusinessIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => BusinessIdRoute,
+} as any)
+const BusinessesIdEditRoute = BusinessesIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => BusinessesIdRoute,
+} as any)
+const CompanyIdEditRoute = CompanyIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => CompanyIdRoute,
+} as any)
 const OpportunitiesIdEditRoute = OpportunitiesIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -244,14 +280,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
-  '/bizz': typeof BizzRoute
-  '/business': typeof BusinessRoute
-  '/bizz/$id': typeof BizzIdRoute
-  '/business/$id': typeof BusinessIdRoute
-  '/bizz/$id/edit': typeof BizzIdEditRoute
-  '/business/$id/edit': typeof BusinessIdEditRoute
-  '/businesses': typeof BusinessesRoute
-  '/company': typeof CompanyRoute
+  '/bizz': typeof BizzRouteWithChildren
+  '/business': typeof BusinessRouteWithChildren
+  '/businesses': typeof BusinessesRouteWithChildren
+  '/company': typeof CompanyRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/grow': typeof GrowRoute
   '/help': typeof HelpRoute
@@ -264,12 +296,18 @@ export interface FileRoutesByFullPath {
   '/network': typeof NetworkRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-    '/contracts/$id': typeof ContractsIdRoute
+  '/bizz/$id': typeof BizzIdRouteWithChildren
+  '/business/$id': typeof BusinessIdRouteWithChildren
+  '/businesses/$id': typeof BusinessesIdRouteWithChildren
+  '/company/$id': typeof CompanyIdRouteWithChildren
+  '/company/businesses': typeof CompanyBusinessesRoute
+  '/contracts/$id': typeof ContractsIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -278,20 +316,20 @@ export interface FileRoutesByFullPath {
   '/teams/': typeof TeamsIndexRoute
   '/workers/': typeof WorkersIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/bizz/$id/edit': typeof BizzIdEditRoute
+  '/business/$id/edit': typeof BusinessIdEditRoute
+  '/businesses/$id/edit': typeof BusinessesIdEditRoute
+  '/company/$id/edit': typeof CompanyIdEditRoute
   '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
-  '/bizz': typeof BizzRoute
-  '/business': typeof BusinessRoute
-  '/bizz/$id': typeof BizzIdRoute
-  '/business/$id': typeof BusinessIdRoute
-  '/bizz/$id/edit': typeof BizzIdEditRoute
-  '/business/$id/edit': typeof BusinessIdEditRoute
-  '/businesses': typeof BusinessesRoute
-  '/company': typeof CompanyRoute
+  '/bizz': typeof BizzRouteWithChildren
+  '/business': typeof BusinessRouteWithChildren
+  '/businesses': typeof BusinessesRouteWithChildren
+  '/company': typeof CompanyRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/grow': typeof GrowRoute
   '/help': typeof HelpRoute
@@ -304,11 +342,17 @@ export interface FileRoutesByTo {
   '/network': typeof NetworkRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/bizz/$id': typeof BizzIdRouteWithChildren
+  '/business/$id': typeof BusinessIdRouteWithChildren
+  '/businesses/$id': typeof BusinessesIdRouteWithChildren
+  '/company/$id': typeof CompanyIdRouteWithChildren
+  '/company/businesses': typeof CompanyBusinessesRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
@@ -318,6 +362,10 @@ export interface FileRoutesByTo {
   '/teams': typeof TeamsIndexRoute
   '/workers': typeof WorkersIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/bizz/$id/edit': typeof BizzIdEditRoute
+  '/business/$id/edit': typeof BusinessIdEditRoute
+  '/businesses/$id/edit': typeof BusinessesIdEditRoute
+  '/company/$id/edit': typeof CompanyIdEditRoute
   '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
 }
 export interface FileRoutesById {
@@ -325,14 +373,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agriculture': typeof AgricultureRoute
-  '/bizz': typeof BizzRoute
-  '/business': typeof BusinessRoute
-  '/bizz/$id': typeof BizzIdRoute
-  '/business/$id': typeof BusinessIdRoute
-  '/bizz/$id/edit': typeof BizzIdEditRoute
-  '/business/$id/edit': typeof BusinessIdEditRoute
-  '/businesses': typeof BusinessesRoute
-  '/company': typeof CompanyRoute
+  '/bizz': typeof BizzRouteWithChildren
+  '/business': typeof BusinessRouteWithChildren
+  '/businesses': typeof BusinessesRouteWithChildren
+  '/company': typeof CompanyRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/grow': typeof GrowRoute
   '/help': typeof HelpRoute
@@ -345,11 +389,17 @@ export interface FileRoutesById {
   '/network': typeof NetworkRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/bizz/$id': typeof BizzIdRouteWithChildren
+  '/business/$id': typeof BusinessIdRouteWithChildren
+  '/businesses/$id': typeof BusinessesIdRouteWithChildren
+  '/company/$id': typeof CompanyIdRouteWithChildren
+  '/company/businesses': typeof CompanyBusinessesRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/opportunities/$id': typeof OpportunitiesIdRouteWithChildren
   '/opportunities/new': typeof OpportunitiesNewRoute
@@ -359,6 +409,10 @@ export interface FileRoutesById {
   '/teams/': typeof TeamsIndexRoute
   '/workers/': typeof WorkersIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/bizz/$id/edit': typeof BizzIdEditRoute
+  '/business/$id/edit': typeof BusinessIdEditRoute
+  '/businesses/$id/edit': typeof BusinessesIdEditRoute
+  '/company/$id/edit': typeof CompanyIdEditRoute
   '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
 }
 export interface FileRouteTypes {
@@ -369,10 +423,6 @@ export interface FileRouteTypes {
     | '/agriculture'
     | '/bizz'
     | '/business'
-    | '/bizz/$id'
-    | '/business/$id'
-    | '/bizz/$id/edit'
-    | '/business/$id/edit'
     | '/businesses'
     | '/company'
     | '/dashboard'
@@ -387,11 +437,17 @@ export interface FileRouteTypes {
     | '/network'
     | '/notifications'
     | '/pricing'
+    | '/privacy'
     | '/register'
     | '/settings'
     | '/terms'
     | '/training'
     | '/.well-known/oauth-protected-resource'
+    | '/bizz/$id'
+    | '/business/$id'
+    | '/businesses/$id'
+    | '/company/$id'
+    | '/company/businesses'
     | '/contracts/$id'
     | '/opportunities/$id'
     | '/opportunities/new'
@@ -401,6 +457,10 @@ export interface FileRouteTypes {
     | '/teams/'
     | '/workers/'
     | '/.lovable/oauth/consent'
+    | '/bizz/$id/edit'
+    | '/business/$id/edit'
+    | '/businesses/$id/edit'
+    | '/company/$id/edit'
     | '/opportunities/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -409,10 +469,6 @@ export interface FileRouteTypes {
     | '/agriculture'
     | '/bizz'
     | '/business'
-    | '/bizz/$id'
-    | '/business/$id'
-    | '/bizz/$id/edit'
-    | '/business/$id/edit'
     | '/businesses'
     | '/company'
     | '/dashboard'
@@ -427,11 +483,17 @@ export interface FileRouteTypes {
     | '/network'
     | '/notifications'
     | '/pricing'
+    | '/privacy'
     | '/register'
     | '/settings'
     | '/terms'
     | '/training'
     | '/.well-known/oauth-protected-resource'
+    | '/bizz/$id'
+    | '/business/$id'
+    | '/businesses/$id'
+    | '/company/$id'
+    | '/company/businesses'
     | '/contracts/$id'
     | '/opportunities/$id'
     | '/opportunities/new'
@@ -441,6 +503,10 @@ export interface FileRouteTypes {
     | '/teams'
     | '/workers'
     | '/.lovable/oauth/consent'
+    | '/bizz/$id/edit'
+    | '/business/$id/edit'
+    | '/businesses/$id/edit'
+    | '/company/$id/edit'
     | '/opportunities/$id/edit'
   id:
     | '__root__'
@@ -449,10 +515,6 @@ export interface FileRouteTypes {
     | '/agriculture'
     | '/bizz'
     | '/business'
-    | '/bizz/$id'
-    | '/business/$id'
-    | '/bizz/$id/edit'
-    | '/business/$id/edit'
     | '/businesses'
     | '/company'
     | '/dashboard'
@@ -467,11 +529,17 @@ export interface FileRouteTypes {
     | '/network'
     | '/notifications'
     | '/pricing'
+    | '/privacy'
     | '/register'
     | '/settings'
     | '/terms'
     | '/training'
     | '/.well-known/oauth-protected-resource'
+    | '/bizz/$id'
+    | '/business/$id'
+    | '/businesses/$id'
+    | '/company/$id'
+    | '/company/businesses'
     | '/contracts/$id'
     | '/opportunities/$id'
     | '/opportunities/new'
@@ -481,6 +549,10 @@ export interface FileRouteTypes {
     | '/teams/'
     | '/workers/'
     | '/.lovable/oauth/consent'
+    | '/bizz/$id/edit'
+    | '/business/$id/edit'
+    | '/businesses/$id/edit'
+    | '/company/$id/edit'
     | '/opportunities/$id/edit'
   fileRoutesById: FileRoutesById
 }
@@ -488,14 +560,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AgricultureRoute: typeof AgricultureRoute
-  BizzRoute: typeof BizzRoute
-  BusinessRoute: typeof BusinessRoute
-  BizzIdRoute: typeof BizzIdRoute
-  BusinessIdRoute: typeof BusinessIdRoute
-  BizzIdEditRoute: typeof BizzIdEditRoute
-  BusinessIdEditRoute: typeof BusinessIdEditRoute
-  BusinessesRoute: typeof BusinessesRoute
-  CompanyRoute: typeof CompanyRoute
+  BizzRoute: typeof BizzRouteWithChildren
+  BusinessRoute: typeof BusinessRouteWithChildren
+  BusinessesRoute: typeof BusinessesRouteWithChildren
+  CompanyRoute: typeof CompanyRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   GrowRoute: typeof GrowRoute
   HelpRoute: typeof HelpRoute
@@ -508,6 +576,7 @@ export interface RootRouteChildren {
   NetworkRoute: typeof NetworkRoute
   NotificationsRoute: typeof NotificationsRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
   RegisterRoute: typeof RegisterRoute
   SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
@@ -559,34 +628,6 @@ declare module '@tanstack/react-router' {
       path: '/business'
       fullPath: '/business'
       preLoaderRoute: typeof BusinessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bizz/$id': {
-      id: '/bizz/$id'
-      path: '/bizz/$id'
-      fullPath: '/bizz/$id'
-      preLoaderRoute: typeof BizzIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/business/$id': {
-      id: '/business/$id'
-      path: '/business/$id'
-      fullPath: '/business/$id'
-      preLoaderRoute: typeof BusinessIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bizz/$id/edit': {
-      id: '/bizz/$id/edit'
-      path: '/bizz/$id/edit'
-      fullPath: '/bizz/$id/edit'
-      preLoaderRoute: typeof BizzIdEditRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/business/$id/edit': {
-      id: '/business/$id/edit'
-      path: '/business/$id/edit'
-      fullPath: '/business/$id/edit'
-      preLoaderRoute: typeof BusinessIdEditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/businesses': {
@@ -687,6 +728,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -721,6 +769,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/.well-known/oauth-protected-resource'
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/bizz/$id': {
+      id: '/bizz/$id'
+      path: '/$id'
+      fullPath: '/bizz/$id'
+      preLoaderRoute: typeof BizzIdRouteImport
+      parentRoute: typeof BizzRoute
+    }
+    '/business/$id': {
+      id: '/business/$id'
+      path: '/$id'
+      fullPath: '/business/$id'
+      preLoaderRoute: typeof BusinessIdRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/businesses/$id': {
+      id: '/businesses/$id'
+      path: '/$id'
+      fullPath: '/businesses/$id'
+      preLoaderRoute: typeof BusinessesIdRouteImport
+      parentRoute: typeof BusinessesRoute
+    }
+    '/company/$id': {
+      id: '/company/$id'
+      path: '/$id'
+      fullPath: '/company/$id'
+      preLoaderRoute: typeof CompanyIdRouteImport
+      parentRoute: typeof CompanyRoute
+    }
+    '/company/businesses': {
+      id: '/company/businesses'
+      path: '/businesses'
+      fullPath: '/company/businesses'
+      preLoaderRoute: typeof CompanyBusinessesRouteImport
+      parentRoute: typeof CompanyRoute
     }
     '/contracts/$id': {
       id: '/contracts/$id'
@@ -785,6 +868,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bizz/$id/edit': {
+      id: '/bizz/$id/edit'
+      path: '/edit'
+      fullPath: '/bizz/$id/edit'
+      preLoaderRoute: typeof BizzIdEditRouteImport
+      parentRoute: typeof BizzIdRoute
+    }
+    '/business/$id/edit': {
+      id: '/business/$id/edit'
+      path: '/edit'
+      fullPath: '/business/$id/edit'
+      preLoaderRoute: typeof BusinessIdEditRouteImport
+      parentRoute: typeof BusinessIdRoute
+    }
+    '/businesses/$id/edit': {
+      id: '/businesses/$id/edit'
+      path: '/edit'
+      fullPath: '/businesses/$id/edit'
+      preLoaderRoute: typeof BusinessesIdEditRouteImport
+      parentRoute: typeof BusinessesIdRoute
+    }
+    '/company/$id/edit': {
+      id: '/company/$id/edit'
+      path: '/edit'
+      fullPath: '/company/$id/edit'
+      preLoaderRoute: typeof CompanyIdEditRouteImport
+      parentRoute: typeof CompanyIdRoute
+    }
     '/opportunities/$id/edit': {
       id: '/opportunities/$id/edit'
       path: '/edit'
@@ -794,6 +905,100 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface BizzIdRouteChildren {
+  BizzIdEditRoute: typeof BizzIdEditRoute
+}
+
+const BizzIdRouteChildren: BizzIdRouteChildren = {
+  BizzIdEditRoute: BizzIdEditRoute,
+}
+
+const BizzIdRouteWithChildren =
+  BizzIdRoute._addFileChildren(BizzIdRouteChildren)
+
+interface BizzRouteChildren {
+  BizzIdRoute: typeof BizzIdRouteWithChildren
+}
+
+const BizzRouteChildren: BizzRouteChildren = {
+  BizzIdRoute: BizzIdRouteWithChildren,
+}
+
+const BizzRouteWithChildren = BizzRoute._addFileChildren(BizzRouteChildren)
+
+interface BusinessIdRouteChildren {
+  BusinessIdEditRoute: typeof BusinessIdEditRoute
+}
+
+const BusinessIdRouteChildren: BusinessIdRouteChildren = {
+  BusinessIdEditRoute: BusinessIdEditRoute,
+}
+
+const BusinessIdRouteWithChildren = BusinessIdRoute._addFileChildren(
+  BusinessIdRouteChildren,
+)
+
+interface BusinessRouteChildren {
+  BusinessIdRoute: typeof BusinessIdRouteWithChildren
+}
+
+const BusinessRouteChildren: BusinessRouteChildren = {
+  BusinessIdRoute: BusinessIdRouteWithChildren,
+}
+
+const BusinessRouteWithChildren = BusinessRoute._addFileChildren(
+  BusinessRouteChildren,
+)
+
+interface BusinessesIdRouteChildren {
+  BusinessesIdEditRoute: typeof BusinessesIdEditRoute
+}
+
+const BusinessesIdRouteChildren: BusinessesIdRouteChildren = {
+  BusinessesIdEditRoute: BusinessesIdEditRoute,
+}
+
+const BusinessesIdRouteWithChildren = BusinessesIdRoute._addFileChildren(
+  BusinessesIdRouteChildren,
+)
+
+interface BusinessesRouteChildren {
+  BusinessesIdRoute: typeof BusinessesIdRouteWithChildren
+}
+
+const BusinessesRouteChildren: BusinessesRouteChildren = {
+  BusinessesIdRoute: BusinessesIdRouteWithChildren,
+}
+
+const BusinessesRouteWithChildren = BusinessesRoute._addFileChildren(
+  BusinessesRouteChildren,
+)
+
+interface CompanyIdRouteChildren {
+  CompanyIdEditRoute: typeof CompanyIdEditRoute
+}
+
+const CompanyIdRouteChildren: CompanyIdRouteChildren = {
+  CompanyIdEditRoute: CompanyIdEditRoute,
+}
+
+const CompanyIdRouteWithChildren = CompanyIdRoute._addFileChildren(
+  CompanyIdRouteChildren,
+)
+
+interface CompanyRouteChildren {
+  CompanyIdRoute: typeof CompanyIdRouteWithChildren
+  CompanyBusinessesRoute: typeof CompanyBusinessesRoute
+}
+
+const CompanyRouteChildren: CompanyRouteChildren = {
+  CompanyIdRoute: CompanyIdRouteWithChildren,
+  CompanyBusinessesRoute: CompanyBusinessesRoute,
+}
+
+const CompanyRouteWithChildren =
+  CompanyRoute._addFileChildren(CompanyRouteChildren)
 
 interface OpportunitiesIdRouteChildren {
   OpportunitiesIdEditRoute: typeof OpportunitiesIdEditRoute
@@ -811,14 +1016,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AgricultureRoute: AgricultureRoute,
-  BizzRoute: BizzRoute,
-  BusinessRoute: BusinessRoute,
-  BizzIdRoute: BizzIdRoute,
-  BusinessIdRoute: BusinessIdRoute,
-  BizzIdEditRoute: BizzIdEditRoute,
-  BusinessIdEditRoute: BusinessIdEditRoute,
-  BusinessesRoute: BusinessesRoute,
-  CompanyRoute: CompanyRoute,
+  BizzRoute: BizzRouteWithChildren,
+  BusinessRoute: BusinessRouteWithChildren,
+  BusinessesRoute: BusinessesRouteWithChildren,
+  CompanyRoute: CompanyRouteWithChildren,
   DashboardRoute: DashboardRoute,
   GrowRoute: GrowRoute,
   HelpRoute: HelpRoute,
@@ -831,6 +1032,7 @@ const rootRouteChildren: RootRouteChildren = {
   NetworkRoute: NetworkRoute,
   NotificationsRoute: NotificationsRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
   RegisterRoute: RegisterRoute,
   SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
