@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader } from "@/features/ui/kit";
@@ -18,18 +18,45 @@ function initials(name: string) {
 function Page() {
   const { session, user, reloadUser } = useApp();
   const [name, setName] = useState(user?.name ?? "");
+  const [phone, setPhone] = useState(user?.phone ?? "");
+  const [district, setDistrict] = useState(user?.district ?? "");
+  const [title, setTitle] = useState("");
+  const [bio, setBio] = useState("");
+  const [sector, setSector] = useState("");
+  const [years, setYears] = useState("0");
+  const [rate, setRate] = useState("0");
+  const [skills, setSkills] = useState(user?.skills.join(", ") ?? "");
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [password, setPassword] = useState("");
   const [avatarBusy, setAvatarBusy] = useState(false);
+  useEffect(() => {
+    if (!user?.workerId || profileLoaded) return;
+    void supabase.from("worker_profiles").select("title,bio,district,sector,years,rate_rwf").eq("id", user.workerId).maybeSingle().then(({ data }) => {
+      if (!data) return;
+      setTitle(data.title ?? ""); setBio(data.bio ?? ""); setDistrict(data.district ?? user.district); setSector(data.sector ?? ""); setYears(String(data.years ?? 0)); setRate(String(data.rate_rwf ?? 0)); setProfileLoaded(true);
+    });
+  }, [user?.workerId, profileLoaded]);
 
   if (!session || !user) return <div className="container-page py-16"><PageHeader title="Profile & settings" desc="Sign in to manage your account."/><Button asChild className="mt-4"><Link to="/login">Sign in</Link></Button></div>;
 
   const saveProfile = async () => {
     if (name.trim().length < 2) { toast.error("Enter your full name."); return; }
     setBusy(true);
-    const { error } = await supabase.from("profiles").update({ display_name: name.trim(), updated_at: new Date().toISOString() }).eq("id", session.user.id);
+    const { error } = await supabase.from("profiles").update({ display_name: name.trim(), phone: phone.trim() || null, district: district.trim() || null, updated_at: new Date().toISOString() }).eq("id", session.user.id);
     setBusy(false);
     if (error) { toast.error("Couldn't save your profile."); return; }
+    if (user.workerId) {
+      const { error: workerError } = await supabase.from("worker_profiles").update({ name: name.trim(), title: title.trim(), bio: bio.trim(), district: district.trim(), sector: sector.trim() || "General", years: Math.max(0, Number(years) || 0), rate_rwf: Math.max(0, Math.round(Number(rate) || 0)) }).eq("id", user.workerId);
+      if (workerError) { toast.error("Basic profile saved, but worker profile could not be updated."); return; }
+      const names = [...new Set(skills.split(",").map((x) => x.trim()).filter(Boolean))].slice(0, 30);
+      const { error: deleteError } = await supabase.from("worker_skills").delete().eq("worker_id", user.workerId).eq("verification", "self_reported");
+      if (deleteError) { toast.error("Profile saved, but skills could not be replaced."); return; }
+      if (names.length) {
+        const { error: skillsError } = await supabase.from("worker_skills").insert(names.map((name) => ({ worker_id: user.workerId!, name, level: "intermediate", verification: "self_reported" })));
+        if (skillsError) { toast.error("Profile saved, but skills could not be saved."); return; }
+      }
+    }
     await reloadUser();
     toast.success("Profile updated.");
   };
@@ -82,6 +109,16 @@ function Page() {
       <Card className="p-6 space-y-4">
         <h2 className="font-semibold">Profile</h2>
         <label className="block text-sm">Full name<input value={name} onChange={(e)=>setName(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" maxLength={80}/></label>
+        <label className="block text-sm">Phone number<input value={phone} onChange={(e)=>setPhone(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" maxLength={30}/></label>
+        <label className="block text-sm">District<input value={district} onChange={(e)=>setDistrict(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" maxLength={80}/></label>
+        {user.workerId && <>
+          <label className="block text-sm">Professional title<input value={title} onChange={(e)=>setTitle(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" maxLength={120} placeholder="e.g. Mason, Software developer"/></label>
+          <label className="block text-sm">Sector<input value={sector} onChange={(e)=>setSector(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" maxLength={100}/></label>
+          <label className="block text-sm">Years of experience<input type="number" min="0" max="70" value={years} onChange={(e)=>setYears(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3"/></label>
+          <label className="block text-sm">Expected rate (RWF)<input type="number" min="0" value={rate} onChange={(e)=>setRate(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3"/></label>
+          <label className="block text-sm">Skills (comma-separated)<textarea value={skills} onChange={(e)=>setSkills(e.target.value)} rows={3} className="mt-1 w-full rounded-xl border bg-card p-3" placeholder="Construction, masonry, teamwork"/></label>
+          <label className="block text-sm">Professional bio<textarea value={bio} onChange={(e)=>setBio(e.target.value)} rows={4} maxLength={2000} className="mt-1 w-full rounded-xl border bg-card p-3"/></label>
+        </>}
         <label className="block text-sm">Email<input value={session.user.email ?? ""} disabled className="mt-1 h-11 w-full rounded-xl border bg-muted px-3"/></label>
         <Button onClick={()=>void saveProfile()} disabled={busy}>Save profile</Button>
       </Card>
