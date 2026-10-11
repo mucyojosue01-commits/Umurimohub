@@ -12,7 +12,7 @@ import { mapOpportunity } from "@/features/data/mappers";
 import { useApp, type Application } from "@/features/store/app-store";
 import { Avatar, Card, Pill } from "@/features/ui/kit";
 
-export const Route = createFileRoute("/opportunities/$id")({
+export const Route = createFileRoute("/opportunities/$id/")({
   loader: async ({ params }) => {
     const { data, error } = await supabase
       .from("opportunities")

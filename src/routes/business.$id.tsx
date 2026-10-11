@@ -89,7 +89,7 @@ function BusinessProfilePage() {
     setPublishingPosition(true);
     const deadline = new Date(); deadline.setDate(deadline.getDate() + 30);
     const { error } = await supabase.from("opportunities").insert({
-      title: positionName.trim(), position_name: positionName.trim(), opportunity_type: "company_position",
+      title: positionName.trim(), position_name: positionName.trim(), opportunity_type: "company_position", type: "Job", pay_unit: "month", mode: "On-site", duration: "Permanent", skills: [], responsibilities: [], requirements: [],
       summary: offerDetails.trim() || `Join ${business.name} as ${positionName.trim()}.`,
       pay_rwf: Number(positionPay) || 0, deadline: deadline.toISOString().slice(0, 10),
       district: business.district || "Kigali", sector: business.sector, status: "open",
