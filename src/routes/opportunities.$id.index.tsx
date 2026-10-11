@@ -21,7 +21,7 @@ export const Route = createFileRoute("/opportunities/$id/")({
       .eq("is_demo", false)
       .maybeSingle();
     if (error) throw error;
-    return { o: data ? mapOpportunity(data) : null };
+    return { o: data ? mapOpportunity(data) : null, status: data?.status ?? null, termsVersion: data?.terms_version ?? 1, rawOpportunity: data ?? null };
   },
   head: ({ loaderData }) => {
     const o = loaderData?.o;
@@ -52,8 +52,12 @@ export const Route = createFileRoute("/opportunities/$id/")({
 function Page() {
   const { id } = Route.useParams();
   const { allOpps, apply, refer, applications, user } = useApp();
+  const loaded = Route.useLoaderData();
+  const [applicationTerms, setApplicationTerms] = useState<{id:string; accepted_terms_version:number; status:string} | null>(null);
+  const [ownerApplications, setOwnerApplications] = useState<Array<{id:string; applicant_user_id:string; accepted_terms_version:number; status:string; display_name:string}>>([]);
+  const [termsBusy, setTermsBusy] = useState(false);
   const { getBusiness, teams, workers, workerUserIds, businesses } = useCatalog();
-  const o = allOpps.find((x) => x.id === id);
+  const o = allOpps.find((x) => x.id === id) ?? loaded.o;
   const [teamId, setTeamId] = useState("");
   const [businessId, setBusinessId] = useState("");
   const [refWorker, setRefWorker] = useState("");
@@ -67,6 +71,43 @@ function Page() {
     });
     return () => { active = false; };
   }, [id]);
+  useEffect(() => {
+    if (!user) { setApplicationTerms(null); return; }
+    let active = true;
+    void supabase.from("applications").select("id,accepted_terms_version,status").eq("opportunity_id", id).eq("applicant_user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle().then(({ data }) => {
+      if (active) setApplicationTerms(data ? { id: data.id, accepted_terms_version: data.accepted_terms_version ?? 1, status: data.status } : null);
+    });
+    return () => { active = false; };
+  }, [id, user?.id, loaded.termsVersion]);
+  const isOwner = !!user && !!loaded.rawOpportunity && (loaded.rawOpportunity.created_by === user.id || (!!loaded.rawOpportunity.business_id && user.businessIds.includes(loaded.rawOpportunity.business_id)));
+  useEffect(() => {
+    if (!isOwner) { setOwnerApplications([]); return; }
+    let active = true;
+    void (async () => {
+      const { data, error } = await supabase.from("applications").select("id,applicant_user_id,accepted_terms_version,status").eq("opportunity_id", id).order("created_at", { ascending: false });
+      if (error || !data || !active) return;
+      const ids = [...new Set(data.map((item) => item.applicant_user_id))];
+      const { data: profiles } = ids.length ? await supabase.from("profiles").select("id,display_name").in("id", ids) : { data: [] };
+      if (!active) return;
+      setOwnerApplications(data.map((item) => ({ ...item, accepted_terms_version: item.accepted_terms_version ?? 1, display_name: profiles?.find((profile) => profile.id === item.applicant_user_id)?.display_name ?? "Applicant" })));
+    })();
+    return () => { active = false; };
+  }, [id, isOwner, loaded.termsVersion]);
+  const acceptUpdatedTerms = async (accept: boolean) => {
+    if (!applicationTerms) return;
+    setTermsBusy(true);
+    const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: applicationTerms.id, _accept: accept });
+    setTermsBusy(false);
+    if (error) { toast.error(error.message); return; }
+    if (accept) {
+      setApplicationTerms({ ...applicationTerms, accepted_terms_version: loaded.termsVersion });
+      toast.success("You accepted the updated terms and can continue.");
+    } else {
+      setApplicationTerms({ ...applicationTerms, status: "withdrawn", accepted_terms_version: loaded.termsVersion });
+      toast.success("You withdrew from this opportunity.");
+    }
+  };
+
   const [kind, setKind] = useState<Application["kind"] | null>(null);
   const [note, setNote] = useState("");
   if (!o) throw notFound();
@@ -80,6 +121,8 @@ function Page() {
       <Link to="/opportunities" className="text-sm text-muted-foreground hover:text-foreground">
         ← Opportunities
       </Link>
+      {loaded.status === "closed" && <div className="mt-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4"><p className="font-semibold">Recently closed</p><p className="mt-1 text-sm text-muted-foreground">This opportunity is closed and is no longer accepting new applications.</p></div>}
+      {applicationTerms && loaded.termsVersion > applicationTerms.accepted_terms_version && !["withdrawn","rejected"].includes(applicationTerms.status) && <Card className="mt-4 border-primary/40 p-5"><h2 className="font-bold">The opportunity has been updated</h2><p className="mt-2 text-sm text-muted-foreground">Review the current description, requirements, pay, location and deadline on this page. You must accept the updated terms to continue with your application.</p><div className="mt-4 flex flex-wrap gap-2"><Button disabled={termsBusy} onClick={() => void acceptUpdatedTerms(true)}>{termsBusy ? "Saving…" : "Accept and stay"}</Button><Button variant="outline" disabled={termsBusy} onClick={() => void acceptUpdatedTerms(false)}>Withdraw application</Button></div></Card>}
       <div className="mt-4 grid gap-8 lg:grid-cols-[2fr_1fr]">
         <div>
           <div className="flex flex-wrap gap-2">
@@ -170,6 +213,13 @@ function Page() {
         </div>
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <Card>
+            {isOwner && ownerApplications.length > 0 && <div className="mb-4 space-y-3 border-b pb-4">
+              <h3 className="font-semibold">Applicant terms acceptance</h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="rounded-xl border p-3"><p className="text-sm font-semibold">Accepted ({ownerApplications.filter((a) => a.accepted_terms_version >= loaded.termsVersion && !["withdrawn","rejected"].includes(a.status)).length})</p>{ownerApplications.filter((a) => a.accepted_terms_version >= loaded.termsVersion && !["withdrawn","rejected"].includes(a.status)).map((a) => <p key={a.id} className="mt-1 text-xs">{a.display_name}</p>)}</div>
+                <div className="rounded-xl border p-3"><p className="text-sm font-semibold">Awaiting acceptance ({ownerApplications.filter((a) => a.accepted_terms_version < loaded.termsVersion && !["withdrawn","rejected"].includes(a.status)).length})</p>{ownerApplications.filter((a) => a.accepted_terms_version < loaded.termsVersion && !["withdrawn","rejected"].includes(a.status)).map((a) => <p key={a.id} className="mt-1 text-xs">{a.display_name}</p>)}</div>
+              </div>
+            </div>}
             {applied.length > 0 && (
               <div className="space-y-3">
                 {applied.map((application) => <div key={application.id} className="flex items-center justify-between rounded-xl border p-3"><div><p className="font-semibold">Applied as {application.kind}</p><p className="text-sm text-muted-foreground">Status: {application.status}</p></div><CheckCircle2 className="size-5 text-success" /></div>)}
@@ -177,17 +227,17 @@ function Page() {
               </div>
             )}
             <div className="space-y-2">
-              {audience.includes("individual") && !applied.some((a) => a.kind === "Individual" || a.kind === "Business") && (
+              {loaded.status === "open" && !(applicationTerms && loaded.termsVersion > applicationTerms.accepted_terms_version && !["withdrawn","rejected"].includes(applicationTerms.status)) && audience.includes("individual") && !applied.some((a) => a.kind === "Individual" || a.kind === "Business") && (
                 <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>
               )}
-              {audience.includes("team") && o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
+              {loaded.status === "open" && !(applicationTerms && loaded.termsVersion > applicationTerms.accepted_terms_version && !["withdrawn","rejected"].includes(applicationTerms.status)) && audience.includes("team") && o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
                 <Button className="w-full" variant="accent" size="lg" onClick={() => setKind("Team")}><Users />Apply as team</Button>
               )}
-              {audience.includes("business") && user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? (
+              {loaded.status === "open" && !(applicationTerms && loaded.termsVersion > applicationTerms.accepted_terms_version && !["withdrawn","rejected"].includes(applicationTerms.status)) && audience.includes("business") && user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? (
                 <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button>
               ) : null}
               {!audience.includes("individual") && !audience.includes("team") && !audience.includes("business") && <p className="text-sm text-muted-foreground">This opportunity has no eligible applicant type configured.</p>}
-              <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>Refer someone you trust</Button>
+              {loaded.status === "open" && <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>Refer someone you trust</Button>}
               {!user && <p className="pt-1 text-center text-xs text-muted-foreground"><Link to="/login" className="text-primary">Sign in</Link> to apply for this opportunity.</p>}
             </div>
           </Card>
