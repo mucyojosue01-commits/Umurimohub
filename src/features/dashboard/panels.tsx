@@ -121,7 +121,7 @@ export function IncomingApplications() {
     queryKey: ["incoming", ids],
     enabled: !!user && !!session,
     queryFn: async () => {
-      let opportunitiesQuery = supabase.from("opportunities").select("id,title,status,created_by,business_id");
+      let opportunitiesQuery = supabase.from("opportunities").select("id,title,status,created_by,business_id,terms_version");
       opportunitiesQuery = ids.length
         ? opportunitiesQuery.or("created_by.eq." + session!.user.id + ",business_id.in.(" + ids.join(",") + ")")
         : opportunitiesQuery.eq("created_by", session!.user.id);
@@ -173,6 +173,8 @@ export function IncomingApplications() {
         <div className="mt-4 space-y-5">
           {(q.data.opps ?? []).map((opp) => {
             const apps = q.data.apps.filter((a) => a.opportunity_id === opp.id);
+            const acceptedTerms = apps.filter((a) => Number(a.accepted_terms_version ?? 1) >= Number(opp.terms_version ?? 1));
+            const pendingTerms = apps.filter((a) => Number(a.accepted_terms_version ?? 1) < Number(opp.terms_version ?? 1) && !["withdrawn", "rejected"].includes(String(a.status).toLowerCase()));
             const groups = [
               ["business", "Businesses", apps.filter((a) => a.applicant_type === "business")],
               ["team", "Teams", apps.filter((a) => a.applicant_type === "team")],
@@ -182,9 +184,9 @@ export function IncomingApplications() {
               <section key={opp.id} className="rounded-2xl border p-4">
                 <div className="flex items-center justify-between gap-3">
                   <Link to="/opportunities/$id" params={{ id: opp.id }} className="font-semibold hover:text-primary">{opp.title}</Link>
-                  <Pill>{apps.length} applicant{apps.length === 1 ? "" : "s"}</Pill>
+                  <div className="flex flex-wrap gap-2"><Pill>{apps.length} applicants</Pill><Pill tone="success">{acceptedTerms.length} accepted terms</Pill>{pendingTerms.length > 0 && <Pill tone="warning">{pendingTerms.length} awaiting acceptance</Pill>}</div>
                 </div>
-                {apps.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No applicants yet. Applications and referrals will appear here.</p> : <div className="mt-4 space-y-4">
+                {apps.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No applicants yet. Applications and referrals will appear here.</p> : <div className="mt-4 space-y-4"><div className="rounded-xl border p-3 text-sm"><p className="font-semibold">Applicants who accepted updated terms ({acceptedTerms.length})</p><p className="mt-1 text-muted-foreground">Only these applicants can be shortlisted or advanced.</p></div>{pendingTerms.length > 0 && <div className="rounded-xl border border-warning/40 bg-warning/5 p-3 text-sm"><p className="font-semibold">Awaiting acceptance ({pendingTerms.length})</p><p className="mt-1 text-muted-foreground">Their application process is paused until they accept the new terms; otherwise they can withdraw.</p></div>}
                   {groups.map(([kind, label, group]) => group.length ? (
                     <div key={kind}>
                       <h3 className="mb-2 text-sm font-semibold text-muted-foreground">{label}</h3>
@@ -208,6 +210,7 @@ export function IncomingApplications() {
                           const team = a.applicant_team_id ? q.data.teams.find((x) => x.id === a.applicant_team_id) : undefined;
                           const displayName = business?.name ?? team?.name ?? worker?.name ?? profile?.display_name ?? "Applicant";
                           const avatar = business?.avatar_url ?? team?.avatar_url ?? worker?.avatar_url ?? profile?.avatar_url;
+                          const needsTermsAcceptance = Number(a.accepted_terms_version ?? 1) < Number(opp.terms_version ?? 1) && !["withdrawn", "rejected"].includes(String(a.status).toLowerCase());
                           return (
                             <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 p-3">
                               <div className="flex min-w-0 items-center gap-3">
@@ -229,7 +232,7 @@ export function IncomingApplications() {
                                 </div>
                                 <div className="min-w-0">
                                   <p className="font-medium">{displayName}</p>
-                                  <p className="text-xs text-muted-foreground">{a.applicant_type ?? a.kind} · {a.status}</p>
+                                  <p className="text-xs text-muted-foreground">{a.applicant_type ?? a.kind} · {a.status}</p>{needsTermsAcceptance && <p className="mt-1 text-xs font-semibold text-warning">Paused — applicant has not accepted updated terms</p>}{!needsTermsAcceptance && Number(opp.terms_version ?? 1) > 1 && <p className="mt-1 text-xs text-success">Updated terms accepted</p>}
                                   {a.note && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{a.note}</p>}
                                   {a.referred_by && (() => {
                                     const rp = q.data.referrerProfiles.find((x) => x.id === a.referred_by);
@@ -241,7 +244,7 @@ export function IncomingApplications() {
                               </div>
                               <div className="relative">
                                 <Button size="icon" variant="outline" aria-label={"Applicant actions for " + displayName} onClick={() => setContractApplication(contractApplication === "menu:" + a.id ? null : "menu:" + a.id)}><MoreVertical className="size-4" /></Button>
-                                {contractApplication === "menu:" + a.id && <div className="absolute right-0 top-10 z-30 w-52 rounded-2xl border bg-popover p-1 shadow-xl">
+                                {contractApplication === "menu:" + a.id && <div className="absolute right-0 top-10 z-30 w-52 rounded-2xl border bg-popover p-1 shadow-xl">{needsTermsAcceptance ? <p className="px-3 py-2 text-xs text-warning">Actions are disabled until updated terms are accepted.</p> : <>
                                   <div className="px-3 py-2"><Pill tone={a.status === "accepted" ? "success" : a.status === "shortlisted" ? "primary" : "muted"}>{a.status}</Pill></div>
                                   {a.status !== "withdrawn" && (["viewed", "shortlisted", "accepted", "rejected"] as Status[]).filter((s) => s !== a.status).map((s) => <button key={s} className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setContractApplication(null); void setStatus(a.id, s); }}>{s}</button>)}
                                   {a.status === "accepted" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setContractApplication(a.id); }}>Create contract</button>}
