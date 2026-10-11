@@ -91,8 +91,12 @@ end;
 $$;
 
 drop trigger if exists applications_team_size_check on public.applications;
+drop trigger if exists applications_team_size_check_update on public.applications;
 create trigger applications_team_size_check
-before insert or update
+before insert on public.applications
+for each row execute function public.enforce_team_opportunity_size();
+create trigger applications_team_size_check_update
+before update of opportunity_id, applicant_team_id, kind, applicant_type
 on public.applications
 for each row execute function public.enforce_team_opportunity_size();
 
