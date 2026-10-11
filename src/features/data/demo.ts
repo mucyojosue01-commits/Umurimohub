@@ -492,6 +492,8 @@ export type Opportunity = {
   featured?: boolean;
   posted: string;
   postedAt?: string;
+  status?: string;
+  termsVersion?: number;
 };
 
 export const OPPORTUNITIES: Opportunity[] = [

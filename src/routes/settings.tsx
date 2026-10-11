@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader } from "@/features/ui/kit";
@@ -18,18 +18,36 @@ function initials(name: string) {
 function Page() {
   const { session, user, reloadUser } = useApp();
   const [name, setName] = useState(user?.name ?? "");
+  const [district, setDistrict] = useState("");
+  const [phone, setPhone] = useState("");
+  const [title, setTitle] = useState("");
+  const [bio, setBio] = useState("");
+  const [sector, setSector] = useState("");
+  const [skills, setSkills] = useState("");
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [password, setPassword] = useState("");
   const [avatarBusy, setAvatarBusy] = useState(false);
+
+  useEffect(() => { let active = true; void (async () => { const [p, w] = await Promise.all([supabase.from("profiles").select("district,phone").eq("id", session?.user.id ?? "").maybeSingle(), supabase.from("worker_profiles").select("title,bio,district,sector,id").eq("user_id", session?.user.id ?? "").maybeSingle()]); if (!active) return; if (p.data) { setDistrict(p.data.district ?? ""); setPhone(p.data.phone ?? ""); } if (w.data) { setTitle(w.data.title ?? ""); setBio(w.data.bio ?? ""); setSector(w.data.sector ?? ""); const { data: sk } = await supabase.from("worker_skills").select("name").eq("worker_id", w.data.id); if (active) setSkills((sk ?? []).map(x => x.name).join(", ")); } setProfileLoaded(true); })(); return () => { active = false; }; }, [session?.user.id]);
 
   if (!session || !user) return <div className="container-page py-16"><PageHeader title="Profile & settings" desc="Sign in to manage your account."/><Button asChild className="mt-4"><Link to="/login">Sign in</Link></Button></div>;
 
   const saveProfile = async () => {
     if (name.trim().length < 2) { toast.error("Enter your full name."); return; }
     setBusy(true);
-    const { error } = await supabase.from("profiles").update({ display_name: name.trim(), updated_at: new Date().toISOString() }).eq("id", session.user.id);
+    const { error } = await supabase.from("profiles").update({ display_name: name.trim(), district: district.trim() || null, phone: phone.trim() || null, updated_at: new Date().toISOString() }).eq("id", session.user.id);
     setBusy(false);
     if (error) { toast.error("Couldn't save your profile."); return; }
+    const { data: worker } = await supabase.from("worker_profiles").select("id").eq("user_id", session.user.id).maybeSingle();
+    if (worker) {
+      const { error: workerError } = await supabase.from("worker_profiles").update({ name: name.trim(), title: title.trim(), bio: bio.trim(), district: district.trim() || "Kigali", sector: sector.trim() || "Other" }).eq("id", worker.id);
+      if (workerError) { toast.error("Basic profile saved, but worker profile could not be updated: " + workerError.message); return; }
+      const { error: deleteError } = await supabase.from("worker_skills").delete().eq("worker_id", worker.id);
+      if (deleteError) { toast.error("Profile saved, but skills could not be updated."); return; }
+      const skillRows = [...new Set(skills.split(",").map(x => x.trim()).filter(Boolean))].slice(0, 30).map(name => ({ worker_id: worker.id, name, level: "intermediate", verification: "self_reported" }));
+      if (skillRows.length) { const { error: skillError } = await supabase.from("worker_skills").insert(skillRows); if (skillError) { toast.error("Profile saved, but skills could not be updated: " + skillError.message); return; } }
+    }
     await reloadUser();
     toast.success("Profile updated.");
   };
@@ -71,7 +89,7 @@ function Page() {
   };
 
   return <div className="container-page max-w-2xl py-10">
-    <PageHeader eyebrow="Account" title="Profile & settings" desc="Manage your profile, picture and password." />
+    <PageHeader eyebrow="Account" title="Profile & settings" desc="Edit your personal details, professional profile, skills, picture and password." />
     <div className="mt-6 space-y-4">
       <Card className="p-6">
         <div className="flex items-center gap-4">
@@ -83,7 +101,13 @@ function Page() {
         <h2 className="font-semibold">Profile</h2>
         <label className="block text-sm">Full name<input value={name} onChange={(e)=>setName(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" maxLength={80}/></label>
         <label className="block text-sm">Email<input value={session.user.email ?? ""} disabled className="mt-1 h-11 w-full rounded-xl border bg-muted px-3"/></label>
-        <Button onClick={()=>void saveProfile()} disabled={busy}>Save profile</Button>
+        <label className="block text-sm">Phone<input value={phone} onChange={e=>setPhone(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" maxLength={30}/></label>
+        <label className="block text-sm">District<input value={district} onChange={e=>setDistrict(e.target.value)} className="mt-1 h-11 w-full rounded-xl border bg-card px-3" maxLength={80}/></label>
+        <label className="block text-sm">Professional title<input value={title} onChange={e=>setTitle(e.target.value)} placeholder="e.g. Mason, Software Developer" className="mt-1 h-11 w-full rounded-xl border bg-card px-3" maxLength={100}/></label>
+        <label className="block text-sm">Sector<input value={sector} onChange={e=>setSector(e.target.value)} placeholder="e.g. Construction" className="mt-1 h-11 w-full rounded-xl border bg-card px-3" maxLength={80}/></label>
+        <label className="block text-sm">About me<textarea value={bio} onChange={e=>setBio(e.target.value)} rows={4} className="mt-1 w-full rounded-xl border bg-card p-3" maxLength={2000}/></label>
+        <label className="block text-sm">Skills (comma-separated)<textarea value={skills} onChange={e=>setSkills(e.target.value)} rows={3} placeholder="Masonry, Welding, Customer service" className="mt-1 w-full rounded-xl border bg-card p-3" maxLength={1500}/><span className="text-xs text-muted-foreground">Up to 30 skills; these are saved to your worker profile as self-reported skills.</span></label>
+        <Button onClick={()=>void saveProfile()} disabled={busy || !profileLoaded}>{busy ? "Saving…" : "Save profile"}</Button>
       </Card>
       <Card className="p-6 space-y-4">
         <h2 className="font-semibold">Password</h2>

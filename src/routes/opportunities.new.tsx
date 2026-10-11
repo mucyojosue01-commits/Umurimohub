@@ -12,6 +12,7 @@ import { Card, PageHeader } from "@/features/ui/kit";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/opportunities/new")({
+  validateSearch: z.object({ businessId: z.string().optional().catch(""), type: z.enum(["Job", "Project", "Gig", "Seasonal", "Apprenticeship"]).optional().catch("Project") }),
   head: () => ({
     meta: [
       { title: "Post an opportunity — UmurimoHub" },
@@ -50,6 +51,7 @@ const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
 
 function Page() {
   const { createOpp, user, authReady } = useApp();
+  const routeSearch = Route.useSearch();
   const { businesses } = useCatalog();
   const nav = useNavigate();
   const [media, setMedia] = useState<File[]>([]);
@@ -61,13 +63,13 @@ function Page() {
   } = useForm<F>({
     resolver: zodResolver(schema),
     defaultValues: {
-      type: "Project",
+      type: routeSearch.type ?? "Project",
       payUnit: "project",
       mode: "On-site",
       teamAllowed: true,
       sector: "Construction",
       district: "",
-      businessId: "",
+      businessId: routeSearch.businessId ?? "",
       audience: "any",
     },
   });
