@@ -17,7 +17,6 @@ export type Database = {
       applications: {
         Row: {
           applicant_user_id: string
-          accepted_at: string | null
           created_at: string
           id: string
           kind: string
@@ -30,7 +29,6 @@ export type Database = {
         }
         Insert: {
           applicant_user_id: string
-          accepted_at?: string | null
           created_at?: string
           id?: string
           kind: string
@@ -43,7 +41,6 @@ export type Database = {
         }
         Update: {
           applicant_user_id?: string
-          accepted_at?: string | null
           created_at?: string
           id?: string
           kind?: string
