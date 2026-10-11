@@ -59,10 +59,10 @@ function Page() {
   const remove = async () => {
     if (!window.confirm("Delete this opportunity? This cannot be undone.")) return;
     setBusy(true);
-    const { error } = await supabase.from("opportunities").delete().eq("id", id);
+    const { error } = await supabase.from("opportunities").update({ status: "deleted" }).eq("id", id);
     setBusy(false);
     if (error) { toast.error("This opportunity cannot be deleted while it has dependent records. Close or complete its active work first."); return; }
-    toast.success("Opportunity deleted");
+    toast.success("Opportunity marked as ended. Applicants have been notified.");
     window.location.href = "/opportunities";
   };
 
