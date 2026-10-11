@@ -15,18 +15,18 @@ export const Route = createFileRoute("/opportunities/$id/edit")({
 function Page() {
   const { id } = Route.useParams();
   const { user } = useApp();
-  const [form, setForm] = useState({ title: "", summary: "", pay_rwf: "", deadline: "", district: "", sector: "", status: "open" });
+  const [form, setForm] = useState({ title: "", summary: "", pay_rwf: "", deadline: "", district: "", sector: "", status: "open", type: "Job", pay_unit: "day", mode: "On-site", duration: "", skills: "", responsibilities: "", requirements: "" });
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState("");
   useEffect(() => {
     let active = true;
-    void supabase.from("opportunities").select("id,title,summary,pay_rwf,deadline,district,sector,status,created_by,business_id").eq("id", id).maybeSingle().then(({ data, error }) => {
+    void supabase.from("opportunities").select("id,title,summary,pay_rwf,deadline,district,sector,status,created_by,business_id,type,pay_unit,mode,duration,skills,responsibilities,requirements").eq("id", id).maybeSingle().then(({ data, error }) => {
       if (!active) return;
       if (error) { setLoadError(error.message); toast.error(error.message); return; }
       if (!data) { setLoadError("This opportunity could not be found."); return; }
-      if (data.created_by !== user?.id && (!data.business_id || !user?.businessIds.includes(data.business_id))) { toast.error("You are not allowed to edit this opportunity."); return; }
-      setForm({ title: data.title, summary: data.summary, pay_rwf: String(data.pay_rwf), deadline: data.deadline, district: data.district, sector: data.sector, status: data.status });
+      if (data.created_by !== user?.id && (!data.business_id || !user?.businessIds.includes(data.business_id))) { setLoadError("You are not allowed to edit this opportunity."); toast.error("You are not allowed to edit this opportunity."); return; }
+      setForm({ title: data.title ?? "", summary: data.summary ?? "", pay_rwf: String(data.pay_rwf ?? 0), deadline: data.deadline ?? "", district: data.district ?? "", sector: data.sector ?? "", status: data.status ?? "open", type: data.type ?? "Job", pay_unit: data.pay_unit ?? "day", mode: data.mode ?? "On-site", duration: data.duration ?? "", skills: (data.skills ?? []).join(", "), responsibilities: (data.responsibilities ?? []).join("\n"), requirements: (data.requirements ?? []).join("\n") });
       setLoaded(true);
     }).catch((e) => { if (active) setLoadError((e as Error).message || "Could not load this opportunity."); });
     return () => { active = false; };
@@ -42,6 +42,13 @@ function Page() {
       district: form.district,
       sector: form.sector,
       status: form.status,
+      type: form.type,
+      pay_unit: form.pay_unit,
+      mode: form.mode,
+      duration: form.duration,
+      skills: form.skills.split(",").map((x) => x.trim()).filter(Boolean),
+      responsibilities: form.responsibilities.split("\n").map((x) => x.trim()).filter(Boolean),
+      requirements: form.requirements.split("\n").map((x) => x.trim()).filter(Boolean),
     }).eq("id", id);
     setBusy(false);
     if (error) { toast.error(error.message); return; }
@@ -67,12 +74,19 @@ function Page() {
     <Card>
       <div className="grid gap-4 md:grid-cols-2">
         <label className="text-sm md:col-span-2">Title<input className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.title} onChange={(e)=>setForm({...form,title:e.target.value})}/></label>
+        <label className="text-sm">Opportunity type<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.type} onChange={(e)=>setForm({...form,type:e.target.value})}>{["Job","Project","Gig","Seasonal","Apprenticeship"].map((v)=><option key={v}>{v}</option>)}</select></label>
+        <label className="text-sm">Pay unit<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.pay_unit} onChange={(e)=>setForm({...form,pay_unit:e.target.value})}>{["hour","day","week","month","project","fixed"].map((v)=><option key={v}>{v}</option>)}</select></label>
+        <label className="text-sm">Work mode<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.mode} onChange={(e)=>setForm({...form,mode:e.target.value})}>{["On-site","Remote","Hybrid","Field"].map((v)=><option key={v}>{v}</option>)}</select></label>
+        <label className="text-sm">Duration<input className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.duration} onChange={(e)=>setForm({...form,duration:e.target.value})}/></label>
         <label className="text-sm">Pay (RWF)<input type="number" className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.pay_rwf} onChange={(e)=>setForm({...form,pay_rwf:e.target.value})}/></label>
         <label className="text-sm">Deadline<input type="date" className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.deadline} onChange={(e)=>setForm({...form,deadline:e.target.value})}/></label>
         <label className="text-sm">District<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.district} onChange={(e)=>setForm({...form,district:e.target.value})}>{DISTRICTS.map((d)=><option key={d}>{d}</option>)}</select></label>
         <label className="text-sm">Sector<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.sector} onChange={(e)=>setForm({...form,sector:e.target.value})}>{SECTORS.map((d)=><option key={d}>{d}</option>)}</select></label>
         <label className="text-sm">Status<select className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.status} onChange={(e)=>setForm({...form,status:e.target.value})}><option value="open">Open</option><option value="closed">Closed</option></select></label>
         <label className="text-sm md:col-span-2">Description<textarea rows={7} className="mt-1 w-full rounded-xl border bg-card p-3" value={form.summary} onChange={(e)=>setForm({...form,summary:e.target.value})}/></label>
+        <label className="text-sm md:col-span-2">Skills (comma-separated)<input className="mt-1 h-11 w-full rounded-xl border bg-card px-3" value={form.skills} onChange={(e)=>setForm({...form,skills:e.target.value})}/></label>
+        <label className="text-sm md:col-span-2">Responsibilities (one per line)<textarea rows={3} className="mt-1 w-full rounded-xl border bg-card p-3" value={form.responsibilities} onChange={(e)=>setForm({...form,responsibilities:e.target.value})}/></label>
+        <label className="text-sm md:col-span-2">Requirements (one per line)<textarea rows={3} className="mt-1 w-full rounded-xl border bg-card p-3" value={form.requirements} onChange={(e)=>setForm({...form,requirements:e.target.value})}/></label>
       </div>
       <div className="mt-6 flex flex-wrap gap-2">
         <Button disabled={busy} onClick={save}>{busy ? "Saving…" : "Save changes"}</Button>
