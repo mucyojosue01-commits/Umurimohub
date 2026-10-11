@@ -21,7 +21,7 @@ export const Route = createFileRoute("/opportunities/$id/")({
       .eq("is_demo", false)
       .maybeSingle();
     if (error) throw error;
-    return { o: data ? mapOpportunity(data) : null };
+    return { o: data ? mapOpportunity(data) : null, status: data?.status ?? null, deletedAt: data?.deleted_at ?? null, termsVersion: data?.terms_version ?? 1 };
   },
   head: ({ loaderData }) => {
     const o = loaderData?.o;
@@ -51,9 +51,12 @@ export const Route = createFileRoute("/opportunities/$id/")({
 
 function Page() {
   const { id } = Route.useParams();
-  const { allOpps, apply, refer, applications, user } = useApp();
+  const { allOpps, apply, refer, applications, user, reloadUser } = useApp();
+  const loaderData = Route.useLoaderData();
+  const [currentTermsVersion, setCurrentTermsVersion] = useState(loaderData.termsVersion ?? 1);
+  const [termsBusy, setTermsBusy] = useState<string | null>(null);
   const { getBusiness, teams, workers, workerUserIds, businesses } = useCatalog();
-  const o = allOpps.find((x) => x.id === id);
+  const o = allOpps.find((x) => x.id === id) ?? loaderData.o;
   const [teamId, setTeamId] = useState("");
   const [businessId, setBusinessId] = useState("");
   const [refWorker, setRefWorker] = useState("");
@@ -72,7 +75,7 @@ function Page() {
   if (!o) throw notFound();
   const b = getBusiness(o.businessId);
   const author = o.authorType === "user" ? workers.find((w) => workerUserIds[w.id] === o.createdBy) : undefined;
-  const applied = applications.filter((a) => a.oppId === o.id);
+  const applied = applications.filter((a) => a.oppId === o.id);\n  const needsTermsAcceptance = applied.filter((a) => (a.acceptedTermsVersion ?? 1) < currentTermsVersion && !["Withdrawn", "Rejected"].includes(a.status));\n  const unavailable = loaderData.status !== "open" || !!loaderData.deletedAt;\n  const acceptTerms = async (applicationId: string) => { setTermsBusy(applicationId); const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: applicationId, _accept: true }); setTermsBusy(null); if (error) { toast.error(error.message || "Could not accept updated terms."); return; } await reloadUser(); toast.success("Updated terms accepted. You can continue with this opportunity."); };
   const audience = o.eligibleActorTypes ?? ["individual", "team", "business"];
 
   return (
@@ -80,7 +83,7 @@ function Page() {
       <Link to="/opportunities" className="text-sm text-muted-foreground hover:text-foreground">
         ← Opportunities
       </Link>
-      <div className="mt-4 grid gap-8 lg:grid-cols-[2fr_1fr]">
+      <div className="mt-4 grid gap-8 lg:grid-cols-[2fr_1fr]">\n        {unavailable && <Card className="lg:col-span-2 border-amber-500/40"><h2 className="font-semibold">{loaderData.deletedAt ? "Opportunity ended" : "Opportunity recently closed"}</h2><p className="mt-1 text-sm text-muted-foreground">{loaderData.deletedAt ? "This opportunity was removed by its publisher. New applications are disabled." : "The publisher has closed this opportunity. New applications are disabled."}</p></Card>}
         <div>
           <div className="flex flex-wrap gap-2">
             <Pill tone="primary">{o.type}</Pill>
@@ -170,20 +173,20 @@ function Page() {
         </div>
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <Card>
-            {applied.length > 0 && (
+            {needsTermsAcceptance.length > 0 && <div className="space-y-3 rounded-xl border border-amber-500/40 bg-amber-500/5 p-4"><h2 className="font-semibold">Opportunity terms updated</h2><p className="text-sm text-muted-foreground">Review the latest opportunity details above. You must accept the new terms to continue; otherwise, withdraw your application from the dashboard.</p>{needsTermsAcceptance.map((application) => <Button key={application.id} className="w-full" disabled={termsBusy === application.id} onClick={() => void acceptTerms(application.id)}>{termsBusy === application.id ? "Saving…" : "Accept and stay"}</Button>)}</div>}\n            {applied.length > 0 && (
               <div className="space-y-3">
                 {applied.map((application) => <div key={application.id} className="flex items-center justify-between rounded-xl border p-3"><div><p className="font-semibold">Applied as {application.kind}</p><p className="text-sm text-muted-foreground">Status: {application.status}</p></div><CheckCircle2 className="size-5 text-success" /></div>)}
                 <Button variant="outline" className="w-full" asChild><Link to="/dashboard">Track applications</Link></Button>
               </div>
             )}
             <div className="space-y-2">
-              {audience.includes("individual") && !applied.some((a) => a.kind === "Individual" || a.kind === "Business") && (
+              {!unavailable && needsTermsAcceptance.length === 0 && audience.includes("individual") && !applied.some((a) => a.kind === "Individual" || a.kind === "Business") && (
                 <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>
               )}
-              {audience.includes("team") && o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
+              {!unavailable && needsTermsAcceptance.length === 0 && audience.includes("team") && o.teamAllowed && !applied.some((a) => a.kind === "Team") && (
                 <Button className="w-full" variant="accent" size="lg" onClick={() => setKind("Team")}><Users />Apply as team</Button>
               )}
-              {audience.includes("business") && user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? (
+              {!unavailable && needsTermsAcceptance.length === 0 && audience.includes("business") && user?.businessIds.length && !applied.some((a) => a.kind === "Business") ? (
                 <Button className="w-full" variant="outline" size="lg" onClick={() => setKind("Business")}>Apply as company</Button>
               ) : null}
               {!audience.includes("individual") && !audience.includes("team") && !audience.includes("business") && <p className="text-sm text-muted-foreground">This opportunity has no eligible applicant type configured.</p>}
