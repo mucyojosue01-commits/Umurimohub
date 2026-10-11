@@ -248,6 +248,7 @@ export function IncomingApplications() {
                                   <div className="px-3 py-2"><Pill tone={a.status === "accepted" ? "success" : a.status === "shortlisted" ? "primary" : "muted"}>{a.status}</Pill></div>
                                   {a.status !== "withdrawn" && (["viewed", "shortlisted", "accepted", "rejected"] as Status[]).filter((s) => s !== a.status).map((s) => <button key={s} className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setContractApplication(null); void setStatus(a.id, s); }}>{s}</button>)}
                                   {a.status === "accepted" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setContractApplication(a.id); }}>Create contract</button>}
+                                  </>}
                                 </div>}
                               </div>
                               {a.status === "accepted" && contractApplication === a.id && (
