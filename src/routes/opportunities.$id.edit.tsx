@@ -15,18 +15,18 @@ export const Route = createFileRoute("/opportunities/$id/edit")({
 function Page() {
   const { id } = Route.useParams();
   const { user } = useApp();
-  const [form, setForm] = useState({ title: "", summary: "", pay_rwf: "", deadline: "", district: "", sector: "", status: "open" });
+  const [form, setForm] = useState({ title: "", summary: "", pay_rwf: "", deadline: "", district: "", sector: "", status: "open", type: "Job", pay_unit: "day", mode: "On-site", duration: "", skills: "", responsibilities: "", requirements: "" });
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState("");
   useEffect(() => {
     let active = true;
-    void supabase.from("opportunities").select("id,title,summary,pay_rwf,deadline,district,sector,status,created_by,business_id").eq("id", id).maybeSingle().then(({ data, error }) => {
+    void supabase.from("opportunities").select("id,title,summary,pay_rwf,deadline,district,sector,status,created_by,business_id,type,pay_unit,mode,duration,skills,responsibilities,requirements").eq("id", id).maybeSingle().then(({ data, error }) => {
       if (!active) return;
       if (error) { setLoadError(error.message); toast.error(error.message); return; }
       if (!data) { setLoadError("This opportunity could not be found."); return; }
       if (data.created_by !== user?.id && (!data.business_id || !user?.businessIds.includes(data.business_id))) { toast.error("You are not allowed to edit this opportunity."); return; }
-      setForm({ title: data.title, summary: data.summary, pay_rwf: String(data.pay_rwf), deadline: data.deadline, district: data.district, sector: data.sector, status: data.status });
+      setForm({ title: data.title, summary: data.summary, pay_rwf: String(data.pay_rwf), deadline: data.deadline, district: data.district, sector: data.sector, status: data.status, type: data.type ?? "Job", pay_unit: data.pay_unit ?? "day", mode: data.mode ?? "On-site", duration: data.duration ?? "", skills: (data.skills ?? []).join(", "), responsibilities: (data.responsibilities ?? []).join("\n"), requirements: (data.requirements ?? []).join("\n") });
       setLoaded(true);
     }).catch((e) => { if (active) setLoadError((e as Error).message || "Could not load this opportunity."); });
     return () => { active = false; };
