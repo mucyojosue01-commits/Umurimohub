@@ -15,7 +15,7 @@ export const Route = createFileRoute("/business")({
 type SearchBusiness = { id: string; name: string; sector: string; district: string; verified: boolean; rating: number; about: string | null; avatar_url: string | null; open_count: number; total_count: number };
 
 function BusinessDirectoryPage() {
-  const pathname = useRouterState({ select: (state) => state.location.pathname.replace(/\\/+$/, "") || "/" });
+  const pathname = useRouterState({ select: (state) => state.location.pathname.replace(/\/+$/, "") || "/" });
   const { user } = useApp();
   const [query, setQuery] = useState("");
   const [sector, setSector] = useState("");
