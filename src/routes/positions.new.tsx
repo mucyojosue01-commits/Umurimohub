@@ -18,9 +18,9 @@ export const Route = createFileRoute("/positions/new")({
       { title: "Create a position — UmurimoHub" },
       {
         name: "description",
-        content: "Publish an employment position for workers across Rwanda.",
+        content: "Create and manage an employment position with a clear deadline and application process.",
       },
-      { property: "og:title", content: "Post an opportunity — UmurimoHub" },
+      { property: "og:title", content: "Create a position — UmurimoHub" },
       { property: "og:description", content: "Reach verified workers and teams across Rwanda." },
     ],
   }),
@@ -129,16 +129,16 @@ function Page() {
         if (rowError) toast.error("Couldn't save " + file.name + ".");
       }
     }
-    toast.success(media.length ? "Opportunity published with media" : "Opportunity published");
-    nav({ to: "/opportunities/$id", params: { id: r.id } });
+    toast.success(media.length ? "Position published with attachments" : "Position published");
+    nav({ to: "/positions/$id", params: { id: r.id } });
   };
   if (authReady && !user) {
     return (
       <div className="container-page max-w-xl py-16 text-center">
         <PageHeader
           eyebrow="Sign in"
-          title="Post an opportunity"
-          desc="Sign in to publish a real opportunity."
+          title="Create a position"
+          desc="Sign in to create and manage an employment position."
         />
         <Button asChild size="lg">
           <Link to="/login">Sign in to post</Link>
@@ -155,7 +155,7 @@ function Page() {
       <PageHeader
         eyebrow="Business"
         title="Post an opportunity"
-        desc="Clear scope and fair pay attract the most trusted people."
+        desc="Define responsibilities, pay, requirements, and a firm application deadline. Expired positions close automatically."
       />
       <Card className="p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
@@ -276,7 +276,7 @@ function Page() {
           )}
           <div className="md:col-span-2">
             <Button type="submit" size="lg">
-              Publish opportunity
+              Publish position
             </Button>
           </div>
         </form>
