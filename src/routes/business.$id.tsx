@@ -28,6 +28,8 @@ export const Route = createFileRoute("/business/$id")({
       .order("created_at", { ascending: false });
 
     if (opportunitiesError) throw new Error("Company opportunities could not be loaded: " + opportunitiesError.message);
+    const openPositions = (rawOpportunities ?? []).filter((row) => row.type === "Job" && (!row.deadline || row.deadline >= new Date().toISOString().slice(0, 10))).map(mapOpportunity);
+    const openNonJobOpportunities = (rawOpportunities ?? []).filter((row) => row.type !== "Job").map(mapOpportunity);
 
     // Employment data is optional until the recruitment migration is applied; it must not break public company pages.
     const { data: employmentRows } = await supabase.from("company_employments").select("id,worker_id,position_name,employment_type,started_at,status").eq("business_id", params.id).eq("status", "active").order("started_at", { ascending: false });
@@ -39,7 +41,8 @@ export const Route = createFileRoute("/business/$id")({
     const profileById = new Map((employeeProfiles ?? []).map((worker) => [worker.id, worker]));
     return {
       business: mapBusiness(rawBusiness, rawOpportunities ?? []),
-      openOpportunities: (rawOpportunities ?? []).map(mapOpportunity),
+      openOpportunities: openNonJobOpportunities,
+      openPositions,
       employees: (employmentRows ?? []).map((row) => ({ ...row, worker: profileById.get(row.worker_id) ?? null })).filter((row) => row.worker),
       completedProjects: completedWorkRows?.length ?? 0,
     };
@@ -72,7 +75,7 @@ function BusinessProfilePage() {
   const { id } = Route.useParams();
   const pathname = useRouterState({ select: (state) => state.location.pathname.replace(/\/+$/, "") });
   const { user } = useApp();
-  const { business, openOpportunities, employees, completedProjects } = Route.useLoaderData();
+  const { business, openOpportunities, openPositions, employees, completedProjects } = Route.useLoaderData();
   const isOwner = !!user && user.businessIds.includes(id);
 
 
@@ -92,6 +95,9 @@ function BusinessProfilePage() {
     </section>
     <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-3"><div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">Trust score</p><p className="mt-1 text-2xl font-bold">{Math.round(business.trustScore ?? 0)}<span className="ml-1 text-xs font-normal text-muted-foreground">/ 100</span></p></div><div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">Rating</p><p className="mt-1 flex items-center gap-1 text-2xl font-bold"><Star className="size-5 text-amber-500" />{business.rating > 0 ? business.rating.toFixed(1) : "—"}<span className="text-xs font-normal text-muted-foreground">/ 5</span></p></div><div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">Open opportunities</p><p className="mt-1 text-2xl font-bold">{business.hiring}</p></div></div>
     </div></Card>
+    <section className="mt-9"><PageHeader eyebrow="Careers" title="Open positions" desc="Employment roles currently advertised by this company." />
+      {openPositions.length === 0 ? <Card><h2 className="font-semibold">No open positions listed</h2><p className="mt-1 text-sm text-muted-foreground">This company has no active employment listings right now.</p>{isOwner && <Button className="mt-4" asChild><Link to="/positions/new" search={{ businessId: id }}><Plus className="mr-2 size-4" />Create position</Link></Button>}</Card> : <div className="grid gap-4 md:grid-cols-2">{openPositions.map((item) => <Card key={item.id} className="flex flex-col"><div className="flex items-start justify-between gap-3"><div><h2 className="font-semibold">{item.title}</h2><p className="mt-1 text-sm text-muted-foreground">{item.district}, Rwanda · {money(item.payRwf)} / {item.payUnit}</p><p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{item.summary}</p></div><Pill tone="primary">Position</Pill></div><Button className="mt-4 self-start" variant="outline" asChild><Link to="/positions/$id" params={{id:item.id}}>View position</Link></Button></Card>)}</div>}
+    </section>
     <section className="mt-9"><PageHeader eyebrow="Work with this company" title="Open opportunities" desc="Current opportunities published by this company." />
       {openOpportunities.length === 0 ? <Card><h2 className="font-semibold">No open opportunities listed</h2><p className="mt-1 text-sm text-muted-foreground">New opportunities will appear here when published.</p>{isOwner && <Button className="mt-4" asChild><Link to="/opportunities/new"><Plus className="mr-2 size-4" />Create opportunity</Link></Button>}</Card> : <div className="grid gap-4 md:grid-cols-2">{openOpportunities.map((item) => <Card key={item.id} className="flex flex-col"><div className="flex items-start justify-between gap-3"><div><h2 className="font-semibold">{item.title}</h2><p className="mt-1 text-sm text-muted-foreground">{item.summary || "See the opportunity for full details."}</p></div><Pill tone="success">Open</Pill></div><div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground"><span>{item.sector}</span><span>{item.district}</span><span>{money(item.payRwf)} / {item.payUnit}</span></div><div className="mt-4 border-t pt-3"><Button variant="outline" size="sm" asChild><Link to="/opportunities/$id" params={{ id: item.id }}>View opportunity</Link></Button></div></Card>)}</div>}
     </section>
