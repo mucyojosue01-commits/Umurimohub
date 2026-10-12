@@ -42,6 +42,8 @@ import { Route as CompanyBusinessesRouteImport } from './routes/company.business
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
 import { Route as OpportunitiesIndexRouteImport } from './routes/opportunities.index'
 import { Route as OpportunitiesNewRouteImport } from './routes/opportunities.new'
+import { Route as PositionsIndexRouteImport } from './routes/positions.index'
+import { Route as PositionsNewRouteImport } from './routes/positions.new'
 import { Route as TeamsIndexRouteImport } from './routes/teams.index'
 import { Route as TeamsIdRouteImport } from './routes/teams.$id'
 import { Route as WorkersIndexRouteImport } from './routes/workers.index'
@@ -53,6 +55,8 @@ import { Route as BusinessesIdEditRouteImport } from './routes/businesses.$id.ed
 import { Route as CompanyIdEditRouteImport } from './routes/company.$id.edit'
 import { Route as OpportunitiesIdIndexRouteImport } from './routes/opportunities.$id.index'
 import { Route as OpportunitiesIdEditRouteImport } from './routes/opportunities.$id.edit'
+import { Route as PositionsIdIndexRouteImport } from './routes/positions.$id.index'
+import { Route as PositionsIdEditRouteImport } from './routes/positions.$id.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -220,6 +224,16 @@ const OpportunitiesNewRoute = OpportunitiesNewRouteImport.update({
   path: '/opportunities/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PositionsIndexRoute = PositionsIndexRouteImport.update({
+  id: '/positions/',
+  path: '/positions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PositionsNewRoute = PositionsNewRouteImport.update({
+  id: '/positions/new',
+  path: '/positions/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeamsIndexRoute = TeamsIndexRouteImport.update({
   id: '/teams/',
   path: '/teams/',
@@ -275,6 +289,16 @@ const OpportunitiesIdEditRoute = OpportunitiesIdEditRouteImport.update({
   path: '/opportunities/$id/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PositionsIdIndexRoute = PositionsIdIndexRouteImport.update({
+  id: '/positions/$id/',
+  path: '/positions/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PositionsIdEditRoute = PositionsIdEditRouteImport.update({
+  id: '/positions/$id/edit',
+  path: '/positions/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -309,9 +333,11 @@ export interface FileRoutesByFullPath {
   '/company/businesses': typeof CompanyBusinessesRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
+  '/positions/new': typeof PositionsNewRoute
   '/teams/$id': typeof TeamsIdRoute
   '/workers/$id': typeof WorkersIdRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
+  '/positions/': typeof PositionsIndexRoute
   '/teams/': typeof TeamsIndexRoute
   '/workers/': typeof WorkersIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -320,7 +346,9 @@ export interface FileRoutesByFullPath {
   '/businesses/$id/edit': typeof BusinessesIdEditRoute
   '/company/$id/edit': typeof CompanyIdEditRoute
   '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
+  '/positions/$id/edit': typeof PositionsIdEditRoute
   '/opportunities/$id/': typeof OpportunitiesIdIndexRoute
+  '/positions/$id/': typeof PositionsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -355,9 +383,11 @@ export interface FileRoutesByTo {
   '/company/businesses': typeof CompanyBusinessesRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
+  '/positions/new': typeof PositionsNewRoute
   '/teams/$id': typeof TeamsIdRoute
   '/workers/$id': typeof WorkersIdRoute
   '/opportunities': typeof OpportunitiesIndexRoute
+  '/positions': typeof PositionsIndexRoute
   '/teams': typeof TeamsIndexRoute
   '/workers': typeof WorkersIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -366,7 +396,9 @@ export interface FileRoutesByTo {
   '/businesses/$id/edit': typeof BusinessesIdEditRoute
   '/company/$id/edit': typeof CompanyIdEditRoute
   '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
+  '/positions/$id/edit': typeof PositionsIdEditRoute
   '/opportunities/$id': typeof OpportunitiesIdIndexRoute
+  '/positions/$id': typeof PositionsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -402,9 +434,11 @@ export interface FileRoutesById {
   '/company/businesses': typeof CompanyBusinessesRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/opportunities/new': typeof OpportunitiesNewRoute
+  '/positions/new': typeof PositionsNewRoute
   '/teams/$id': typeof TeamsIdRoute
   '/workers/$id': typeof WorkersIdRoute
   '/opportunities/': typeof OpportunitiesIndexRoute
+  '/positions/': typeof PositionsIndexRoute
   '/teams/': typeof TeamsIndexRoute
   '/workers/': typeof WorkersIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -413,7 +447,9 @@ export interface FileRoutesById {
   '/businesses/$id/edit': typeof BusinessesIdEditRoute
   '/company/$id/edit': typeof CompanyIdEditRoute
   '/opportunities/$id/edit': typeof OpportunitiesIdEditRoute
+  '/positions/$id/edit': typeof PositionsIdEditRoute
   '/opportunities/$id/': typeof OpportunitiesIdIndexRoute
+  '/positions/$id/': typeof PositionsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -450,9 +486,11 @@ export interface FileRouteTypes {
     | '/company/businesses'
     | '/contracts/$id'
     | '/opportunities/new'
+    | '/positions/new'
     | '/teams/$id'
     | '/workers/$id'
     | '/opportunities/'
+    | '/positions/'
     | '/teams/'
     | '/workers/'
     | '/.lovable/oauth/consent'
@@ -461,7 +499,9 @@ export interface FileRouteTypes {
     | '/businesses/$id/edit'
     | '/company/$id/edit'
     | '/opportunities/$id/edit'
+    | '/positions/$id/edit'
     | '/opportunities/$id/'
+    | '/positions/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -496,9 +536,11 @@ export interface FileRouteTypes {
     | '/company/businesses'
     | '/contracts/$id'
     | '/opportunities/new'
+    | '/positions/new'
     | '/teams/$id'
     | '/workers/$id'
     | '/opportunities'
+    | '/positions'
     | '/teams'
     | '/workers'
     | '/.lovable/oauth/consent'
@@ -507,7 +549,9 @@ export interface FileRouteTypes {
     | '/businesses/$id/edit'
     | '/company/$id/edit'
     | '/opportunities/$id/edit'
+    | '/positions/$id/edit'
     | '/opportunities/$id'
+    | '/positions/$id'
   id:
     | '__root__'
     | '/'
@@ -542,9 +586,11 @@ export interface FileRouteTypes {
     | '/company/businesses'
     | '/contracts/$id'
     | '/opportunities/new'
+    | '/positions/new'
     | '/teams/$id'
     | '/workers/$id'
     | '/opportunities/'
+    | '/positions/'
     | '/teams/'
     | '/workers/'
     | '/.lovable/oauth/consent'
@@ -553,7 +599,9 @@ export interface FileRouteTypes {
     | '/businesses/$id/edit'
     | '/company/$id/edit'
     | '/opportunities/$id/edit'
+    | '/positions/$id/edit'
     | '/opportunities/$id/'
+    | '/positions/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -584,14 +632,18 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ContractsIdRoute: typeof ContractsIdRoute
   OpportunitiesNewRoute: typeof OpportunitiesNewRoute
+  PositionsNewRoute: typeof PositionsNewRoute
   TeamsIdRoute: typeof TeamsIdRoute
   WorkersIdRoute: typeof WorkersIdRoute
   OpportunitiesIndexRoute: typeof OpportunitiesIndexRoute
+  PositionsIndexRoute: typeof PositionsIndexRoute
   TeamsIndexRoute: typeof TeamsIndexRoute
   WorkersIndexRoute: typeof WorkersIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   OpportunitiesIdEditRoute: typeof OpportunitiesIdEditRoute
+  PositionsIdEditRoute: typeof PositionsIdEditRoute
   OpportunitiesIdIndexRoute: typeof OpportunitiesIdIndexRoute
+  PositionsIdIndexRoute: typeof PositionsIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -827,6 +879,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpportunitiesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/positions/': {
+      id: '/positions/'
+      path: '/positions'
+      fullPath: '/positions/'
+      preLoaderRoute: typeof PositionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/positions/new': {
+      id: '/positions/new'
+      path: '/positions/new'
+      fullPath: '/positions/new'
+      preLoaderRoute: typeof PositionsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/teams/': {
       id: '/teams/'
       path: '/teams'
@@ -902,6 +968,20 @@ declare module '@tanstack/react-router' {
       path: '/opportunities/$id/edit'
       fullPath: '/opportunities/$id/edit'
       preLoaderRoute: typeof OpportunitiesIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/positions/$id/': {
+      id: '/positions/$id/'
+      path: '/positions/$id'
+      fullPath: '/positions/$id/'
+      preLoaderRoute: typeof PositionsIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/positions/$id/edit': {
+      id: '/positions/$id/edit'
+      path: '/positions/$id/edit'
+      fullPath: '/positions/$id/edit'
+      preLoaderRoute: typeof PositionsIdEditRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -1030,14 +1110,18 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ContractsIdRoute: ContractsIdRoute,
   OpportunitiesNewRoute: OpportunitiesNewRoute,
+  PositionsNewRoute: PositionsNewRoute,
   TeamsIdRoute: TeamsIdRoute,
   WorkersIdRoute: WorkersIdRoute,
   OpportunitiesIndexRoute: OpportunitiesIndexRoute,
+  PositionsIndexRoute: PositionsIndexRoute,
   TeamsIndexRoute: TeamsIndexRoute,
   WorkersIndexRoute: WorkersIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   OpportunitiesIdEditRoute: OpportunitiesIdEditRoute,
+  PositionsIdEditRoute: PositionsIdEditRoute,
   OpportunitiesIdIndexRoute: OpportunitiesIdIndexRoute,
+  PositionsIdIndexRoute: PositionsIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
