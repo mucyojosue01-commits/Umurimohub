@@ -35,16 +35,12 @@ const schema = z.object({
   payRwf: z.coerce.number().positive("Enter pay in RWF").max(1e9),
   payUnit: z.enum(["day", "month", "project"]),
   mode: z.enum(["On-site", "Remote", "Hybrid"]),
-  duration: z.string().trim().min(1).max(40),
   deadline: z.string().min(1, "Pick a date"),
   skills: z.string().trim().min(2).max(200),
   summary: z.string().trim().min(20, "Describe the work (20+ chars)").max(1000),
   responsibilities: z.string().trim().min(10, "Add the main responsibilities").max(3000),
   requirements: z.string().trim().min(2, "Add at least one requirement").max(3000),
-  teamAllowed: z.boolean(),
-  teamSize: z.coerce.number().min(0).max(500).optional(),
-  businessId: z.string().optional(),
-  audience: z.enum(["individual", "team", "business", "any"]),
+  businessId: z.string().min(1, "Select the company posting this position"),
 });
 type F = z.infer<typeof schema>;
 const inp = "mt-1 h-11 w-full rounded-xl border bg-card px-3";
@@ -66,23 +62,24 @@ function Page() {
       type: "Job",
       payUnit: "project",
       mode: "On-site",
-      teamAllowed: true,
       sector: "Construction",
       district: "",
       businessId: routeSearch.businessId ?? "",
-      audience: "any",
     },
   });
   const onSubmit = async (f: F) => {
+    if (!user || !f.businessId || !user.businessIds.includes(f.businessId)) {
+      toast.error("Only an authorized company representative can publish a position.");
+      return;
+    }
     if (f.deadline < new Date().toISOString().slice(0, 10)) {
       toast.error("Deadline must be in the future");
       return;
     }
-    const { teamSize, audience, ...rest } = f;
+    const { ...rest } = f;
     const o: NewOpportunity = {
       ...rest,
       businessId: f.businessId,
-      ...(f.teamAllowed && teamSize ? { teamSize } : {}),
       sector: f.sector as Opportunity["sector"],
       responsibilities: f.responsibilities
         .split("\n")
@@ -155,7 +152,7 @@ function Page() {
       <PageHeader
         eyebrow="Business"
         title="Post an opportunity"
-        desc="Define responsibilities, pay, requirements, and a firm application deadline. Expired positions close automatically."
+        desc="Companies can define responsibilities, pay, requirements, and a firm application deadline. Only individual users can apply; expired positions close automatically."
       />
       <Card className="p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
@@ -170,19 +167,9 @@ function Page() {
             <span className={inp + " flex items-center"}>Job position</span>
           </label>
           <label className="text-sm">
-            Publisher business <span className="text-muted-foreground">(optional)</span>
+            Company hiring for this position
             <select {...register("businessId")} className={inp} defaultValue={user?.businessIds[0] ?? ""}>
-              <option value="">Post as me</option>
               {businesses.filter((b) => user?.businessIds.includes(b.id)).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
-          </label>
-          <label className="text-sm">
-            Who can apply
-            <select {...register("audience")} className={inp}>
-              <option value="any">Users, teams and businesses</option>
-              <option value="individual">Users only</option>
-              <option value="team">Teams only</option>
-              <option value="business">Businesses only</option>
             </select>
           </label>
           <label className="text-sm">
@@ -225,11 +212,6 @@ function Page() {
             </select>
           </label>
           <label className="text-sm">
-            Duration
-            <input {...register("duration")} placeholder="e.g. 6 weeks" className={inp} />
-            <Err k="duration" />
-          </label>
-          <label className="text-sm">
             Application deadline
             <input type="date" {...register("deadline")} className={inp} />
             <Err k="deadline" />
@@ -264,16 +246,6 @@ function Page() {
             />
             <Err k="summary" />
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...register("teamAllowed")} />
-            Teams can apply
-          </label>
-          {watch("teamAllowed") && (
-            <label className="text-sm">
-              Team size
-              <input type="number" {...register("teamSize")} className={inp} />
-            </label>
-          )}
           <div className="md:col-span-2">
             <Button type="submit" size="lg">
               Publish position
