@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BriefcaseBusiness, CalendarDays, MapPin, Users } from "lucide-react";
+import { BriefcaseBusiness, CalendarDays, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCatalog } from "@/features/data/catalog";
 import { useApp } from "@/features/store/app-store";
@@ -30,7 +30,6 @@ function Page() {
             <div className="flex flex-wrap items-center gap-2"><Pill tone="primary">Position</Pill><Pill>{o.sector}</Pill>{own && <Pill tone="accent">Your listing</Pill>}</div>
             <h2 className="mt-4 text-lg font-bold">{o.title}</h2><p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{o.summary}</p>
             <div className="mt-4 grid gap-2 text-sm text-muted-foreground"><span className="flex items-center gap-2"><MapPin className="size-4"/>{o.district}, Rwanda</span><span className="flex items-center gap-2"><BriefcaseBusiness className="size-4"/>{rwf(o.payRwf)} / {o.payUnit}</span>
-              {o.teamAllowed && <span className="flex items-center gap-2"><Users className="size-4"/>Teams can apply{o.teamSize ? ` (up to ${o.teamSize})` : ""}</span>}
               <span className="flex items-center gap-2"><CalendarDays className="size-4"/>Apply by {o.deadline}</span></div>
             <div className="mt-5 border-t pt-4 text-sm font-semibold text-primary">View position profile →</div>
           </Card>
