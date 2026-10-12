@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      application_events: {
+        Row: {
+          actor: string | null
+          application_id: string
+          at: string
+          from_status: string | null
+          id: number
+          note: string | null
+          to_status: string
+        }
+        Insert: {
+          actor?: string | null
+          application_id: string
+          at?: string
+          from_status?: string | null
+          id?: never
+          note?: string | null
+          to_status: string
+        }
+        Update: {
+          actor?: string | null
+          application_id?: string
+          at?: string
+          from_status?: string | null
+          id?: never
+          note?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_events_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           applicant_user_id: string
@@ -162,6 +200,86 @@ export type Database = {
           verified?: boolean
         }
         Relationships: []
+      }
+      company_employments: {
+        Row: {
+          application_id: string | null
+          business_id: string
+          created_at: string
+          employment_type: string
+          ended_at: string | null
+          ended_by: string | null
+          id: string
+          offer_id: string | null
+          position_name: string
+          started_at: string
+          status: string
+          updated_at: string
+          worker_id: string
+          worker_user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          business_id: string
+          created_at?: string
+          employment_type?: string
+          ended_at?: string | null
+          ended_by?: string | null
+          id?: string
+          offer_id?: string | null
+          position_name: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          worker_id: string
+          worker_user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          business_id?: string
+          created_at?: string
+          employment_type?: string
+          ended_at?: string | null
+          ended_by?: string | null
+          id?: string
+          offer_id?: string | null
+          position_name?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          worker_id?: string
+          worker_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_employments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_employments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_employments_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: true
+            referencedRelation: "employment_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_employments_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       connections: {
         Row: {
@@ -348,6 +466,76 @@ export type Database = {
           },
         ]
       }
+      employment_offers: {
+        Row: {
+          application_id: string | null
+          business_id: string
+          created_at: string
+          details: string
+          employment_type: string
+          id: string
+          offered_by: string
+          position_name: string
+          responded_at: string | null
+          status: string
+          updated_at: string
+          worker_id: string
+          worker_user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          business_id: string
+          created_at?: string
+          details?: string
+          employment_type?: string
+          id?: string
+          offered_by?: string
+          position_name: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+          worker_id: string
+          worker_user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          business_id?: string
+          created_at?: string
+          details?: string
+          employment_type?: string
+          id?: string
+          offered_by?: string
+          position_name?: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+          worker_id?: string
+          worker_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employment_offers_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employment_offers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employment_offers_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -392,6 +580,7 @@ export type Database = {
           mode: string
           pay_rwf: number
           pay_unit: string
+          position_name: string | null
           requirements: string[]
           responsibilities: string[]
           sector: string
@@ -416,6 +605,7 @@ export type Database = {
           mode: string
           pay_rwf: number
           pay_unit: string
+          position_name?: string | null
           requirements?: string[]
           responsibilities?: string[]
           sector: string
@@ -440,6 +630,7 @@ export type Database = {
           mode?: string
           pay_rwf?: number
           pay_unit?: string
+          position_name?: string | null
           requirements?: string[]
           responsibilities?: string[]
           sector?: string
@@ -829,6 +1020,10 @@ export type Database = {
         }
         Returns: string
       }
+      end_company_employment: {
+        Args: { _employment_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -841,15 +1036,80 @@ export type Database = {
         Returns: boolean
       }
       is_contract_party: { Args: { _cid: string }; Returns: boolean }
+      is_platform_admin: { Args: never; Returns: boolean }
       is_team_lead: { Args: { _tid: string }; Returns: boolean }
       my_worker_id: { Args: never; Returns: string }
       notify_business: {
         Args: { _bid: string; _kind: string; _link: string; _text: string }
         Returns: undefined
       }
+      position_transition_allowed: {
+        Args: { _from: string; _to: string }
+        Returns: boolean
+      }
       respond_contract: {
         Args: { _accept: boolean; _contract_id: string; _note?: string }
         Returns: Database["public"]["Enums"]["contract_status"]
+      }
+      respond_position_referral: {
+        Args: { _accept: boolean; _referral_id: string }
+        Returns: string
+      }
+      respond_to_employment_offer: {
+        Args: { _decision: string; _offer_id: string }
+        Returns: {
+          application_id: string | null
+          business_id: string
+          created_at: string
+          details: string
+          employment_type: string
+          id: string
+          offered_by: string
+          position_name: string
+          responded_at: string | null
+          status: string
+          updated_at: string
+          worker_id: string
+          worker_user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "employment_offers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      search_businesses: {
+        Args: {
+          _district?: string
+          _limit?: number
+          _offset?: number
+          _q?: string
+          _sector?: string
+          _verified?: boolean
+        }
+        Returns: {
+          about: string
+          avatar_url: string
+          district: string
+          id: string
+          name: string
+          open_count: number
+          rating: number
+          sector: string
+          total_count: number
+          verified: boolean
+        }[]
+      }
+      set_position_application_status: {
+        Args: {
+          _application_id: string
+          _employment_type?: string
+          _note?: string
+          _offer_details?: string
+          _status: string
+        }
+        Returns: string
       }
       worker_network_count: { Args: { _worker_id: string }; Returns: number }
     }
@@ -868,6 +1128,9 @@ export type Database = {
         | "rejected"
         | "accepted"
         | "withdrawn"
+        | "under_review"
+        | "interview"
+        | "offer"
       contract_status:
         | "proposed"
         | "active"
@@ -1016,6 +1279,9 @@ export const Constants = {
         "rejected",
         "accepted",
         "withdrawn",
+        "under_review",
+        "interview",
+        "offer",
       ],
       contract_status: [
         "proposed",
