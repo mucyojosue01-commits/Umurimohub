@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CalendarDays, MapPin, BriefcaseBusiness, Users, Wallet, Pencil, UserRoundCheck } from "lucide-react";
+import { CalendarDays, MapPin, BriefcaseBusiness, Wallet, Pencil, UserRoundCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader, Pill } from "@/features/ui/kit";
 import { useApp } from "@/features/store/app-store";
@@ -42,7 +42,7 @@ function Page() {
   },[id]);
   if(!p) throw notFound();
   if(p.type.toLowerCase()!=="job") throw notFound();
-  const owner=p.createdBy===user?.id || (!!p.businessId && user?.businessIds.includes(p.businessId));
+  const owner=!!p.businessId && !!user?.businessIds.includes(p.businessId);
   const business=getBusiness(p.businessId);
   const expired=new Date(p.deadline+"T23:59:59") < new Date();
   const open=p.status==="open" && !expired;
@@ -52,8 +52,8 @@ function Page() {
     <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]"><div className="space-y-5">
       <Card className="p-6 md:p-8"><div className="flex flex-wrap gap-2"><Pill tone="primary">Employment position</Pill><Pill>{p.sector}</Pill><Pill tone={open?"accent":"warning"}>{open?"Accepting applications":expired?"Deadline passed":p.status==="closed"?"Closed":"Ended"}</Pill></div>
         <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">{p.title}</h1><p className="mt-3 whitespace-pre-line text-muted-foreground">{p.summary}</p>
-        {owner && <div className="mt-5 flex flex-wrap gap-2"><Button asChild><Link to="/positions/$id/edit" params={{id}}><Pencil className="mr-2 size-4"/>Edit position</Link></Button><Button variant="outline" asChild><Link to="/opportunities/$id" params={{id}}>Manage applicants</Link></Button></div>}
-        {!owner && open && <Button className="mt-5" asChild><Link to="/opportunities/$id" params={{id}}>Review requirements & apply</Link></Button>}
+        {owner && <div className="mt-5 flex flex-wrap gap-2"><Button asChild><Link to="/positions/$id/edit" params={{id}}><Pencil className="mr-2 size-4"/>Edit position</Link></Button><Button variant="outline" asChild><Link to="/positions/$id/applicants" params={{id}}>Manage applicants</Link></Button></div>}
+        {!owner && open && <Button className="mt-5" asChild><Link to="/positions/$id/applicants" params={{id}}>Apply for position</Link></Button>}
         {!open && <div className="mt-5 rounded-xl border bg-muted/30 p-4 text-sm">This position is no longer accepting applications. The employer can update its deadline or end the listing from the edit page.</div>}
       </Card>
       <Card className="p-6"><h2 className="text-lg font-bold">Responsibilities</h2>{lines(p.responsibilities)}</Card>
@@ -63,12 +63,11 @@ function Page() {
       <Card className="p-5"><h2 className="font-bold">Position overview</h2><div className="mt-4 space-y-4 text-sm">
         <div className="flex gap-3"><Wallet className="size-5 shrink-0 text-primary"/><div><p className="text-muted-foreground">Compensation</p><p className="font-semibold">{rwf(p.payRwf)} / {p.payUnit}</p></div></div>
         <div className="flex gap-3"><MapPin className="size-5 shrink-0 text-primary"/><div><p className="text-muted-foreground">Location</p><p className="font-semibold">{p.district}, Rwanda</p></div></div>
-        <div className="flex gap-3"><BriefcaseBusiness className="size-5 shrink-0 text-primary"/><div><p className="text-muted-foreground">Work arrangement</p><p className="font-semibold">{p.mode} · {p.duration}</p></div></div>
+        <div className="flex gap-3"><BriefcaseBusiness className="size-5 shrink-0 text-primary"/><div><p className="text-muted-foreground">Work arrangement</p><p className="font-semibold">{p.mode}</p></div></div>
         <div className="flex gap-3"><CalendarDays className="size-5 shrink-0 text-primary"/><div><p className="text-muted-foreground">Application deadline</p><p className="font-semibold">{p.deadline}</p><p className="mt-1 text-xs text-muted-foreground">{open?"Closes automatically after the deadline.":"Applications are closed."}</p></div></div>
         <div className="flex gap-3"><UserRoundCheck className="size-5 shrink-0 text-primary"/><div><p className="text-muted-foreground">Applicants</p><p className="font-semibold">{countError?"Count unavailable":applicantCount+" applicant"+(applicantCount===1?"":"s")}</p></div></div>
-        {p.teamAllowed && <div className="flex gap-3"><Users className="size-5 shrink-0 text-primary"/><div><p className="text-muted-foreground">Team applications</p><p className="font-semibold">Allowed{p.teamSize?" · up to "+p.teamSize+" members":""}</p></div></div>}
       </div>{business && <div className="mt-5 border-t pt-4"><p className="text-xs uppercase tracking-wide text-muted-foreground">Published by</p><p className="mt-1 font-semibold">{business.name}</p><Button className="mt-3 w-full" variant="outline" asChild><Link to="/business/$id" params={{id:business.id}}>View employer profile</Link></Button></div>}</Card>
-      {owner && <Card className="p-5"><h2 className="font-bold">Employer actions</h2><p className="mt-1 text-sm text-muted-foreground">Update the role, change the closing date, or end the listing.</p><Button className="mt-4 w-full" asChild><Link to="/positions/$id/edit" params={{id}}>Manage position</Link></Button></Card>}
+      {owner && <Card className="p-5"><h2 className="font-bold">Employer actions</h2><p className="mt-1 text-sm text-muted-foreground">Update the role, change the closing date, or end the listing.</p><Button className="mt-4 w-full" asChild><Link to="/positions/$id/edit" params={{id}}>Edit position</Link></Button></Card>}
     </aside></div>
   </div>;
 }
