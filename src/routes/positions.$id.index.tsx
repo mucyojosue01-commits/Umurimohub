@@ -53,7 +53,7 @@ function Page() {
       <Card className="p-6 md:p-8"><div className="flex flex-wrap gap-2"><Pill tone="primary">Employment position</Pill><Pill>{p.sector}</Pill><Pill tone={open?"accent":"warning"}>{open?"Accepting applications":expired?"Deadline passed":p.status==="closed"?"Closed":"Ended"}</Pill></div>
         <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">{p.title}</h1><p className="mt-3 whitespace-pre-line text-muted-foreground">{p.summary}</p>
         {owner && <div className="mt-5 flex flex-wrap gap-2"><Button asChild><Link to="/positions/$id/edit" params={{id}}><Pencil className="mr-2 size-4"/>Edit position</Link></Button><Button variant="outline" asChild><Link to="/positions/$id/applicants" params={{id}}>Manage applicants</Link></Button></div>}
-        {!owner && open && <Button className="mt-5" asChild><Link to="/positions/$id/applicants" params={{id}}>Apply for position</Link></Button>}
+        {!owner && open && <Button className="mt-5" asChild><Link to="/positions/$id/apply" params={{id}}>Apply for position</Link></Button>}
         {!open && <div className="mt-5 rounded-xl border bg-muted/30 p-4 text-sm">This position is no longer accepting applications. The employer can update its deadline or end the listing from the edit page.</div>}
       </Card>
       <Card className="p-6"><h2 className="text-lg font-bold">Responsibilities</h2>{lines(p.responsibilities)}</Card>
