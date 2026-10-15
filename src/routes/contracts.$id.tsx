@@ -10,12 +10,12 @@ import { Avatar, Card, Pill } from "@/features/ui/kit";
 import { CompletionPanel } from "@/features/completion/panels";
 import { MilestonesPanel } from "@/features/milestones/panels";
 import { useContracts, EditContractForm } from "@/features/contracts/panels";
-import { cancelContract, deleteContract, contractsKey, reacceptCancelledContract, createContractPayment, markContractPaymentPaid, confirmContractPaymentReceived, rateCompletedContract } from "@/features/contracts/service";
+import { cancelContract, deleteContract, contractsKey, reacceptCancelledContract, rateCompletedContract } from "@/features/contracts/service";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { rwf } from "@/features/data/demo";
 import { supabase } from "@/integrations/supabase/client";
-import { Star, CreditCard } from "lucide-react";
+import { Star } from "lucide-react";
 import { PaymentPanel } from "@/features/payments/panel";
 
 export const Route = createFileRoute("/contracts/$id")({
@@ -41,15 +41,6 @@ function Page() {
     queryKey: ["contract-opportunity", user?.id, contract?.opportunity_id],
     enabled: !!contract?.opportunity_id,
     queryFn: async () => { const { data, error } = await supabase.from("opportunities").select("id,title").eq("id", contract!.opportunity_id).maybeSingle(); if (error) throw error; return data; },
-  });
-  const paymentQ = useQuery({
-    queryKey: ["contract-payment", user?.id, contract?.id],
-    enabled: !!contract,
-    queryFn: async () => {
-      const { data, error } = await supabase.from("contract_payments").select("id,amount_rwf,status,payment_reference") .eq("contract_id", contract!.id).maybeSingle();
-      if (error) throw error;
-      return data;
-    },
   });
   const ratingQ = useQuery({
     queryKey: ["contract-rating", contract?.id, user?.id],
