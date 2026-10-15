@@ -195,7 +195,7 @@ function Page() {
             )}
             {isPoster ? <div className="space-y-2">
               <p className="text-sm text-muted-foreground">You published this opportunity. Use the management actions to update it and review applicants.</p>
-              <Button className="w-full" asChild><Link to="/opportunities/$id/edit" params={{id:o.id}}>Edit opportunity</Link></Button><Button className="w-full" variant="outline" asChild><Link to="/opportunities/$id" params={{id:o.id}} hash="applicants" onClick={() => window.setTimeout(() => document.getElementById("applicants")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50)}>Manage applicants</Link></Button><Button className="w-full" variant="destructive" onClick={() => void deleteOpportunity()}>Delete opportunity</Button>
+              <Button className="w-full" asChild><Link to="/opportunities/$id/edit" params={{id:o.id}}>Edit opportunity</Link></Button><Button className="w-full" variant="outline" onClick={() => document.getElementById("applicants")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Manage applicants</Button><Button className="w-full" variant="destructive" onClick={() => void deleteOpportunity()}>Delete opportunity</Button>
             </div> : <div className="space-y-2">
               {o.status === "open" && audience.includes("individual") && !applied.some((a) => a.kind === "Individual" || a.kind === "Business") && (
                 <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>
