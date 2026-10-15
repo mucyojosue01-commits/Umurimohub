@@ -42,7 +42,8 @@ begin
   insert into teams(id,name,lead_user_id,sector,areas,rating,projects,available,summary,skills,is_demo)
     values ('t_team','Test Team',lead,'Construction','{}',0,0,true,'s','{}',false);
   insert into applications(opportunity_id,applicant_user_id,kind,note,status) values ('t_opp',wk,'Individual','n','submitted') returning id into a1;
-  insert into applications(opportunity_id,applicant_user_id,team_id,kind,note,status) values ('t_opp',lead,'t_team','Team','n','submitted') returning id into a2;
+  insert into applications(opportunity_id,applicant_user_id,team_id,applicant_team_id,applicant_type,kind,note,status)
+    values ('t_opp',lead,'t_team','t_team','team','Team','n','submitted') returning id into a2;
 
   -- Only accepted applications, only by business members
   perform pg_temp.as_user(biz);
