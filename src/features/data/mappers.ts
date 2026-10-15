@@ -133,6 +133,7 @@ export function mapOpportunity(o: Tables<"opportunities">): Opportunity {
     sector: o.sector as Sector,
     district: o.district,
     type: o.type as Opportunity["type"],
+    opportunityType: o.opportunity_type as Opportunity["opportunityType"],
     payRwf: o.pay_rwf,
     payUnit: o.pay_unit as Opportunity["payUnit"],
     mode: o.mode as Opportunity["mode"],
