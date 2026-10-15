@@ -8,6 +8,7 @@ import { useCatalog } from "@/features/data/catalog";
 import { useApp } from "@/features/store/app-store";
 import { Avatar, Card, Pill } from "@/features/ui/kit";
 import { CreateContractForm } from "@/features/contracts/panels";
+import { respondContract } from "@/features/contracts/service";
 import { MoreVertical } from "lucide-react";
 
 type Status = "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" | "withdrawn";
@@ -20,9 +21,12 @@ export function MyApplications() {
     queryKey: ["my-application-contracts", session?.user.id, applications.map((a) => a.id)],
     enabled: !!session && applications.length > 0,
     queryFn: async () => {
-      const { data, error } = await supabase.from("contracts").select("application_id").in("application_id", applications.map((a) => a.id));
+      const { data, error } = await supabase
+        .from("contracts")
+        .select("id,application_id,title,status,amount_rwf")
+        .in("application_id", applications.map((a) => a.id));
       if (error) throw error;
-      return new Set((data ?? []).map((c) => c.application_id));
+      return data ?? [];
     },
   });
   const offersQ = useQuery({
@@ -59,7 +63,7 @@ export function MyApplications() {
       qc.invalidateQueries({ queryKey: ["catalog"] }),
     ]);
   };
-  const visibleApplications = applications.filter((a) => !(a.status.toLowerCase() === "accepted" && linkedContractsQ.data?.has(a.id)));
+  const visibleApplications = applications;
   const offers = offersQ.data ?? [];
   const standaloneOffers = offers.filter((offer) => !offer.application_id || !applications.some((a) => a.id === offer.application_id));
 
@@ -76,6 +80,21 @@ export function MyApplications() {
             const opportunity = allOpps.find((o) => o.id === a.oppId);
             const isPosition = opportunity?.opportunityType === "company_position" || opportunity?.type.toLowerCase() === "job";
             const linkedOffer = offers.find((offer) => offer.application_id === a.id && offer.status === "pending");
+            const linkedContract = linkedContractsQ.data?.find((contract) => contract.application_id === a.id && contract.status === "proposed");
+            const respondToOpportunity = async (accept: boolean) => {
+              if (!linkedContract) return;
+              try {
+                await respondContract(linkedContract.id, accept);
+                toast.success(accept ? "Opportunity accepted. The project is now active." : "Opportunity offer declined");
+                await Promise.all([
+                  reloadUser(),
+                  qc.invalidateQueries({ queryKey: ["my-application-contracts", session?.user.id] }),
+                  qc.invalidateQueries({ queryKey: ["contracts"] }),
+                ]);
+              } catch (error) {
+                toast.error((error as Error).message);
+              }
+            };
             return (
               <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
@@ -92,7 +111,13 @@ export function MyApplications() {
                     </div>
                   )}
                 </div>
-                {linkedOffer && <Button size="sm" disabled={offersQ.isFetching} onClick={() => void acceptOffer(linkedOffer.id)}>Accept offer</Button>}
+                <div className="flex flex-wrap gap-2">
+                  {linkedContract && <>
+                    <Button size="sm" onClick={() => void respondToOpportunity(true)}>Accept opportunity</Button>
+                    <Button size="sm" variant="outline" onClick={() => void respondToOpportunity(false)}>Decline</Button>
+                  </>}
+                  {linkedOffer && <Button size="sm" disabled={offersQ.isFetching} onClick={() => void acceptOffer(linkedOffer.id)}>Accept offer</Button>}
+                </div>
               </li>
             );
           })}
