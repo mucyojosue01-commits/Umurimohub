@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Briefcase, CheckCircle2, Wallet, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
-import { MyApplications, MyOpportunities, TeamInvites } from "@/features/dashboard/panels";
+import { MyOpportunities, TeamInvites } from "@/features/dashboard/panels";
 import { ContractsPanel, useContracts } from "@/features/contracts/panels";
 import { Avatar, Card, OpportunityCard, PageHeader, Stat } from "@/features/ui/kit";
 import { useCatalog } from "@/features/data/catalog";
@@ -57,7 +57,6 @@ function Page() {
       </div>
       <TeamInvites />
       <MyOpportunities />
-      <MyApplications />
       <ContractsPanel />
             <Card className="mt-6">
         <div className="flex items-center justify-between gap-3">
