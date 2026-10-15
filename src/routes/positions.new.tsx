@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,15 @@ function Page() {
       businessId: routeSearch.businessId ?? "",
     },
   });
+  const selectedBusinessId = watch("businessId");
+  useEffect(() => {
+    if (!selectedBusinessId && user?.businessIds.length) {
+      const requested = routeSearch.businessId;
+      const preferred = requested && user.businessIds.includes(requested) ? requested : user.businessIds[0];
+      setValue("businessId", preferred, { shouldValidate: false });
+    }
+  }, [selectedBusinessId, user?.businessIds, routeSearch.businessId, setValue]);
+
   const onSubmit = async (f: F) => {
     if (!user || !f.businessId || !user.businessIds.includes(f.businessId)) {
       toast.error("Only an authorized company representative can publish a position.");
