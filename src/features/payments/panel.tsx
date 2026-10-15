@@ -74,12 +74,20 @@ export function PaymentPanel({
   const pendingTotal = useMemo(() => (paymentsQ.data ?? []).filter(p => ["pending","processing"].includes(p.status)).reduce((sum,p) => sum + Number(p.amount_rwf), 0), [paymentsQ.data]);
   const hasOpenDispute = (paymentId: string) => (disputesQ.data ?? []).some(d => d.payment_transaction_id === paymentId && ["open","under_review"].includes(d.status));
 
-  const refresh = async () => Promise.all([
-    qc.invalidateQueries({ queryKey: paymentKey(contractId) }),
-    qc.invalidateQueries({ queryKey: disputeKey(contractId) }),
-    qc.invalidateQueries({ queryKey: ["payment-eligible-milestones", contractId] }),
-    qc.invalidateQueries({ queryKey: ["payment-dashboard"] }),
-  ]);
+  const refresh = async () => {
+    if (isBusiness) {
+      await Promise.all((paymentsQ.data ?? []).filter(p => ["pending","processing"].includes(p.status)).map(p =>
+        supabase.functions.invoke("momo-pay-status", { body: { paymentTransactionId: p.id } }).catch(() => undefined)
+      ));
+    }
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: paymentKey(contractId) }),
+      qc.invalidateQueries({ queryKey: disputeKey(contractId) }),
+      qc.invalidateQueries({ queryKey: ["payment-eligible-milestones", contractId] }),
+      qc.invalidateQueries({ queryKey: ["payment-dashboard"] }),
+    ]);
+    await Promise.all([paymentsQ.refetch(), disputesQ.refetch()]);
+  };
   const initiate = async () => {
     if (!isBusiness) return;
     if (mode === "milestone" && !milestoneId) { toast.error("Choose an approved milestone first."); return; }
