@@ -249,8 +249,8 @@ function Page() {
                   {provider && <div className="relative">
                     <Button size="icon" variant="ghost" aria-label={"Training actions for " + x.title} onClick={() => setMenuTraining(menuTraining === x.id ? null : x.id)}><MoreVertical className="size-4" /></Button>
                     {menuTraining === x.id && <div className="absolute right-0 top-10 z-30 w-40 rounded-xl border bg-popover p-1 shadow-xl">
-                      <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setMenuTraining(null); openEdit(x); }}>Edit</button>
-                      <button className="block w-full rounded-lg px-3 py-2 text-left text-sm text-destructive hover:bg-muted" disabled={busy === x.id} onClick={() => { setMenuTraining(null); void remove(x.id); }}>Delete</button>
+                      <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setMenuTraining(null); openEdit(x); }}>Edit training</button>
+                      <button className="block w-full rounded-lg px-3 py-2 text-left text-sm text-destructive hover:bg-muted" disabled={busy === x.id} onClick={() => { setMenuTraining(null); void remove(x.id); }}>Delete training</button>
                     </div>}
                   </div>}
                 </div>
@@ -287,7 +287,7 @@ function Page() {
                           <div className="mt-2 flex flex-wrap gap-2">
                             {a.status === "applied" && <Button size="sm" onClick={() => void shortlist(a.id)} disabled={busy === a.id}>Shortlist</Button>}
                             {a.status === "shortlisted" && <span className="text-xs text-muted-foreground">Waiting for candidate acceptance.</span>}
-                            {a.status === "accepted" && <Button size="sm" onClick={() => void complete(a.id)} disabled={busy === a.id}>{busy === a.id ? "Saving…" : "End"}</Button>}
+                            {a.status === "accepted" && <Button size="sm" title="Mark this accepted learner's training complete and add it to their profile experience" onClick={() => void complete(a.id)} disabled={busy === a.id}>{busy === a.id ? "Saving…" : "End training"}</Button>}
                             {a.status === "completed" && <Pill tone="success">Profile experience added</Pill>}
                           </div>
                         </div>
