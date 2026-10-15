@@ -29,8 +29,8 @@ declare
   provider uuid := '00000000-0000-4000-a000-0000000000e1';
   applicant uuid := '00000000-0000-4000-a000-0000000000e2';
   outsider uuid := '00000000-0000-4000-a000-0000000000e3';
-  training_id uuid := '00000000-0000-4000-a000-0000000000e4';
-  application_id uuid := '00000000-0000-4000-a000-0000000000e5';
+  v_training_id uuid := '00000000-0000-4000-a000-0000000000e4';
+  v_application_id uuid := '00000000-0000-4000-a000-0000000000e5';
   result text;
 begin
   insert into auth.users (id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
@@ -48,26 +48,26 @@ begin
   insert into public.training_programs
     (id,created_by,title,description,district,provider_type,status,is_demo,skills)
   values
-    (training_id,provider,'Training Completion Test','Test training description','Gasabo','business','published',false,array['Welding','Safety']);
+    (v_training_id,provider,'Training Completion Test','Test training description','Gasabo','business','published',false,array['Welding','Safety']);
 
   insert into public.training_applications
     (id,training_id,applicant_user_id,worker_id,status,note,accepted_at)
   values
-    (application_id,training_id,applicant,'training-test-worker','accepted','Test acceptance',now());
+    (v_application_id,v_training_id,applicant,'training-test-worker','accepted','Test acceptance',now());
 
   perform pg_temp.as_user(outsider);
   perform pg_temp.check(
-    pg_temp.fails(format('select public.complete_training_application(%L)', application_id)),
+    pg_temp.fails(format('select public.complete_training_application(%L)', v_application_id)),
     'unrelated user cannot complete training'
   );
 
   perform pg_temp.as_owner();
   perform pg_temp.check(
-    (select status='accepted' from public.training_applications where id=application_id),
+    (select status='accepted' from public.training_applications where id=v_application_id),
     'unauthorized completion leaves application accepted'
   );
   perform pg_temp.check(
-    (select count(*)=0 from public.training_experiences where training_id=training_id),
+    (select count(*)=0 from public.training_experiences where training_id=v_training_id),
     'unauthorized completion creates no experience'
   );
 
@@ -77,15 +77,15 @@ begin
 
   perform pg_temp.as_owner();
   perform pg_temp.check(
-    (select status='completed' and completed_at is not null from public.training_applications where id=application_id),
+    (select status='completed' and completed_at is not null from public.training_applications where id=v_application_id),
     'application completion persisted'
   );
   perform pg_temp.check(
-    (select count(*)=1 from public.training_experiences where training_id=training_id and worker_id='training-test-worker'),
+    (select count(*)=1 from public.training_experiences where training_id=v_training_id and worker_id='training-test-worker'),
     'exactly one training experience created'
   );
   perform pg_temp.check(
-    (select skills @> array['Welding','Safety'] from public.training_experiences where training_id=training_id and worker_id='training-test-worker'),
+    (select skills @> array['Welding','Safety'] from public.training_experiences where training_id=v_training_id and worker_id='training-test-worker'),
     'training skills recorded on profile experience'
   );
   perform pg_temp.check(
@@ -95,12 +95,12 @@ begin
 
   perform pg_temp.as_user(provider);
   perform pg_temp.check(
-    pg_temp.fails(format('select public.complete_training_application(%L)', application_id)),
+    pg_temp.fails(format('select public.complete_training_application(%L)', v_application_id)),
     'completed application cannot be completed twice'
   );
   perform pg_temp.as_owner();
   perform pg_temp.check(
-    (select count(*)=1 from public.training_experiences where training_id=training_id and worker_id='training-test-worker'),
+    (select count(*)=1 from public.training_experiences where training_id=v_training_id and worker_id='training-test-worker'),
     'repeat completion does not duplicate experience'
   );
 
