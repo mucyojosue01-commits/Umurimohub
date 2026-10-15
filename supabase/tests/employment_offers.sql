@@ -29,8 +29,8 @@ declare
   biz uuid := '00000000-0000-4000-a000-0000000000f5';
   worker uuid := '00000000-0000-4000-a000-0000000000f6';
   outsider uuid := '00000000-0000-4000-a000-0000000000f7';
-  application_id uuid := '00000000-0000-4000-a000-0000000000f8';
-  offer_id uuid;
+  v_application_id uuid := '00000000-0000-4000-a000-0000000000f8';
+  v_offer_id uuid;
   app_status text;
   offer_status text;
 begin
@@ -56,7 +56,7 @@ begin
   insert into public.applications
     (id,opportunity_id,applicant_user_id,applicant_type,kind,note,status)
   values
-    (application_id,'employment-test-job',worker,'individual','Individual','test application','submitted');
+    (v_application_id,'employment-test-job',worker,'individual','Individual','test application','submitted');
 
   perform pg_temp.as_user(outsider);
   perform pg_temp.check(
@@ -65,40 +65,40 @@ begin
   );
   perform pg_temp.as_owner();
   perform pg_temp.check(
-    (select count(*)=0 from public.employment_offers where application_id=application_id),
+    (select count(*)=0 from public.employment_offers where application_id=v_application_id),
     'unauthorized user created no offer'
   );
 
   perform pg_temp.as_user(biz);
-  select (public.set_position_application_status(application_id,'offer',null,'full_time','Employment test offer')).status
+  select (public.set_position_application_status(v_v_application_id,'offer',null,'full_time','Employment test offer')).status
     into app_status;
   perform pg_temp.check(app_status='offer','business member moves application to offer');
   perform pg_temp.as_owner();
-  select id into offer_id from public.employment_offers where application_id=application_id and status='pending';
-  perform pg_temp.check(offer_id is not null,'pending offer created');
+  select id into v_offer_id from public.employment_offers where application_id=v_application_id and status='pending';
+  perform pg_temp.check(v_offer_id is not null,'pending offer created');
   perform pg_temp.check(
-    (select status='offer' from public.applications where id=application_id),
+    (select status='offer' from public.applications where id=v_application_id),
     'application status follows offer'
   );
 
   perform pg_temp.as_user(outsider);
   perform pg_temp.check(
-    pg_temp.fails(format('select public.respond_to_employment_offer(%L,''accepted'')', offer_id)),
+    pg_temp.fails(format('select public.respond_to_employment_offer(%L,''accepted'')', v_offer_id)),
     'unrelated user cannot accept offer'
   );
   perform pg_temp.as_owner();
   perform pg_temp.check(
-    (select status='pending' from public.employment_offers where id=offer_id),
+    (select status='pending' from public.employment_offers where id=v_offer_id),
     'unauthorized response leaves offer pending'
   );
 
   perform pg_temp.as_user(worker);
-  select (public.respond_to_employment_offer(offer_id,'accepted')).status into offer_status;
+  select (public.respond_to_employment_offer(v_offer_id,'accepted')).status into offer_status;
   perform pg_temp.check(offer_status='accepted','invited worker accepts offer');
 
   perform pg_temp.as_owner();
   perform pg_temp.check(
-    (select count(*)=1 from public.company_employments where offer_id=offer_id and status='active'),
+    (select count(*)=1 from public.company_employments where offer_id=v_offer_id and status='active'),
     'acceptance creates one active employment'
   );
   perform pg_temp.check(
@@ -106,7 +106,7 @@ begin
     'accepted offer closes the job position'
   );
   perform pg_temp.check(
-    (select status='accepted' from public.applications where id=application_id),
+    (select status='accepted' from public.applications where id=v_application_id),
     'accepted offer closes the application successfully'
   );
   perform pg_temp.check(
@@ -114,7 +114,7 @@ begin
     'business notified when worker accepts'
   );
   perform pg_temp.check(
-    pg_temp.fails(format('select public.respond_to_employment_offer(%L,''accepted'')', offer_id)),
+    pg_temp.fails(format('select public.respond_to_employment_offer(%L,''accepted'')', v_offer_id)),
     'offer cannot be accepted twice'
   );
 
