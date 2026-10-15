@@ -1092,6 +1092,7 @@ export type Database = {
           _district?: string
           _limit?: number
           _offset?: number
+          _preferred_district?: string
           _q?: string
           _sector?: string
           _verified?: boolean
@@ -1106,7 +1107,34 @@ export type Database = {
           rating: number
           sector: string
           total_count: number
+          trust_score: number
           verified: boolean
+        }[]
+      }
+      search_teams: {
+        Args: {
+          _available?: boolean
+          _district?: string
+          _limit?: number
+          _preferred_district?: string
+          _q?: string
+          _sector?: string
+        }
+        Returns: {
+          areas: string[]
+          available: boolean
+          avatar_url: string | null
+          id: string
+          lead_id: string | null
+          member_ids: string[]
+          name: string
+          projects: number
+          rating: number
+          sector: string
+          skills: string[]
+          summary: string
+          total_count: number
+          trust_score: number
         }[]
       }
       set_position_application_status: {
