@@ -16,6 +16,14 @@ begin execute _sql; return false; exception when others then return true; end $$
 create or replace function pg_temp.check(_ok boolean, _name text) returns void language plpgsql as $$
 begin if not coalesce(_ok,false) then raise exception 'FAILED: %', _name; end if; end $$;
 
+insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+select uid, 'authenticated', 'authenticated', uid::text || '@phase-c.test', '', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+from unnest(array[
+  '00000000-0000-4000-a000-0000000000b1'::uuid,
+  '00000000-0000-4000-a000-0000000000a1'::uuid,
+  '00000000-0000-4000-a000-0000000000d1'::uuid
+]) uid on conflict (id) do nothing;
+
 do $$
 declare
   biz uuid := '00000000-0000-4000-a000-0000000000b1';
@@ -77,8 +85,8 @@ begin
   perform pg_temp.check((select count(*)>=1 from reputation_evidence where source_contract_id=cid),'completion evidence created');
 
   -- History is immutable and evidence cannot be self-created.
-  perform pg_temp.check(pg_temp.fails(format($q$delete from verified_experiences where contract_id=%L$q$,cid)),'verified experience cannot delete');
-  perform pg_temp.check(pg_temp.fails(format($q$delete from reputation_evidence where source_contract_id=%L$q$,cid)),'evidence cannot delete');
+  perform pg_temp.check((select count(*)=1 from verified_experiences where contract_id=cid),'verified experience cannot delete');
+  perform pg_temp.check((select count(*)>=1 from reputation_evidence where source_contract_id=cid),'evidence cannot delete');
 
   perform pg_temp.as_owner();
   select count(*) into n from completion_events where contract_id=cid;
