@@ -1,15 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-function teamField(team: unknown, key: string): unknown {
-  return (team as Record<string, unknown>)[key];
-}
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
 import { useCatalog } from "@/features/data/catalog";
 import { Card, PageHeader, TeamCard } from "@/features/ui/kit";
 import { DISTRICTS, SECTORS } from "@/features/data/demo";
+
+function teamField(team: unknown, key: string): unknown {
+  return (team as Record<string, unknown>)[key];
+}
 
 export const Route = createFileRoute("/teams/")({
   head: () => ({
