@@ -31,8 +31,10 @@ const statusTone = (status: Completion["status"]) =>
     "success" | "primary" | "warning";
 
 function CompletionHistory({ completionId }: { completionId: string }) {
+  const { session } = useApp();
   const q = useQuery({
-    queryKey: ["completion-events", completionId],
+    queryKey: ["completion-events", completionId, session?.user.id],
+    enabled: !!session,
     queryFn: () => listMyCompletionEvents(completionId),
   });
 
@@ -91,6 +93,7 @@ function CompletionCard({
       toast.success(success);
       await Promise.all([
         qc.invalidateQueries({ queryKey: completionsKey }),
+        qc.invalidateQueries({ queryKey: ["completion-events"] }),
         qc.invalidateQueries({ queryKey: verifiedExperienceKey }),
         qc.invalidateQueries({ queryKey: reputationEvidenceKey }),
         qc.invalidateQueries({ queryKey: milestonesKey }),
@@ -310,12 +313,12 @@ function VerifiedWorkHistory({ experiences }: { experiences: VerifiedExperience[
 export function CompletionPanel({ contracts }: { contracts: Contract[] }) {
   const { session, user } = useApp();
   const completionsQuery = useQuery({
-    queryKey: completionsKey,
+    queryKey: [...completionsKey, session?.user.id],
     enabled: !!session,
     queryFn: listMyCompletions,
   });
   const milestonesQuery = useQuery({
-    queryKey: milestonesKey,
+    queryKey: [...milestonesKey, session?.user.id],
     enabled: !!session,
     queryFn: listMyMilestones,
   });
