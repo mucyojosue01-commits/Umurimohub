@@ -134,5 +134,12 @@ begin
   perform pg_temp.check(pg_temp.fails(format($q$update contracts set status='active' where id=%L$q$, c1)), 'cancelled -> active invalid');
   perform pg_temp.check(pg_temp.fails(format($q$delete from contracts where id=%L$q$, c1)), 'contracts undeletable');
 
+  -- The authorized RPC can reaccept a cancelled contract and records the transition.
+  perform pg_temp.as_user(wk);
+  st := public.reaccept_cancelled_contract(c1);
+  perform pg_temp.check(st = 'active', 'contract party reaccepts through RPC');
+  perform pg_temp.check((select status = 'active' from contracts where id = c1), 'reaccepted status persisted');
+  perform pg_temp.check((select count(*) = 1 from contract_events where contract_id = c1 and event_type = 'reaccepted'), 'reaccept event recorded');
+
   raise exception 'ALL CONTRACT TESTS PASSED (rolled back)';
 end $$;
