@@ -68,8 +68,16 @@ begin
   c1 := public.create_contract(a1, 'Wall build', 'Build the boundary wall', 1500000, current_date, current_date + 20, null);
   perform pg_temp.check(pg_temp.fails(format($q$select public.create_contract(%L,'Again','Scope of the work',1000)$q$, a1)), 'duplicate contract rejected');
   perform pg_temp.check(pg_temp.fails($q$insert into contracts(application_id,opportunity_id,business_id,worker_id,title,scope,amount_rwf,proposed_by) values (gen_random_uuid(),'t_opp','t_biz','t_w','Title','Scope here ok',1,auth.uid())$q$), 'direct insert denied');
-  perform pg_temp.check(pg_temp.fails(format($q$update contracts set amount_rwf = 1 where id=%L$q$, c1)), 'direct amount edit denied');
-  perform pg_temp.check(pg_temp.fails(format($q$update contracts set status='active' where id=%L$q$, c1)), 'direct status edit denied');
+  perform pg_temp.check(
+    pg_temp.fails(format($q$update contracts set amount_rwf = 1 where id=%L$q$, c1))
+      or (select amount_rwf = 1500000 from contracts where id = c1),
+    'direct amount edit denied'
+  );
+  perform pg_temp.check(
+    pg_temp.fails(format($q$update contracts set status='active' where id=%L$q$, c1))
+      or (select status = 'proposed' from contracts where id = c1),
+    'direct status edit denied'
+  );
   perform pg_temp.check(pg_temp.fails(format($q$select public.respond_contract(%L,true)$q$, c1)), 'business cannot accept own proposal');
 
   -- Visibility
