@@ -99,6 +99,11 @@ function Page() {
       toast.error(r.error ?? "Couldn't publish");
       return;
     }
+    const { error: positionTypeError } = await supabase.from("opportunities").update({ opportunity_type: "company_position", position_name: f.title.trim() }).eq("id", r.id);
+    if (positionTypeError) {
+      toast.error("The position was created, but its company-position classification could not be saved: " + positionTypeError.message);
+      return;
+    }
     if (media.length) {
       for (const file of media) {
         if (file.size > 10_000_000) {
