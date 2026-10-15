@@ -18,6 +18,12 @@ set opportunity_id = o.opportunity_id,
 from public.employment_offers o
 where e.offer_id = o.id and e.opportunity_id is null;
 
+-- Classify legacy company job listings as positions, keeping them out of opportunity dashboards.
+update public.opportunities
+set opportunity_type = 'company_position',
+    position_name = coalesce(nullif(trim(position_name), ''), title)
+where type = 'Job' and business_id is not null;
+
 -- Backfill old employments by exact company/title match where no offer linkage exists.
 update public.company_employments e
 set opportunity_id = (
