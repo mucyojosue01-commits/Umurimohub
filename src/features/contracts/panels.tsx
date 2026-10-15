@@ -2,20 +2,16 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { rwf } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
 import { Card, Pill } from "@/features/ui/kit";
 import {
-  cancelContract,
   contractsKey,
   createContract,
-  updateContract,
   listMyContracts,
-  respondContract,
-  reacceptCancelledContract,
+  updateContract,
   validateProposal,
   type Contract,
 } from "./service";
@@ -168,97 +164,30 @@ const tone = (s: string) =>
 
 export function ContractsPanel() {
   const { user } = useApp();
-  const qc = useQueryClient();
   const q = useContracts();
-  const [editingContract, setEditingContract] = useState<Contract | null>(null);
   if (!user) return null;
-  const act = async (fn: () => Promise<unknown>, msg: string) => {
-    try {
-      await fn();
-      toast.success(msg);
-      void qc.invalidateQueries({ queryKey: contractsKey });
-    } catch (e) {
-      toast.error((e as Error).message);
-    }
-  };
   return (
-    <>
     <Card className="mt-6">
-      <h2 className="font-bold">Contracts</h2>
+      <h2 className="font-bold">Contracts & projects</h2>
       {q.isLoading ? (
         <p className="mt-2 text-sm text-muted-foreground">Loading contracts…</p>
       ) : q.isError ? (
         <p className="mt-2 text-sm text-destructive">Couldn't load contracts. Try again shortly.</p>
       ) : !q.data?.length ? (
-        <p className="mt-2 text-sm text-muted-foreground">
-          No contracts yet. Contracts appear once an accepted application gets a proposal.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">No contracts yet. Contracts appear once an accepted application gets a proposal.</p>
       ) : (
         <ul className="mt-3 divide-y">
-          {q.data.map((c) => {
-            const isBiz = user.businessIds.includes(c.business_id);
-            const isParty =
-              (c.worker_id && c.worker_id === user.workerId) ||
-              (c.team_id && user.leadTeamIds.includes(c.team_id));
-            return (
-              <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
-                <div>
-                  <p className="font-medium">{c.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {rwf(c.amount_rwf)} · {c.team_id ? "Team" : "Individual"}
-                  </p>
-                </div>
-                <span className="flex flex-wrap items-center gap-2">
-                  <Pill tone={tone(c.status)}>{c.status}</Pill>
-                  {isParty && c.status === "proposed" && (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          act(() => respondContract(c.id, true), "Contract accepted — now active")
-                        }
-                      >
-                        Accept
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => act(() => respondContract(c.id, false), "Contract declined")}
-                      >
-                        Decline
-                      </Button>
-                    </>
-                  )}
-                  {(isBiz || isParty) && c.status === "cancelled" && (
-                    <Button
-                      size="sm"
-                      onClick={() => act(() => reacceptCancelledContract(c.id), "Cancelled contract re-accepted and active")}
-                    >
-                      Re-accept
-                    </Button>
-                  )}
-                  {isBiz && (c.status === "proposed" || c.status === "active") && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => act(() => cancelContract(c.id), "Contract cancelled")}
-                    >
-                      Cancel
-                    </Button>
-                  )}
-                </span>
-              </li>
-            );
-          })}
+          {q.data.map((contract) => (
+            <li key={contract.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+              <div>
+                <p className="font-medium">{contract.title}</p>
+                <p className="text-sm text-muted-foreground">{rwf(contract.amount_rwf)} · {contract.team_id ? "Team" : "Individual"}</p>
+              </div>
+              <Pill tone={tone(contract.status)}>{contract.status}</Pill>
+            </li>
+          ))}
         </ul>
       )}
     </Card>
-    <Dialog open={!!editingContract} onOpenChange={(open)=>{if(!open)setEditingContract(null)}}>
-      <DialogContent className="max-w-2xl rounded-3xl">
-        <DialogHeader><DialogTitle>Edit contract proposal</DialogTitle></DialogHeader>
-        {editingContract && <EditContractForm contract={editingContract} onDone={() => setEditingContract(null)} />}
-      </DialogContent>
-    </Dialog>
-    </>
   );
 }
