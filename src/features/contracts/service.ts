@@ -34,7 +34,7 @@ export async function listMyContracts(): Promise<Contract[]> {
     .select("*")
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).filter((row) => !(row as Contract & { deleted_at?: string | null }).deleted_at);
 }
 
 export async function createContract(p: ContractProposal) {
