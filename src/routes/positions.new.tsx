@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { DISTRICTS, SECTORS, type Opportunity } from "@/features/data/demo";
 import { useApp, type NewOpportunity } from "@/features/store/app-store";
 import { useCatalog } from "@/features/data/catalog";
 import { Card, PageHeader } from "@/features/ui/kit";
+import { SearchSelect } from "@/components/search-select";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/positions/new")({
@@ -50,11 +50,11 @@ function Page() {
   const routeSearch = Route.useSearch();
   const { businesses } = useCatalog();
   const nav = useNavigate();
-  const [media, setMedia] = useState<File[]>([]);
+  const watchBusinessId = watch("businessId");
   const {
     register,
     handleSubmit,
-    watch,
+    setValue,
     formState: { errors },
   } = useForm<F>({
     resolver: zodResolver(schema),
@@ -104,34 +104,7 @@ function Page() {
       toast.error("The position was created, but its company-position classification could not be saved: " + positionTypeError.message);
       return;
     }
-    if (media.length) {
-      for (const file of media) {
-        if (file.size > 10_000_000) {
-          toast.error(file.name + " is larger than 10 MB.");
-          continue;
-        }
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = r.id + "/" + crypto.randomUUID() + "-" + safeName;
-        const upload = await supabase.storage.from("opportunity-attachments").upload(path, file, {
-          contentType: file.type || "application/octet-stream",
-          upsert: false,
-        });
-        if (upload.error) {
-          toast.error("Couldn't upload " + file.name + ".");
-          continue;
-        }
-        const { error: rowError } = await supabase.from("opportunity_attachments").insert({
-          opportunity_id: r.id,
-          uploaded_by: user!.id,
-          storage_path: upload.data.path,
-          file_name: file.name,
-          mime_type: file.type || "application/octet-stream",
-          size_bytes: file.size,
-        });
-        if (rowError) toast.error("Couldn't save " + file.name + ".");
-      }
-    }
-    toast.success(media.length ? "Position published with attachments" : "Position published");
+    toast.success("Position published");
     nav({ to: "/positions/$id", params: { id: r.id } });
   };
   if (authReady && !user) {
@@ -173,9 +146,15 @@ function Page() {
           </label>
           <label className="text-sm">
             Company hiring for this position
-            <select {...register("businessId")} className={inp} defaultValue={user?.businessIds[0] ?? ""}>
-              {businesses.filter((b) => user?.businessIds.includes(b.id)).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
+            <input type="hidden" {...register("businessId")} />
+            <SearchSelect
+              value={watchBusinessId}
+              onChange={(value) => setValue("businessId", value, { shouldValidate: true, shouldDirty: true })}
+              options={businesses.filter((b) => user?.businessIds.includes(b.id)).map((b) => ({ value: b.id, label: b.name, description: b.sector + " · " + b.district }))}
+              placeholder="Search and select a company…"
+              emptyText="No matching companies"
+            />
+            <Err k="businessId" />
           </label>
           <label className="text-sm">
             Sector
@@ -236,11 +215,6 @@ function Page() {
             <textarea rows={5} {...register("requirements")} placeholder="List what an applicant must bring or be able to do, one requirement per line. Example: 2+ years masonry experience; able to work on-site in Kigali; bring basic hand tools; available for the full project period." className="mt-1 w-full rounded-xl border bg-card p-3" />
             <span className="mt-1 block text-xs text-muted-foreground">Each line becomes a check-list item applicants can review before applying.</span>
             <Err k="requirements" />
-          </label>
-          <label className="text-sm md:col-span-2">
-            Media & attachments
-            <input type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx" className="mt-1 block w-full rounded-xl border bg-card p-2 text-sm" onChange={(e) => setMedia(Array.from(e.target.files ?? []).slice(0, 8))} />
-            <span className="mt-1 block text-xs text-muted-foreground">Up to 8 files, 10 MB each.</span>
           </label>
           <label className="text-sm md:col-span-2">
             Description
