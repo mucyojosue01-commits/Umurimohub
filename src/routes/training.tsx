@@ -187,6 +187,29 @@ function Page() {
     }
   };
 
+  const completeAcceptedLearners = async (trainingId: string, trainingTitle: string) => {
+    if (!window.confirm("Mark every accepted learner's training as complete? Each successful completion will be added to their profile experience.")) return;
+    setBusy("complete:" + trainingId);
+    const { data, error } = await supabase.from("training_applications").select("id").eq("training_id", trainingId).eq("status", "accepted");
+    if (error) { setBusy(null); toast.error("Could not load accepted learners: " + error.message); return; }
+    const accepted = data ?? [];
+    if (!accepted.length) { setBusy(null); toast.info("There are no accepted learners waiting for completion."); return; }
+    const results = await Promise.all(accepted.map(async (application) => {
+      const result = await supabase.rpc("complete_training_application", { _application_id: application.id });
+      return { error: result.error };
+    }));
+    setBusy(null);
+    const completedCount = results.filter((result) => !result.error).length;
+    const failedCount = results.length - completedCount;
+    if (completedCount) toast.success(completedCount + " learner(s) marked complete; profile experience updated.");
+    if (failedCount) toast.error(failedCount + " completion(s) failed. Retry to finish the remaining accepted learners.");
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ["training-applications"] }),
+      qc.invalidateQueries({ queryKey: ["training-applicant-profiles"] }),
+      qc.invalidateQueries({ queryKey: ["training-programs"] }),
+    ]);
+  };
+
   if (!session) {
     return (
       <div className="container-page py-10">
@@ -250,6 +273,7 @@ function Page() {
                     <Button size="icon" variant="ghost" aria-label={"Training actions for " + x.title} onClick={() => setMenuTraining(menuTraining === x.id ? null : x.id)}><MoreVertical className="size-4" /></Button>
                     {menuTraining === x.id && <div className="absolute right-0 top-10 z-30 w-40 rounded-xl border bg-popover p-1 shadow-xl">
                       <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setMenuTraining(null); openEdit(x); }}>Edit training</button>
+                      {apps.some((a) => a.training_id === x.id && a.status === "accepted") && <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted" disabled={busy === "complete:" + x.id} onClick={() => { setMenuTraining(null); void completeAcceptedLearners(x.id, x.title); }}>{busy === "complete:" + x.id ? "Completing…" : "Mark accepted learners complete"}</button>}
                       <button className="block w-full rounded-lg px-3 py-2 text-left text-sm text-destructive hover:bg-muted" disabled={busy === x.id} onClick={() => { setMenuTraining(null); void remove(x.id); }}>Delete training</button>
                     </div>}
                   </div>}
@@ -287,7 +311,7 @@ function Page() {
                           <div className="mt-2 flex flex-wrap gap-2">
                             {a.status === "applied" && <Button size="sm" onClick={() => void shortlist(a.id)} disabled={busy === a.id}>Shortlist</Button>}
                             {a.status === "shortlisted" && <span className="text-xs text-muted-foreground">Waiting for candidate acceptance.</span>}
-                            {a.status === "accepted" && <Button size="sm" title="Mark this accepted learner's training complete and add it to their profile experience" onClick={() => void complete(a.id)} disabled={busy === a.id}>{busy === a.id ? "Saving…" : "End training"}</Button>}
+                            {a.status === "accepted" && <Pill tone="primary">Accepted · awaiting completion</Pill>}
                             {a.status === "completed" && <Pill tone="success">Profile experience added</Pill>}
                           </div>
                         </div>
