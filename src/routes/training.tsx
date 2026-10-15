@@ -175,18 +175,6 @@ function Page() {
     }
   };
 
-  const complete = async (id: string) => {
-    if (!window.confirm("Mark this training as completed? It will be added to the learner's profile experience.")) return;
-    setBusy(id);
-    const { error } = await supabase.rpc("complete_training_application", { _application_id: id });
-    setBusy(null);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Training completed and profile experience added");
-      void qc.invalidateQueries({ queryKey: ["training-applications"] });
-    }
-  };
-
   const completeAcceptedLearners = async (trainingId: string, trainingTitle: string) => {
     if (!window.confirm("Mark every accepted learner's training as complete? Each successful completion will be added to their profile experience.")) return;
     setBusy("complete:" + trainingId);
