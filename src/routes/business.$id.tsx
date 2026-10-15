@@ -30,8 +30,8 @@ export const Route = createFileRoute("/business/$id")({
       .order("created_at", { ascending: false });
 
     if (opportunitiesError) throw new Error("Company opportunities could not be loaded: " + opportunitiesError.message);
-    const openPositions = (rawOpportunities ?? []).filter((row) => row.type === "Job" && (!row.deadline || row.deadline >= new Date().toISOString().slice(0, 10))).map(mapOpportunity);
-    const openNonJobOpportunities = (rawOpportunities ?? []).filter((row) => row.type !== "Job").map(mapOpportunity);
+    const openPositions = (rawOpportunities ?? []).filter((row) => row.opportunity_type === "company_position" && row.type === "Job" && (!row.deadline || row.deadline >= new Date().toISOString().slice(0, 10))).map(mapOpportunity);
+    const openNonJobOpportunities = (rawOpportunities ?? []).filter((row) => row.opportunity_type !== "company_position" && row.type !== "Job").map(mapOpportunity);
 
     // Employment data is optional until the recruitment migration is applied; it must not break public company pages.
     const { data: employmentRows } = await supabase.from("company_employments").select("id,worker_id,worker_user_id,position_name,employment_type,started_at,status,opportunity_id").eq("business_id", params.id).eq("status", "active").order("started_at", { ascending: false });
