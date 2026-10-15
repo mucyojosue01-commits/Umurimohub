@@ -2,22 +2,16 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { rwf } from "@/features/data/demo";
 import { useApp } from "@/features/store/app-store";
 import { Card, Pill } from "@/features/ui/kit";
 import {
-  cancelContract,
   contractsKey,
   createContract,
-  updateContract,
   listMyContracts,
-  respondContract,
-  reacceptCancelledContract,
   validateProposal,
-  type Contract,
 } from "./service";
 
 export function useContracts() {
