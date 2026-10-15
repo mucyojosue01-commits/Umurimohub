@@ -50,16 +50,19 @@ export function MyApplications() {
       }));
     },
   });
-  const acceptOffer = async (offerId: string) => {
-    const { error } = await supabase.rpc("respond_to_employment_offer", { _offer_id: offerId, _decision: "accepted" });
+  const respondToEmploymentOffer = async (offerId: string, decision: "accepted" | "declined") => {
+    const { error } = await supabase.rpc("respond_to_employment_offer", { _offer_id: offerId, _decision: decision });
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Offer accepted. You are now employed by the company.");
+    toast.success(decision === "accepted"
+      ? "Offer accepted. You are now employed by the company."
+      : "Offer declined. The company has been notified.");
     await Promise.all([
       reloadUser(),
       qc.invalidateQueries({ queryKey: ["my-employment-offers", session?.user.id] }),
+      qc.invalidateQueries({ queryKey: ["my-application-contracts", session?.user.id] }),
       qc.invalidateQueries({ queryKey: ["catalog"] }),
     ]);
   };
@@ -67,14 +70,20 @@ export function MyApplications() {
   const offers = offersQ.data ?? [];
   const standaloneOffers = offers.filter((offer) => !offer.application_id || !applications.some((a) => a.id === offer.application_id));
 
-  if (!session) return null;
   return (
-    <Card className="mt-6">
+    <Card className="mt-6" id="my-applications">
       <h2 className="font-bold">My applications</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Review application status and confirm offers when they are ready.</p>
-      {visibleApplications.length === 0 && standaloneOffers.length === 0 && !offersQ.isLoading ? (
-        <p className="mt-3 text-sm text-muted-foreground">No applications or employment offers yet. <Link to="/opportunities" className="text-primary">Browse opportunities</Link></p>
+      <p className="mt-1 text-sm text-muted-foreground">Check each application status and respond when an offer is ready.</p>
+      {!session ? (
+        <p className="mt-3 text-sm text-muted-foreground">Sign in to view your applications and offers.</p>
       ) : (
+        <>
+        {offersQ.isError && <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-destructive"><span>Employment offers could not be loaded.</span><Button size="sm" variant="outline" onClick={() => void offersQ.refetch()}>Retry</Button></div>}
+        {linkedContractsQ.isError && <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-destructive"><span>Opportunity offers could not be loaded.</span><Button size="sm" variant="outline" onClick={() => void linkedContractsQ.refetch()}>Retry</Button></div>}
+        {offersQ.isLoading ? <p className="mt-3 text-sm text-muted-foreground">Loading employment offers…</p> : null}
+        {visibleApplications.length === 0 && standaloneOffers.length === 0 && !offersQ.isLoading ? (
+          <p className="mt-3 text-sm text-muted-foreground">No applications or employment offers yet. <Link to="/opportunities" className="text-primary">Browse opportunities</Link></p>
+        ) : (
         <ul className="mt-3 divide-y">
           {visibleApplications.map((a) => {
             const opportunity = allOpps.find((o) => o.id === a.oppId);
@@ -101,7 +110,7 @@ export function MyApplications() {
                   <Link to="/opportunities/$id" params={{ id: a.oppId }} className="font-medium hover:text-primary">{title(a.oppId)}</Link>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
                     <Pill>{isPosition ? "Position" : "Opportunity"}</Pill>
-                    <Pill tone={["accepted", "completed"].includes(a.status.toLowerCase()) ? "success" : a.status.toLowerCase() === "offer" ? "primary" : "muted"}>{a.status}</Pill>
+                    <Pill tone={["accepted", "completed"].includes(a.status.toLowerCase()) ? "success" : (linkedOffer || linkedContract) ? "primary" : "muted"}>{linkedOffer ? "Offer pending" : linkedContract ? "Offer pending" : a.status.replaceAll("_", " ")}</Pill>
                   </div>
                   {a.termsVersion && a.acceptedTermsVersion !== undefined && a.termsVersion > a.acceptedTermsVersion && !["withdrawn", "rejected"].includes(a.status.toLowerCase()) && (
                     <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-warning/40 bg-warning/10 p-2 text-xs">
@@ -116,7 +125,10 @@ export function MyApplications() {
                     <Button size="sm" onClick={() => void respondToOpportunity(true)}>Accept opportunity</Button>
                     <Button size="sm" variant="outline" onClick={() => void respondToOpportunity(false)}>Decline</Button>
                   </>}
-                  {linkedOffer && <Button size="sm" disabled={offersQ.isFetching} onClick={() => void acceptOffer(linkedOffer.id)}>Accept offer</Button>}
+                  {linkedOffer && <>
+                    <Button size="sm" disabled={offersQ.isFetching} onClick={() => void respondToEmploymentOffer(linkedOffer.id, "accepted")}>Accept offer</Button>
+                    <Button size="sm" variant="outline" disabled={offersQ.isFetching} onClick={() => void respondToEmploymentOffer(linkedOffer.id, "declined")}>Decline</Button>
+                  </>}
                 </div>
               </li>
             );
@@ -129,12 +141,14 @@ export function MyApplications() {
                   <Pill>Position</Pill>
                   <Pill tone={offer.status === "accepted" ? "success" : offer.status === "pending" ? "primary" : "muted"}>{offer.status}</Pill>
                 </div>
-                {offer.details && <p className="mt-1 text-xs text-muted-foreground">{offer.details}</p>}
+                
               </div>
-              {offer.status === "pending" && <Button size="sm" disabled={offersQ.isFetching} onClick={() => void acceptOffer(offer.id)}>Accept offer</Button>}
+              {offer.status === "pending" && <div className="flex flex-wrap gap-2"><Button size="sm" disabled={offersQ.isFetching} onClick={() => void respondToEmploymentOffer(offer.id, "accepted")}>Accept offer</Button><Button size="sm" variant="outline" disabled={offersQ.isFetching} onClick={() => void respondToEmploymentOffer(offer.id, "declined")}>Decline</Button></div>}
             </li>
           ))}
         </ul>
+        )}
+        </>
       )}
     </Card>
   );
