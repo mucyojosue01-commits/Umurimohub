@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { BriefcaseBusiness, CalendarDays, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCatalog } from "@/features/data/catalog";
@@ -17,11 +19,27 @@ export const Route = createFileRoute("/positions/")({
 function Page() {
   const { user } = useApp();
   const { opportunities, loading, error } = useCatalog();
-  const positions = opportunities.filter((o) => o.opportunityType === "company_position" && o.type.toLowerCase() === "job" && o.status === "open" && new Date(o.deadline + "T23:59:59") >= new Date());
+  const [filledPositionIds, setFilledPositionIds] = useState<string[]>([]);
+  const [employmentCheckDone, setEmploymentCheckDone] = useState(false);
+  useEffect(() => {
+    let active = true;
+    void supabase.from("company_employments").select("opportunity_id").eq("status", "active").not("opportunity_id", "is", null).then(({ data, error: employmentError }) => {
+      if (!active) return;
+      if (employmentError) {
+        // The database also closes filled positions; this query is a defensive display safeguard.
+        setFilledPositionIds([]);
+      } else {
+        setFilledPositionIds([...new Set((data ?? []).map((row) => row.opportunity_id).filter((value): value is string => !!value))]);
+      }
+      setEmploymentCheckDone(true);
+    });
+    return () => { active = false; };
+  }, []);
+  const positions = opportunities.filter((o) => o.opportunityType === "company_position" && o.type.toLowerCase() === "job" && o.status === "open" && !filledPositionIds.includes(o.id) && new Date(o.deadline + "T23:59:59") >= new Date());
   return <div className="container-page py-10">
     <PageHeader eyebrow="Jobs" title="Open positions" desc="Explore employment listings, review each full position profile, and apply before the deadline."
       actions={<Button asChild><Link to="/positions/new"><BriefcaseBusiness className="mr-2 size-4"/>Post position</Link></Button>} />
-    {loading ? <div className="py-16 text-center text-muted-foreground">Loading positions…</div> :
+    {loading || !employmentCheckDone ? <div className="py-16 text-center text-muted-foreground">Loading positions…</div> :
       error ? <div role="alert" className="mt-6 rounded-xl border p-5 text-sm text-destructive">Positions could not be loaded. Please retry shortly.</div> :
       positions.length ? <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{positions.map(o => {
         const own = o.createdBy === user?.id || (!!o.businessId && user?.businessIds.includes(o.businessId));
