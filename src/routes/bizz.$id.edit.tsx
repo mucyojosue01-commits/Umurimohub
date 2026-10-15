@@ -55,7 +55,7 @@ function BusinessEditorPage() {
         queryClient.invalidateQueries({ queryKey: ["company", user.id] }),
       ]);
       toast.success("Business profile saved.");
-      await navigate({ to: "/business/$id", params: { id }, replace: true });
+      await navigate({ to: "/bizz/$id", params: { id }, replace: true });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not save the company profile.");
     } finally {
