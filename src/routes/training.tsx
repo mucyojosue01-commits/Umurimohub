@@ -287,7 +287,7 @@ function Page() {
                           <div className="mt-2 flex flex-wrap gap-2">
                             {a.status === "applied" && <Button size="sm" onClick={() => void shortlist(a.id)} disabled={busy === a.id}>Shortlist</Button>}
                             {a.status === "shortlisted" && <span className="text-xs text-muted-foreground">Waiting for candidate acceptance.</span>}
-                            {a.status === "accepted" && <Button size="sm" onClick={() => void complete(a.id)} disabled={busy === a.id}>{busy === a.id ? "Saving…" : "End"}</Button>}
+                            {a.status === "accepted" && <Button size="sm" title="Mark this accepted learner's training complete and add it to their profile experience" onClick={() => void complete(a.id)} disabled={busy === a.id}>{busy === a.id ? "Saving…" : "End training"}</Button>}
                             {a.status === "completed" && <Pill tone="success">Profile experience added</Pill>}
                           </div>
                         </div>
