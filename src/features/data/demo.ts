@@ -478,6 +478,7 @@ export type Opportunity = {
   sector: Sector;
   district: string;
   type: "Job" | "Project" | "Gig" | "Apprenticeship" | "Seasonal";
+  opportunityType?: "project" | "service" | "company_position";
   payRwf: number;
   payUnit: "day" | "month" | "project";
   mode: "On-site" | "Remote" | "Hybrid";
