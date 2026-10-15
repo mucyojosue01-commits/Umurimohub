@@ -32,8 +32,10 @@ export function EmploymentOffer({
     queryFn: async (): Promise<PublishedOpportunity[]> => {
       const { data, error } = await supabase
         .from("opportunities")
-        .select("id,title,business_id")
+        .select("id,title,business_id,opportunity_type,type")
         .in("business_id", user!.businessIds)
+        .eq("opportunity_type", "company_position")
+        .eq("type", "Job")
         .eq("status", "open")
         .eq("is_demo", false)
         .order("created_at", { ascending: false });
@@ -60,6 +62,7 @@ export function EmploymentOffer({
     setBusy(true);
     const { error } = await supabase.from("employment_offers").insert({
       business_id: opportunity.business_id,
+      opportunity_id: opportunity.id,
       worker_id: workerId,
       worker_user_id: workerUserId,
       position_name: opportunity.title,
@@ -83,7 +86,7 @@ export function EmploymentOffer({
     <Card>
       <h2 className="font-bold">Send employment offer</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Choose one of your published opportunities. Each option includes its company name.
+        Choose one of your company’s open employment positions. Project opportunities are kept separate.
       </p>
       <label className="mt-3 block text-sm">
         Opportunity
