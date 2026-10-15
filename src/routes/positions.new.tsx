@@ -55,6 +55,7 @@ function Page() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<F>({
     resolver: zodResolver(schema),
