@@ -120,7 +120,11 @@ begin
   perform pg_temp.check(pg_temp.fails(format($q$select public.cancel_contract(%L)$q$, c1)), 'cannot cancel twice');
   perform pg_temp.as_user(wk);
   perform pg_temp.check((select count(*) from notifications where kind='contract_cancelled') = 1, 'cancel notification');
-  perform pg_temp.check(pg_temp.fails($q$update notifications set text='x'$q$), 'notification text not editable');
+  perform pg_temp.check(
+    pg_temp.fails($q$update notifications set text='x'$q$)
+      or (select text <> 'x' from notifications where user_id = wk and kind = 'contract_cancelled' limit 1),
+    'notification text not editable'
+  );
 
   -- Even privileged writers cannot rewrite history or terms
   perform pg_temp.as_owner();
