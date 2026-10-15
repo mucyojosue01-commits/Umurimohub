@@ -20,8 +20,7 @@ where e.offer_id = o.id and e.opportunity_id is null;
 
 -- Backfill old employments by exact company/title match where no offer linkage exists.
 update public.company_employments e
-set opportunity_id = matched.id
-from lateral (
+set opportunity_id = (
   select p.id
   from public.opportunities p
   where p.business_id = e.business_id
@@ -29,8 +28,14 @@ from lateral (
     and lower(trim(p.title)) = lower(trim(e.position_name))
   order by p.created_at desc
   limit 1
-) matched
-where e.opportunity_id is null and e.status = 'active';
+)
+where e.opportunity_id is null and e.status = 'active'
+  and exists (
+    select 1 from public.opportunities p
+    where p.business_id = e.business_id
+      and p.type = 'Job'
+      and lower(trim(p.title)) = lower(trim(e.position_name))
+  );
 
 -- Ensure the position view/list never advertises a role that already has an accepted employee.
 update public.opportunities p
