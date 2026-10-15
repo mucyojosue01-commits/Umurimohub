@@ -1,5 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+
+function teamField(team: unknown, key: string): unknown {
+  return (team as Record<string, unknown>)[key];
+}
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
@@ -27,25 +31,24 @@ function Page() {
   const [sector, setSector] = useState("");
   const [verification, setVerification] = useState("all");
   const userDistrict = (user as (typeof user & { district?: string }) | null)?.district?.trim().toLowerCase() ?? "";
-  const field = (team: (typeof teams)[number], key: string): unknown => (team as unknown as Record<string, unknown>)[key];
   const rankedTeams = useMemo(() => {
     const q = query.trim().toLowerCase();
     return teams.filter((team) => {
-      const name = String(field(team, "name") ?? "");
-      const description = String(field(team, "about") ?? field(team, "description") ?? "");
-      const teamDistrict = String(field(team, "district") ?? "");
-      const teamSector = String(field(team, "sector") ?? "");
-      const verified = Boolean(field(team, "verified"));
+      const name = String(teamField(team, "name") ?? "");
+      const description = String(teamField(team, "about") ?? teamField(team, "description") ?? "");
+      const teamDistrict = String(teamField(team, "district") ?? "");
+      const teamSector = String(teamField(team, "sector") ?? "");
+      const verified = Boolean(teamField(team, "verified"));
       const matchesText = !q || [name, description, teamDistrict, teamSector].join(" ").toLowerCase().includes(q);
       return matchesText && (!district || teamDistrict === district) && (!sector || teamSector === sector) &&
         (verification === "all" || (verification === "verified" ? verified : !verified));
     }).sort((a, b) => {
-      const trust = Number(Boolean(field(b, "verified"))) - Number(Boolean(field(a, "verified")));
-      const scoreA = Number(field(a, "trust_score") ?? field(a, "score") ?? field(a, "rating") ?? 0);
-      const scoreB = Number(field(b, "trust_score") ?? field(b, "score") ?? field(b, "rating") ?? 0);
-      const localA = String(field(a, "district") ?? "").trim().toLowerCase() === userDistrict;
-      const localB = String(field(b, "district") ?? "").trim().toLowerCase() === userDistrict;
-      return trust || scoreB - scoreA || Number(localB) - Number(localA) || String(field(a, "name") ?? "").localeCompare(String(field(b, "name") ?? ""));
+      const trust = Number(Boolean(teamField(b, "verified"))) - Number(Boolean(teamField(a, "verified")));
+      const scoreA = Number(teamField(a, "trust_score") ?? teamField(a, "score") ?? teamField(a, "rating") ?? 0);
+      const scoreB = Number(teamField(b, "trust_score") ?? teamField(b, "score") ?? teamField(b, "rating") ?? 0);
+      const localA = String(teamField(a, "district") ?? "").trim().toLowerCase() === userDistrict;
+      const localB = String(teamField(b, "district") ?? "").trim().toLowerCase() === userDistrict;
+      return trust || scoreB - scoreA || Number(localB) - Number(localA) || String(teamField(a, "name") ?? "").localeCompare(String(teamField(b, "name") ?? ""));
     }).slice(0, 30);
   }, [teams, query, district, sector, verification, userDistrict]);
   const reset = () => { setQuery(""); setDistrict(""); setSector(""); setVerification("all"); };
