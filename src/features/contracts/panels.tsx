@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MoreVertical } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -174,7 +173,6 @@ export function ContractsPanel() {
   const qc = useQueryClient();
   const q = useContracts();
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
-  const [menuContract, setMenuContract] = useState<string | null>(null);
   if (!user) return null;
   const act = async (fn: () => Promise<unknown>, msg: string) => {
     try {
@@ -214,17 +212,6 @@ export function ContractsPanel() {
                 </div>
                 <span className="flex flex-wrap items-center gap-2">
                   <Pill tone={tone(c.status)}>{c.status}</Pill>
-                  <Link to="/contracts/$id" params={{ id: c.id }} className="rounded-xl border px-3 py-2 text-sm hover:bg-muted">Open project</Link>
-                  <div className="relative">
-                    {c.status !== "completed" && <Button size="icon" variant="outline" aria-label="Contract actions" onClick={() => setMenuContract(menuContract === c.id ? null : c.id)}><MoreVertical className="size-4" /></Button>}
-                    {menuContract === c.id && c.status !== "completed" && (
-                      <div className="absolute right-0 top-11 z-30 w-48 rounded-2xl border bg-popover p-1 shadow-xl">
-                        <Link to="/contracts/$id" params={{ id: c.id }} className="block rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => setMenuContract(null)}>Info / project page</Link>
-                        {isBiz && c.status === "proposed" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setEditingContract(c); setMenuContract(null); }}>Edit</button>}
-                        {isBiz && c.status === "proposed" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => { setMenuContract(null); void act(async () => { await deleteContract(c.id); }, "Contract proposal deleted"); }}>Delete</button>}
-                      </div>
-                    )}
-                  </div>
                   {isParty && c.status === "proposed" && (
                     <>
                       <Button
