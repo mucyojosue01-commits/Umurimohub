@@ -19,7 +19,11 @@ import {
 
 export function useContracts() {
   const { session } = useApp();
-  return useQuery({ queryKey: contractsKey, enabled: !!session, queryFn: listMyContracts });
+  return useQuery({
+    queryKey: [...contractsKey, session?.user.id],
+    enabled: !!session,
+    queryFn: listMyContracts,
+  });
 }
 
 export function CreateContractForm({
@@ -173,7 +177,12 @@ export function ContractsPanel() {
       {q.isLoading ? (
         <p className="mt-2 text-sm text-muted-foreground">Loading contracts…</p>
       ) : q.isError ? (
-        <p className="mt-2 text-sm text-destructive">Couldn't load contracts. Try again shortly.</p>
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-destructive">
+          <span>Couldn't load contracts.</span>
+          <Button size="sm" variant="outline" onClick={() => void q.refetch()}>
+            Retry
+          </Button>
+        </div>
       ) : !q.data?.length ? (
         <p className="mt-2 text-sm text-muted-foreground">No contracts yet. Contracts appear once an accepted application gets a proposal.</p>
       ) : (

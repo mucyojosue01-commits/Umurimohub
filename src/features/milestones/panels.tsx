@@ -153,8 +153,10 @@ function MilestoneForm({
 }
 
 function MilestoneHistory({ id }: { id: string }) {
+  const { session } = useApp();
   const q = useQuery({
-    queryKey: milestoneEventsKey(id),
+    queryKey: [...milestoneEventsKey(id), session?.user.id],
+    enabled: !!session,
     queryFn: () => listMilestoneEvents(id),
   });
 
@@ -197,6 +199,7 @@ function MilestoneCard({
       await fn();
       toast.success(message);
       void qc.invalidateQueries({ queryKey: milestonesKey });
+      void qc.invalidateQueries({ queryKey: milestoneEventsKey(milestone.id) });
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -306,12 +309,22 @@ function MilestoneCard({
 export function MilestonesPanel({ contracts }: { contracts: Contract[] }) {
   const { user, session } = useApp();
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: milestonesKey, enabled: !!session, queryFn: listMyMilestones });
+  const q = useQuery({
+    queryKey: [...milestonesKey, session?.user.id],
+    enabled: !!session,
+    queryFn: listMyMilestones,
+  });
   useEffect(() => {
     if (!session) return;
     const channel = supabase.channel("live-milestones-" + session.user.id)
-      .on("postgres_changes", { event: "*", schema: "public", table: "milestones" }, () => void qc.invalidateQueries({ queryKey: milestonesKey }))
-      .on("postgres_changes", { event: "*", schema: "public", table: "milestone_events" }, () => void qc.invalidateQueries({ queryKey: milestonesKey }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "milestones" }, () => {
+        void qc.invalidateQueries({ queryKey: milestonesKey });
+        void qc.invalidateQueries({ queryKey: ["milestone-events"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "milestone_events" }, () => {
+        void qc.invalidateQueries({ queryKey: milestonesKey });
+        void qc.invalidateQueries({ queryKey: ["milestone-events"] });
+      })
       .subscribe();
     return () => { void supabase.removeChannel(channel); };
   }, [session, qc]);
