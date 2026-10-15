@@ -88,7 +88,8 @@ export function MyApplications() {
           {visibleApplications.map((a) => {
             const opportunity = allOpps.find((o) => o.id === a.oppId);
             const isPosition = opportunity?.opportunityType === "company_position" || opportunity?.type.toLowerCase() === "job";
-            const linkedOffer = offers.find((offer) => offer.application_id === a.id && offer.status === "pending");
+            const relatedOffer = offers.find((offer) => offer.application_id === a.id);
+            const linkedOffer = relatedOffer?.status === "pending" ? relatedOffer : undefined;
             const linkedContract = linkedContractsQ.data?.find((contract) => contract.application_id === a.id && contract.status === "proposed");
             const respondToOpportunity = async (accept: boolean) => {
               if (!linkedContract) return;
@@ -110,7 +111,7 @@ export function MyApplications() {
                   <Link to="/opportunities/$id" params={{ id: a.oppId }} className="font-medium hover:text-primary">{title(a.oppId)}</Link>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
                     <Pill>{isPosition ? "Position" : "Opportunity"}</Pill>
-                    <Pill tone={["accepted", "completed"].includes(a.status.toLowerCase()) ? "success" : (linkedOffer || linkedContract) ? "primary" : "muted"}>{linkedOffer ? "Offer pending" : linkedContract ? "Offer pending" : a.status.replaceAll("_", " ")}</Pill>
+                    <Pill tone={relatedOffer?.status === "accepted" || ["accepted", "completed"].includes(a.status.toLowerCase()) ? "success" : relatedOffer?.status === "pending" || linkedContract ? "primary" : "muted"}>{relatedOffer ? "Offer " + relatedOffer.status : linkedContract ? "Offer pending" : a.status.replaceAll("_", " ")}</Pill>
                   </div>
                   {a.termsVersion && a.acceptedTermsVersion !== undefined && a.termsVersion > a.acceptedTermsVersion && !["withdrawn", "rejected"].includes(a.status.toLowerCase()) && (
                     <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-warning/40 bg-warning/10 p-2 text-xs">
