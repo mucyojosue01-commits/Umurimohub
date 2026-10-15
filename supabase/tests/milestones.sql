@@ -117,7 +117,7 @@ begin
     'submission event recorded'
   );
   perform pg_temp.check(
-    pg_temp.fails(format($q$select public.approve_milestone(%L)$q$, milestone_id)),
+    pg_temp.fails(format($q$select public.approve_milestone(%L)$q$, v_milestone_id)),
     'worker cannot approve'
   );
 
@@ -126,7 +126,7 @@ begin
   perform pg_temp.check(status = 'disputed', 'business disputes submission');
 
   perform pg_temp.check(
-    pg_temp.fails(format($q$select public.approve_milestone(%L)$q$, milestone_id)),
+    pg_temp.fails(format($q$select public.approve_milestone(%L)$q$, v_milestone_id)),
     'disputed milestone cannot approve'
   );
 
