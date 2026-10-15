@@ -90,9 +90,6 @@ begin
     select * into result_row from public.payment_transactions pt where pt.contract_id = c.id and pt.status in ('pending','processing') and ((_payment_mode = 'milestone' and pt.milestone_id = _milestone_id) or (_payment_mode = 'full_contract' and pt.payment_mode = 'full_contract')) order by pt.created_at desc limit 1;
     return result_row;
   end if;
-  if exists (select 1 from public.payment_transactions pt where pt.contract_id = c.id and pt.status = 'paid' and ((_payment_mode = 'milestone' and pt.milestone_id = _milestone_id) or (_payment_mode = 'full_contract' and pt.payment_mode = 'full_contract'))) then
-    raise exception 'This milestone or contract has already been paid';
-  end if;
   insert into public.payment_transactions(contract_id,milestone_id,payment_mode,amount_rwf,payer_user_id,payer_phone,idempotency_key)
   values(c.id,_milestone_id,_payment_mode,payment_amount,auth.uid(),nullif(btrim(_payer_phone),''),_idempotency_key) returning * into result_row;
   insert into public.notifications(user_id,kind,text,link)
