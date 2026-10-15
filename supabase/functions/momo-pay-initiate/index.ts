@@ -20,15 +20,28 @@ Deno.serve(async (req) => {
   const { data: payment } = await admin.from("payment_transactions").select("*").eq("id", body.paymentTransactionId).maybeSingle();
   if (!payment) return reply({ error: "Payment request not found." }, 404);
   if (payment.payer_user_id !== user.id) return reply({ error: "Only the payer can initiate this payment." }, 403);
-  if (!["pending", "processing"].includes(payment.status)) return reply({ error: "This payment is not awaiting initiation." }, 409);
+  if (payment.status === "processing" && payment.provider_reference) {
+    return reply({ configured: true, status: "processing", alreadySubmitted: true, message: "This payment was already submitted; no second charge was sent." }, 202);
+  }
+  if (payment.status !== "pending") return reply({ error: "This payment is not awaiting initiation." }, 409);
   const subscriptionKey = Deno.env.get("MOMO_SUBSCRIPTION_KEY"), apiUser = Deno.env.get("MOMO_API_USER"), apiKey = Deno.env.get("MOMO_API_KEY");
   if (!subscriptionKey || !apiUser || !apiKey) return reply({ configured: false, status: payment.status, message: "MoMo Pay credentials are not configured; no money was charged." });
   if (!payment.payer_phone) return reply({ error: "Payer phone number is required." }, 400);
   const base = (Deno.env.get("MOMO_BASE_URL") || "https://sandbox.momodeveloper.mtn.com").replace(/\/$/, "");
   const target = Deno.env.get("MOMO_TARGET_ENVIRONMENT") || "sandbox";
+  const { data: claimed } = await admin.from("payment_transactions")
+    .update({ status: "processing", metadata: { initiation_started_at: new Date().toISOString(), provider: "MTN MoMo Collection API", target_environment: target } })
+    .eq("id", payment.id).eq("status", "pending").select("id").maybeSingle();
+  if (!claimed) {
+    const { data: latest } = await admin.from("payment_transactions").select("status,provider_reference").eq("id", payment.id).maybeSingle();
+    return reply({ configured: true, status: latest?.status || "processing", alreadySubmitted: true, message: "Payment initiation is already in progress; no second charge was sent." }, 202);
+  }
   try {
     const tokenResponse = await fetch(base + "/collection/token/", { method: "POST", headers: { Authorization: "Basic " + btoa(apiUser + ":" + apiKey), "Ocp-Apim-Subscription-Key": subscriptionKey, "X-Target-Environment": target } });
-    if (!tokenResponse.ok) return reply({ error: "MoMo Pay authentication failed. Check provider credentials and target environment." }, 502);
+    if (!tokenResponse.ok) {
+      await admin.from("payment_transactions").update({ status: "failed", failure_reason: "Provider authentication failed", failed_at: new Date().toISOString() }).eq("id", payment.id).eq("status", "processing");
+      return reply({ error: "MoMo Pay authentication failed. Check provider credentials and target environment." }, 502);
+    }
     const token = await tokenResponse.json(), reference = crypto.randomUUID();
     const phone = payment.payer_phone.replace(/[^0-9]/g, "").replace(/^0/, "250");
     const providerResponse = await fetch(base + "/collection/v1_0/requesttopay", {
@@ -42,5 +55,9 @@ Deno.serve(async (req) => {
     }
     await admin.from("payment_transactions").update({ status: "processing", provider_reference: reference, provider_transaction_id: reference, metadata: { provider: "MTN MoMo Collection API", target_environment: target } }).eq("id", payment.id).in("status", ["pending", "processing"]);
     return reply({ configured: true, status: "processing", paymentTransactionId: payment.id, message: "Approve the mobile-money prompt on the payer's phone." }, 202);
-  } catch (error) { console.error("MoMo initiation failed", error); return reply({ error: "MoMo Pay is temporarily unavailable. No payment success has been recorded." }, 502); }
+  } catch (error) {
+    console.error("MoMo initiation failed", error);
+    await admin.from("payment_transactions").update({ status: "failed", failure_reason: "Provider request could not be completed", failed_at: new Date().toISOString() }).eq("id", payment.id).eq("status", "processing");
+    return reply({ error: "MoMo Pay is temporarily unavailable. The failed request can be retried safely." }, 502);
+  }
 });
