@@ -183,3 +183,40 @@ export function PaymentsDashboard() {
   if (!session) return null;
   return <Card className="mt-4"><div className="flex items-center justify-between gap-2"><div><h2 className="font-bold">Payment overview</h2><p className="text-sm text-muted-foreground">MoMo Pay transactions across your contracts</p></div><CreditCard className="size-5 text-primary"/></div>{q.isLoading ? <p className="mt-3 text-sm text-muted-foreground">Loading payment totals…</p> : q.isError ? <div className="mt-3 flex items-center gap-2 text-sm text-destructive"><span>Payment totals unavailable.</span><Button size="sm" variant="outline" onClick={() => void q.refetch()}>Retry</Button></div> : <div className="mt-3 grid gap-3 sm:grid-cols-3"><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Paid transactions</p><p className="mt-1 text-lg font-bold">{rwf(q.data.paid)}</p></div><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Pending transactions</p><p className="mt-1 text-lg font-bold">{rwf(q.data.pending)}</p></div><div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Transactions</p><p className="mt-1 text-lg font-bold">{q.data.count}</p></div></div>}</Card>;
 }
+
+
+export function PaymentDisputesAdmin() {
+  const { user, session } = useApp();
+  const qc = useQueryClient();
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const q = useQuery({
+    queryKey: ["payment-disputes-admin", session?.user.id],
+    enabled: !!session && user?.roles.includes("admin") === true,
+    queryFn: async () => {
+      const db = supabase as any;
+      const { data, error } = await db.from("payment_disputes").select("id,contract_id,payment_transaction_id,reason,status,created_at,resolution_note").order("created_at", { ascending: false }).limit(100);
+      if (error) throw error;
+      return (data ?? []) as Array<{id:string;contract_id:string;payment_transaction_id:string;reason:string;status:string;created_at:string;resolution_note:string|null}>;
+    },
+  });
+  if (!user?.roles.includes("admin")) return null;
+  const resolve = async (id: string, decision: "resolved_payer" | "resolved_recipient" | "closed") => {
+    const note = window.prompt("Resolution note (optional):") ?? "";
+    setBusyId(id);
+    try {
+      const db = supabase as any;
+      const { error } = await db.rpc("resolve_payment_dispute", { _dispute_id: id, _decision: decision, _note: note });
+      if (error) throw error;
+      toast.success("Payment dispute resolved and both parties notified.");
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["payment-disputes-admin"] }),
+        qc.invalidateQueries({ queryKey: ["payment-disputes"] }),
+        qc.invalidateQueries({ queryKey: ["payment-transactions"] }),
+      ]);
+    } catch (e) { toast.error((e as Error).message || "Could not resolve dispute."); }
+    finally { setBusyId(null); }
+  };
+  return <Card className="mt-4"><div className="flex items-center justify-between gap-2"><div><h2 className="font-bold">Payment dispute administration</h2><p className="text-sm text-muted-foreground">Review disputes and record an auditable resolution.</p></div><ShieldAlert className="size-5 text-primary"/></div>
+    {q.isLoading ? <p className="mt-3 text-sm text-muted-foreground">Loading disputes…</p> : q.isError ? <div className="mt-3 flex items-center gap-2 text-sm text-destructive"><span>Could not load disputes.</span><Button size="sm" variant="outline" onClick={() => void q.refetch()}>Retry</Button></div> : !q.data?.length ? <p className="mt-3 text-sm text-muted-foreground">No payment disputes recorded.</p> : <ul className="mt-3 divide-y">{q.data.map(d => <li key={d.id} className="py-3"><div className="flex flex-wrap items-center justify-between gap-2"><Pill tone={d.status === "closed" || d.status.startsWith("resolved") ? "success" : "warning"}>{d.status.replaceAll("_"," ")}</Pill><span className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleString()}</span></div><p className="mt-2 text-sm">{d.reason}</p><p className="mt-1 text-xs text-muted-foreground">Contract {d.contract_id} · Payment {d.payment_transaction_id}</p>{d.resolution_note && <p className="mt-2 text-xs text-muted-foreground">Resolution: {d.resolution_note}</p>}{["open","under_review"].includes(d.status) && <div className="mt-3 flex flex-wrap gap-2"><Button size="sm" disabled={busyId === d.id} onClick={() => void resolve(d.id,"resolved_payer")}>Resolve for payer</Button><Button size="sm" variant="outline" disabled={busyId === d.id} onClick={() => void resolve(d.id,"resolved_recipient")}>Resolve for recipient</Button><Button size="sm" variant="ghost" disabled={busyId === d.id} onClick={() => void resolve(d.id,"closed")}>Close</Button></div>}</li>)}</ul>}
+  </Card>;
+}
