@@ -139,7 +139,7 @@ function Page() {
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Start</p><p className="font-medium">{contract.start_date ?? "Not set"}</p></div>
           <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">End</p><p className="font-medium">{contract.end_date ?? "Not set"}</p></div>
-          <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Payment</p><p className="font-medium">{paymentQ.isLoading ? "Loading…" : paymentQ.data ? paymentQ.data.status : contract.status === "completed" ? "Not created" : "Unlocks on completion"}</p></div>
+          <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Payment plan</p><p className="font-medium">{(contract as typeof contract & { payment_plan?: string }).payment_plan === "milestone" ? "Milestone-based" : "Full contract"}</p></div>
           <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Project process</p><p className="font-medium">Milestones → completion → payment → rating</p></div>
         </div>
       </Card>
