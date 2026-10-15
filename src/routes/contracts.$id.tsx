@@ -37,12 +37,12 @@ function Page() {
   const [review, setReview] = useState("");
   const [financeBusy, setFinanceBusy] = useState(false);
   const opportunityQ = useQuery({
-    queryKey: ["contract-opportunity", contract?.opportunity_id],
+    queryKey: ["contract-opportunity", user?.id, contract?.opportunity_id],
     enabled: !!contract?.opportunity_id,
     queryFn: async () => { const { data, error } = await supabase.from("opportunities").select("id,title").eq("id", contract!.opportunity_id).maybeSingle(); if (error) throw error; return data; },
   });
   const paymentQ = useQuery({
-    queryKey: ["contract-payment", contract?.id],
+    queryKey: ["contract-payment", user?.id, contract?.id],
     enabled: !!contract,
     queryFn: async () => {
       const { data, error } = await supabase.from("contract_payments").select("id,amount_rwf,status,payment_reference") .eq("contract_id", contract!.id).maybeSingle();
@@ -72,6 +72,16 @@ function Page() {
     }
   };
 
+  if (q.isError) {
+    return (
+      <div className="container-page py-20 text-center">
+        <p className="text-sm text-destructive">Couldn't load this contract.</p>
+        <Button className="mt-4" variant="outline" onClick={() => void q.refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
   if (!q.isLoading && !contract) throw notFound();
   if (!contract) return <div className="container-page py-20 text-center text-muted-foreground">Loading contract…</div>;
 
