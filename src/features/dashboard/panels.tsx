@@ -14,99 +14,102 @@ type Status = "submitted" | "viewed" | "shortlisted" | "rejected" | "accepted" |
 
 export function MyApplications() {
   const { applications, allOpps, session, reloadUser } = useApp();
-  const actorIds = applications.flatMap((a) => [a.businessId, a.teamId].filter(Boolean) as string[]);
-  const actorsQ = useQuery({
-    queryKey: ["my-application-actors", actorIds],
+  const qc = useQueryClient();
+  const title = (id: string) => allOpps.find((o) => o.id === id)?.title ?? "Opportunity";
+  const linkedContractsQ = useQuery({
+    queryKey: ["my-application-contracts", session?.user.id, applications.map((a) => a.id)],
     enabled: !!session && applications.length > 0,
     queryFn: async () => {
-      const [businesses, teams, profile] = await Promise.all([
-        actorIds.length ? supabase.from("businesses").select("id,name,avatar_url").in("id", actorIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
-        actorIds.length ? supabase.from("teams").select("id,name,avatar_url").in("id", actorIds) : Promise.resolve({ data: [] as { id: string; name: string; avatar_url: string | null }[] }),
-        session ? supabase.from("profiles").select("id,display_name,avatar_url").eq("id", session.user.id).maybeSingle() : Promise.resolve({ data: null }),
-      ]);
-      const worker = session ? await supabase.from("worker_profiles").select("id,user_id,name,avatar_url").eq("user_id", session.user.id).maybeSingle() : { data: null };
-      return { businesses: businesses.data ?? [], teams: teams.data ?? [], profile: profile.data ?? null, worker: worker.data ?? null };
+      const { data, error } = await supabase.from("contracts").select("application_id").in("application_id", applications.map((a) => a.id));
+      if (error) throw error;
+      return new Set((data ?? []).map((c) => c.application_id));
     },
   });
-  const title = (id: string) => allOpps.find((o) => o.id === id)?.title ?? "Opportunity";
-  const linkedContractsQ = useQuery({ queryKey: ["my-application-contracts", session?.user.id, applications.map(a=>a.id)], enabled: !!session && applications.length > 0, queryFn: async () => { const { data, error } = await supabase.from("contracts").select("application_id").in("application_id", applications.map(a=>a.id)); if (error) throw error; return new Set((data ?? []).map(c=>c.application_id)); } });
-  const visibleApplications = applications.filter(a => !(a.status.toLowerCase() === "accepted" && linkedContractsQ.data?.has(a.id)));
+  const offersQ = useQuery({
+    queryKey: ["my-employment-offers", session?.user.id],
+    enabled: !!session,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("employment_offers")
+        .select("id,business_id,opportunity_id,application_id,position_name,employment_type,details,status,created_at")
+        .eq("worker_user_id", session!.user.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      const businessIds = [...new Set((data ?? []).map((offer) => offer.business_id))];
+      const { data: businesses, error: businessError } = businessIds.length
+        ? await supabase.from("businesses").select("id,name").in("id", businessIds)
+        : { data: [], error: null };
+      if (businessError) throw businessError;
+      return (data ?? []).map((offer) => ({
+        ...offer,
+        companyName: businesses?.find((business) => business.id === offer.business_id)?.name ?? "Company",
+      }));
+    },
+  });
+  const acceptOffer = async (offerId: string) => {
+    const { error } = await supabase.rpc("respond_to_employment_offer", { _offer_id: offerId, _decision: "accepted" });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Offer accepted. You are now employed by the company.");
+    await Promise.all([
+      reloadUser(),
+      qc.invalidateQueries({ queryKey: ["my-employment-offers", session?.user.id] }),
+      qc.invalidateQueries({ queryKey: ["catalog"] }),
+    ]);
+  };
+  const visibleApplications = applications.filter((a) => !(a.status.toLowerCase() === "accepted" && linkedContractsQ.data?.has(a.id)));
+  const offers = offersQ.data ?? [];
+  const linkedOfferIds = new Set(offers.map((offer) => offer.application_id).filter(Boolean));
+  const standaloneOffers = offers.filter((offer) => !offer.application_id || !applications.some((a) => a.id === offer.application_id));
+
+  if (!session) return null;
   return (
     <Card className="mt-6">
       <h2 className="font-bold">My applications</h2>
-      {!visibleApplications.length ? (
-        <p className="mt-2 text-sm text-muted-foreground">
-          No applications yet.{" "}
-          <Link to="/opportunities" className="text-primary">
-            Browse opportunities
-          </Link>
-        </p>
+      <p className="mt-1 text-sm text-muted-foreground">Review application status and confirm offers when they are ready.</p>
+      {visibleApplications.length === 0 && standaloneOffers.length === 0 && !offersQ.isLoading ? (
+        <p className="mt-3 text-sm text-muted-foreground">No applications or employment offers yet. <Link to="/opportunities" className="text-primary">Browse opportunities</Link></p>
       ) : (
         <ul className="mt-3 divide-y">
           {visibleApplications.map((a) => {
-            const business = actorsQ.data?.businesses.find((x) => x.id === a.businessId);
-            const team = actorsQ.data?.teams.find((x) => x.id === a.teamId);
-            const displayName = business?.name ?? team?.name ?? actorsQ.data?.profile?.display_name ?? "Applicant";
-            const avatar = business?.avatar_url ?? team?.avatar_url ?? actorsQ.data?.worker?.avatar_url ?? actorsQ.data?.profile?.avatar_url;
+            const opportunity = allOpps.find((o) => o.id === a.oppId);
+            const isPosition = opportunity?.opportunityType === "company_position" || opportunity?.type.toLowerCase() === "job";
+            const linkedOffer = offers.find((offer) => offer.application_id === a.id && offer.status === "pending");
             return (
-            <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <Avatar initials={displayName.slice(0, 2).toUpperCase()} src={avatar} alt={displayName} size="md" />
-                <Link
-                  to="/opportunities/$id"
-                  params={{ id: a.oppId }}
-                  className="font-medium hover:text-primary"
-                >
-                  {title(a.oppId)}
-                </Link>
-              </div>
-              <span className="flex items-center gap-2">
-                {a.termsVersion && a.acceptedTermsVersion !== undefined && a.termsVersion > a.acceptedTermsVersion && a.status !== "Withdrawn" && a.status !== "Rejected" && (
-                  <span className="flex items-center gap-2 rounded-xl border border-warning/40 bg-warning/10 px-2 py-1 text-xs">
-                    <span>Terms changed</span>
-                    <Button size="sm" onClick={async () => { const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: a.id, _accept: true }); if (error) toast.error(error.message); else { toast.success("Updated terms accepted"); await reloadUser(); } }}>Accept</Button>
-                    <Button size="sm" variant="outline" onClick={async () => { const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: a.id, _accept: false }); if (error) toast.error(error.message); else { toast.success("Updated terms declined; application withdrawn"); await reloadUser(); } }}>Decline</Button>
-                  </span>
-                )}
-                <Pill
-                  tone={
-                    a.status === "Accepted"
-                      ? "success"
-                      : a.status === "Shortlisted"
-                        ? "primary"
-                        : "muted"
-                  }
-                >
-                  {a.status}
-                </Pill>
-                {a.acceptedAt && a.status.toLowerCase() === "accepted" && (
-                  <span className="text-xs text-muted-foreground">
-                    Accepted {new Date(a.acceptedAt).toLocaleString()}
-                  </span>
-                )}
-                {session && !["Withdrawn", "Accepted", "Rejected"].includes(a.status) && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={async () => {
-                      const { error } = await supabase
-                        .from("applications")
-                        .update({ status: "withdrawn" })
-                        .eq("id", a.id);
-                      if (error) toast.error(error.message);
-                      else {
-                        toast("Application withdrawn");
-                        await reloadUser();
-                      }
-                    }}
-                  >
-                    Withdraw
-                  </Button>
-                )}
-              </span>
-            </li>
+              <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <Link to="/opportunities/$id" params={{ id: a.oppId }} className="font-medium hover:text-primary">{title(a.oppId)}</Link>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <Pill>{isPosition ? "Position" : "Opportunity"}</Pill>
+                    <Pill tone={["accepted", "completed"].includes(a.status.toLowerCase()) ? "success" : a.status.toLowerCase() === "offer" ? "primary" : "muted"}>{a.status}</Pill>
+                  </div>
+                  {a.termsVersion && a.acceptedTermsVersion !== undefined && a.termsVersion > a.acceptedTermsVersion && !["withdrawn", "rejected"].includes(a.status.toLowerCase()) && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-warning/40 bg-warning/10 p-2 text-xs">
+                      <span>Updated terms require your confirmation</span>
+                      <Button size="sm" onClick={async () => { const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: a.id, _accept: true }); if (error) toast.error(error.message); else { toast.success("Updated terms accepted"); await reloadUser(); } }}>Accept terms</Button>
+                      <Button size="sm" variant="outline" onClick={async () => { const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: a.id, _accept: false }); if (error) toast.error(error.message); else { toast.success("Updated terms declined; application withdrawn"); await reloadUser(); } }}>Decline</Button>
+                    </div>
+                  )}
+                </div>
+                {linkedOffer && <Button size="sm" disabled={offersQ.isFetching} onClick={() => void acceptOffer(linkedOffer.id)}>Accept offer</Button>}
+              </li>
             );
           })}
+          {standaloneOffers.map((offer) => (
+            <li key={offer.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+              <div className="min-w-0">
+                <p className="font-medium">{offer.position_name} · {offer.companyName}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <Pill>Position</Pill>
+                  <Pill tone={offer.status === "accepted" ? "success" : offer.status === "pending" ? "primary" : "muted"}>{offer.status}</Pill>
+                </div>
+                {offer.details && <p className="mt-1 text-xs text-muted-foreground">{offer.details}</p>}
+              </div>
+              {offer.status === "pending" && <Button size="sm" disabled={offersQ.isFetching} onClick={() => void acceptOffer(offer.id)}>Accept offer</Button>}
+            </li>
+          ))}
         </ul>
       )}
     </Card>
@@ -396,7 +399,6 @@ export function MyOpportunities() {
                  <p className="mt-1 text-xs text-muted-foreground">Posted {new Date(o.created_at).toLocaleDateString()} · Deadline {o.deadline} · {o.status}</p>
                </div>
                <div className="flex items-center gap-2">
-                 <Button size="sm" variant="outline" asChild><Link to="/opportunities/$id" params={{ id: o.id }}>Info & applicants</Link></Button>
                  <div className="relative">
                    <Button size="icon" variant="ghost" aria-label={"Actions for " + o.title} onClick={() => setMenuId(menuId === o.id ? null : o.id)}><MoreVertical className="size-4" /></Button>
                    {menuId === o.id && <div className="absolute right-0 top-10 z-30 w-48 rounded-2xl border bg-popover p-1 shadow-xl">
