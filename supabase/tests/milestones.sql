@@ -37,6 +37,15 @@ declare
   status text;
   total bigint;
 begin
+  -- The production schema correctly enforces auth.users foreign keys. Create isolated
+  -- fixture identities so these transaction-rolled-back tests remain representative.
+  insert into auth.users (id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+  values
+    (biz, 'authenticated', 'authenticated', 'milestone-test-biz@example.test', '{}'::jsonb, '{}'::jsonb, now(), now()),
+    (worker, 'authenticated', 'authenticated', 'milestone-test-worker@example.test', '{}'::jsonb, '{}'::jsonb, now(), now()),
+    (outsider, 'authenticated', 'authenticated', 'milestone-test-outsider@example.test', '{}'::jsonb, '{}'::jsonb, now(), now())
+  on conflict do nothing;
+
   insert into businesses(id,name,sector,district,verified,rating,about,services,is_demo,created_by)
     values ('m_biz','Milestone Test Biz','Construction','Gasabo',false,0,'x','{}',false,biz);
   insert into business_members values ('m_biz', biz, 'owner');
