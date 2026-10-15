@@ -74,6 +74,13 @@ function Page() {
     });
     return () => { active = false; };
   }, [id, user?.id]);
+  const deleteOpportunity = async () => {
+    if (!window.confirm("Delete “" + o.title + "”? Existing applications will remain in history, but this opportunity will no longer be available.")) return;
+    const { error } = await supabase.from("opportunities").update({ status: "deleted" }).eq("id", o.id);
+    if (error) { toast.error("Could not delete opportunity: " + error.message); return; }
+    toast.success("Opportunity deleted from active listings.");
+    window.location.href = "/opportunities";
+  };
   const [kind, setKind] = useState<Application["kind"] | null>(null);
   const [note, setNote] = useState("");
   if (!o) throw notFound();
@@ -188,7 +195,7 @@ function Page() {
             )}
             {isPoster ? <div className="space-y-2">
               <p className="text-sm text-muted-foreground">You published this opportunity. Use the management actions to update it and review applicants.</p>
-              <Button className="w-full" asChild><Link to="/opportunities/$id/edit" params={{id:o.id}}>Edit or close opportunity</Link></Button>
+              <Button className="w-full" asChild><Link to="/opportunities/$id/edit" params={{id:o.id}}>Edit or close opportunity</Link></Button><Button className="w-full" variant="destructive" onClick={() => void deleteOpportunity()}>Delete opportunity</Button>
             </div> : <div className="space-y-2">
               {o.status === "open" && audience.includes("individual") && !applied.some((a) => a.kind === "Individual" || a.kind === "Business") && (
                 <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>
