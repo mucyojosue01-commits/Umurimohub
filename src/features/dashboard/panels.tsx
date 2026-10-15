@@ -61,7 +61,6 @@ export function MyApplications() {
   };
   const visibleApplications = applications.filter((a) => !(a.status.toLowerCase() === "accepted" && linkedContractsQ.data?.has(a.id)));
   const offers = offersQ.data ?? [];
-  const linkedOfferIds = new Set(offers.map((offer) => offer.application_id).filter(Boolean));
   const standaloneOffers = offers.filter((offer) => !offer.application_id || !applications.some((a) => a.id === offer.application_id));
 
   if (!session) return null;
