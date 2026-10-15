@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -178,12 +179,14 @@ export function ContractsPanel() {
       ) : (
         <ul className="mt-3 divide-y">
           {q.data.map((contract) => (
-            <li key={contract.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
-              <div>
-                <p className="font-medium">{contract.title}</p>
-                <p className="text-sm text-muted-foreground">{rwf(contract.amount_rwf)} · {contract.team_id ? "Team" : "Individual"}</p>
-              </div>
-              <Pill tone={tone(contract.status)}>{contract.status}</Pill>
+            <li key={contract.id} className="py-3">
+              <Link to="/contracts/$id" params={{ id: contract.id }} className="flex flex-wrap items-center justify-between gap-2 rounded-xl -mx-2 px-2 py-2 transition hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label={"Manage contract: " + contract.title}>
+                <div>
+                  <p className="font-medium">{contract.title}</p>
+                  <p className="text-sm text-muted-foreground">{rwf(contract.amount_rwf)} · {contract.team_id ? "Team" : "Individual"}</p>
+                </div>
+                <Pill tone={tone(contract.status)}>{contract.status}</Pill>
+              </Link>
             </li>
           ))}
         </ul>
