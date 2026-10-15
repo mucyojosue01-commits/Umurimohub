@@ -66,8 +66,8 @@ function Page() {
 
   const profileIds = useMemo(() => [...new Set((applicationsQ.data ?? []).map((a) => a.applicant_user_id))], [applicationsQ.data]);
   const profilesQ = useQuery({
-    queryKey: ["training-applicant-profiles", profileIds.join(",")],
-    enabled: profileIds.length > 0,
+    queryKey: ["training-applicant-profiles", session?.user.id, profileIds.join(",")],
+    enabled: !!session && profileIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase.from("profiles").select("id,display_name,avatar_url").in("id", profileIds);
       if (error) throw error;
