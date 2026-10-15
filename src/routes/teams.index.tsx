@@ -84,7 +84,7 @@ function Page() {
       <PageHeader
         eyebrow="Discover"
         title="Teams"
-        desc="Find proven teams ranked by trust and ratings, with your district used as a secondary ranking signal."
+        desc="Find proven teams ranked by trust first, with teams in your district prioritized within similar trust scores and ratings used after proximity."
         actions={user ? <Button asChild><Link to="/register" search={{ create: "team" }}>+ Create team</Link></Button> : undefined}
       />
       <Card className="mt-6 space-y-4 p-4 md:p-5">
