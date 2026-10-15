@@ -65,7 +65,7 @@ function Page() {
       mode: "On-site",
       sector: "Construction",
       district: "",
-      businessId: routeSearch.businessId ?? "",
+      businessId: routeSearch.businessId ?? user?.businessIds[0] ?? "",
     },
   });
   const onSubmit = async (f: F) => {
