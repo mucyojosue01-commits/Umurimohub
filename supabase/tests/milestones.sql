@@ -32,7 +32,7 @@ declare
   outsider uuid := '00000000-0000-4000-a000-0000000000d1';
   app_id uuid;
   cid uuid;
-  milestone_id uuid;
+  v_milestone_id uuid;
   milestone_id_2 uuid;
   status text;
   total bigint;
@@ -64,10 +64,10 @@ begin
   perform pg_temp.check(status = 'active', 'contract is active');
 
   perform pg_temp.as_user(biz);
-  milestone_id := public.create_milestone(
+  v_milestone_id := public.create_milestone(
     cid, 1, 'Foundation', 'Complete the foundation and handover.', 400000, current_date + 7
   );
-  perform pg_temp.check((select ms.status = 'pending' from public.milestones ms where ms.id = milestone_id), 'created pending');
+  perform pg_temp.check((select ms.status = 'pending' from public.milestones ms where ms.id = v_milestone_id), 'created pending');
 
   milestone_id_2 := public.create_milestone(
     cid, 2, 'Walls', 'Complete the walls and handover.', 300000, current_date + 14
@@ -104,16 +104,16 @@ begin
   perform pg_temp.check(
     pg_temp.fails(format(
       $q$select public.submit_milestone(%L,'x')$q$,
-      milestone_id
+      v_milestone_id
     )),
     'outsider cannot submit'
   );
 
   perform pg_temp.as_user(worker);
-  status := public.submit_milestone(milestone_id, 'Foundation completed and ready for review.');
+  status := public.submit_milestone(v_milestone_id, 'Foundation completed and ready for review.');
   perform pg_temp.check(status = 'submitted', 'worker submits pending milestone');
   perform pg_temp.check(
-    (select count(*) from milestone_events where milestone_events.milestone_id = milestone_id and event_type = 'submitted') = 1,
+    (select count(*) from milestone_events where milestone_events.milestone_id = v_milestone_id and event_type = 'submitted') = 1,
     'submission event recorded'
   );
   perform pg_temp.check(
@@ -122,7 +122,7 @@ begin
   );
 
   perform pg_temp.as_user(biz);
-  status := public.dispute_milestone(milestone_id, 'Please correct the drainage detail.');
+  status := public.dispute_milestone(v_milestone_id, 'Please correct the drainage detail.');
   perform pg_temp.check(status = 'disputed', 'business disputes submission');
 
   perform pg_temp.check(
@@ -131,35 +131,35 @@ begin
   );
 
   perform pg_temp.as_user(worker);
-  status := public.submit_milestone(milestone_id, 'Drainage detail corrected and resubmitted.');
+  status := public.submit_milestone(v_milestone_id, 'Drainage detail corrected and resubmitted.');
   perform pg_temp.check(status = 'submitted', 'worker resubmits disputed work');
 
   perform pg_temp.as_user(biz);
-  status := public.approve_milestone(milestone_id);
+  status := public.approve_milestone(v_milestone_id);
   perform pg_temp.check(status = 'approved', 'business approves submission');
   perform pg_temp.check(
-    (select approved_at is not null from milestones where id = milestone_id),
+    (select approved_at is not null from public.milestones ms where ms.id = v_milestone_id),
     'approval timestamp recorded'
   );
 
   perform pg_temp.check(
     pg_temp.fails(format(
       $q$select public.submit_milestone(%L,'again')$q$,
-      milestone_id
+      v_milestone_id
     )),
     'approved milestone cannot resubmit'
   );
   perform pg_temp.check(
     pg_temp.fails(format(
       $q$update milestones set amount_rwf=1 where id=%L$q$,
-      milestone_id
+      v_milestone_id
     )),
     'approved milestone cannot be edited'
   );
   perform pg_temp.check(
     pg_temp.fails(format(
       $q$delete from milestones where id=%L$q$,
-      milestone_id
+      v_milestone_id
     )),
     'approved milestone cannot be deleted'
   );
@@ -174,14 +174,14 @@ begin
   perform pg_temp.check(
     pg_temp.fails(format(
       $q$update milestone_events set note='tampered' where milestone_id=%L$q$,
-      milestone_id
+      v_milestone_id
     )),
     'milestone events immutable'
   );
   perform pg_temp.check(
     pg_temp.fails(format(
       $q$delete from milestone_events where milestone_id=%L$q$,
-      milestone_id
+      v_milestone_id
     )),
     'milestone events undeletable'
   );
