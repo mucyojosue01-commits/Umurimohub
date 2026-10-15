@@ -110,155 +110,36 @@ export function CreateContractForm({
   );
 }
 
-export function EditContractForm({ contract, onDone }: { contract: Contract; onDone: () => void }) {
-  const qc = useQueryClient();
-  const [f, setF] = useState({
-    title: contract.title,
-    scope: contract.scope,
-    amount: String(contract.amount_rwf),
-    start: contract.start_date ?? "",
-    end: contract.end_date ?? "",
-    terms: contract.terms ?? "",
-  });
-  const [busy, setBusy] = useState(false);
-  const submit = async () => {
-    const p = {
-      title: f.title,
-      scope: f.scope,
-      amountRwf: Number(f.amount),
-      ...(f.start ? { startDate: f.start } : {}),
-      ...(f.end ? { endDate: f.end } : {}),
-      ...(f.terms ? { terms: f.terms } : {}),
-    };
-    const err = validateProposal({ applicationId: contract.application_id, ...p });
-    if (err) { toast.error(err); return; }
-    setBusy(true);
-    try {
-      await updateContract(contract.id, p);
-      toast.success("Contract proposal updated");
-      await qc.invalidateQueries({ queryKey: contractsKey });
-      onDone();
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <div className="mt-3 grid gap-2 rounded-2xl border bg-muted/30 p-4">
-      <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="Contract title" />
-      <Textarea value={f.scope} onChange={(e) => setF({ ...f, scope: e.target.value })} placeholder="Scope of work" />
-      <Input type="number" min={1} step={1} value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} placeholder="Amount (RWF)" />
-      <div className="grid grid-cols-2 gap-2">
-        <Input type="date" value={f.start} onChange={(e) => setF({ ...f, start: e.target.value })} aria-label="Start date" />
-        <Input type="date" value={f.end} onChange={(e) => setF({ ...f, end: e.target.value })} aria-label="End date" />
-      </div>
-      <Textarea value={f.terms} onChange={(e) => setF({ ...f, terms: e.target.value })} placeholder="Terms" />
-      <div className="flex gap-2">
-        <Button size="sm" disabled={busy} onClick={submit}>{busy ? "Saving…" : "Save contract"}</Button>
-        <Button size="sm" variant="ghost" onClick={onDone}>Cancel</Button>
-      </div>
-    </div>
-  );
-}
-
-const tone = (s: string) =>
+export const tone = (s: string) =>
   (s === "active" ? "success" : s === "proposed" ? "primary" : "muted") as
     "success" | "primary" | "muted";
 
 export function ContractsPanel() {
   const { user } = useApp();
-  const qc = useQueryClient();
   const q = useContracts();
-  const [editingContract, setEditingContract] = useState<Contract | null>(null);
   if (!user) return null;
-  const act = async (fn: () => Promise<unknown>, msg: string) => {
-    try {
-      await fn();
-      toast.success(msg);
-      void qc.invalidateQueries({ queryKey: contractsKey });
-    } catch (e) {
-      toast.error((e as Error).message);
-    }
-  };
   return (
-    <>
     <Card className="mt-6">
-      <h2 className="font-bold">Contracts</h2>
+      <h2 className="font-bold">Contracts & projects</h2>
       {q.isLoading ? (
         <p className="mt-2 text-sm text-muted-foreground">Loading contracts…</p>
       ) : q.isError ? (
         <p className="mt-2 text-sm text-destructive">Couldn't load contracts. Try again shortly.</p>
       ) : !q.data?.length ? (
-        <p className="mt-2 text-sm text-muted-foreground">
-          No contracts yet. Contracts appear once an accepted application gets a proposal.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">No contracts yet. Contracts appear once an accepted application gets a proposal.</p>
       ) : (
         <ul className="mt-3 divide-y">
-          {q.data.map((c) => {
-            const isBiz = user.businessIds.includes(c.business_id);
-            const isParty =
-              (c.worker_id && c.worker_id === user.workerId) ||
-              (c.team_id && user.leadTeamIds.includes(c.team_id));
-            return (
-              <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
-                <div>
-                  <p className="font-medium">{c.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {rwf(c.amount_rwf)} · {c.team_id ? "Team" : "Individual"}
-                  </p>
-                </div>
-                <span className="flex flex-wrap items-center gap-2">
-                  <Pill tone={tone(c.status)}>{c.status}</Pill>
-                  {isParty && c.status === "proposed" && (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          act(() => respondContract(c.id, true), "Contract accepted — now active")
-                        }
-                      >
-                        Accept
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => act(() => respondContract(c.id, false), "Contract declined")}
-                      >
-                        Decline
-                      </Button>
-                    </>
-                  )}
-                  {(isBiz || isParty) && c.status === "cancelled" && (
-                    <Button
-                      size="sm"
-                      onClick={() => act(() => reacceptCancelledContract(c.id), "Cancelled contract re-accepted and active")}
-                    >
-                      Re-accept
-                    </Button>
-                  )}
-                  {isBiz && (c.status === "proposed" || c.status === "active") && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => act(() => cancelContract(c.id), "Contract cancelled")}
-                    >
-                      Cancel
-                    </Button>
-                  )}
-                </span>
-              </li>
-            );
-          })}
+          {q.data.map((contract) => (
+            <li key={contract.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+              <div>
+                <p className="font-medium">{contract.title}</p>
+                <p className="text-sm text-muted-foreground">{rwf(contract.amount_rwf)} · {contract.team_id ? "Team" : "Individual"}</p>
+              </div>
+              <Pill tone={tone(contract.status)}>{contract.status}</Pill>
+            </li>
+          ))}
         </ul>
       )}
     </Card>
-    <Dialog open={!!editingContract} onOpenChange={(open)=>{if(!open)setEditingContract(null)}}>
-      <DialogContent className="max-w-2xl rounded-3xl">
-        <DialogHeader><DialogTitle>Edit contract proposal</DialogTitle></DialogHeader>
-        {editingContract && <EditContractForm contract={editingContract} onDone={() => setEditingContract(null)} />}
-      </DialogContent>
-    </Dialog>
-    </>
   );
 }
