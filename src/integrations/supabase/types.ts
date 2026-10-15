@@ -1117,7 +1117,7 @@ export type Database = {
           _offer_details?: string
           _status: string
         }
-        Returns: string
+        Returns: Database["public"]["Tables"]["applications"]["Row"]
       }
       worker_network_count: { Args: { _worker_id: string }; Returns: number }
     }
