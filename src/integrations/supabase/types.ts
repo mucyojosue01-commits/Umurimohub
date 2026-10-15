@@ -1035,6 +1035,10 @@ export type Database = {
         Args: { _bid: string; _roles?: string[] }
         Returns: boolean
       }
+      manage_company_employment: {
+        Args: { _action: string; _employment_id: string; _position_name?: string | null }
+        Returns: Database["public"]["Tables"]["company_employments"]["Row"]
+      }
       is_contract_party: { Args: { _cid: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
       is_team_lead: { Args: { _tid: string }; Returns: boolean }
