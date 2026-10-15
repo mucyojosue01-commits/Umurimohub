@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
 import { MyApplications, MyOpportunities, TeamInvites } from "@/features/dashboard/panels";
 import { ContractsPanel, useContracts } from "@/features/contracts/panels";
+import { PaymentsDashboard } from "@/features/payments/panel";
 import { Avatar, Card, OpportunityCard, PageHeader, Stat } from "@/features/ui/kit";
 import { useCatalog } from "@/features/data/catalog";
 import { toast } from "sonner";
@@ -53,11 +54,12 @@ function Page() {
       <div className="grid gap-4 md:grid-cols-3">
         <Stat icon={Briefcase} label="Applications" value={String(applications.length)} />
         <Stat icon={CheckCircle2} label="Contracts & projects" value={String(contractsQuery.data?.length ?? 0)} />
-        <Stat icon={Wallet} label="Payment status" value="Not enabled yet" hint="Payments come after project verification." />
+        <Stat icon={Wallet} label="Payment status" value="MoMo Pay" hint="Milestone and full-contract payments" />
       </div>
       <TeamInvites />
       <MyApplications />
       <MyOpportunities />
+      <PaymentsDashboard />
       <ContractsPanel />
             <Card className="mt-6">
         <div className="flex items-center justify-between gap-3">
