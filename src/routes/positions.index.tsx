@@ -17,7 +17,7 @@ export const Route = createFileRoute("/positions/")({
 function Page() {
   const { user } = useApp();
   const { opportunities, loading, error } = useCatalog();
-  const positions = opportunities.filter((o) => o.type.toLowerCase() === "job" && o.status === "open" && new Date(o.deadline + "T23:59:59") >= new Date());
+  const positions = opportunities.filter((o) => o.opportunityType === "company_position" && o.type.toLowerCase() === "job" && o.status === "open" && new Date(o.deadline + "T23:59:59") >= new Date());
   return <div className="container-page py-10">
     <PageHeader eyebrow="Jobs" title="Open positions" desc="Explore employment listings, review each full position profile, and apply before the deadline."
       actions={<Button asChild><Link to="/positions/new"><BriefcaseBusiness className="mr-2 size-4"/>Post position</Link></Button>} />

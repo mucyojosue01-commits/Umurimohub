@@ -203,6 +203,7 @@ export type Database = {
       }
       company_employments: {
         Row: {
+          opportunity_id: string | null
           application_id: string | null
           business_id: string
           created_at: string
@@ -219,6 +220,7 @@ export type Database = {
           worker_user_id: string
         }
         Insert: {
+          opportunity_id?: string | null
           application_id?: string | null
           business_id: string
           created_at?: string
@@ -468,6 +470,7 @@ export type Database = {
       }
       employment_offers: {
         Row: {
+          opportunity_id: string | null
           application_id: string | null
           business_id: string
           created_at: string
@@ -483,6 +486,7 @@ export type Database = {
           worker_user_id: string
         }
         Insert: {
+          opportunity_id?: string | null
           application_id?: string | null
           business_id: string
           created_at?: string
@@ -1036,7 +1040,7 @@ export type Database = {
         Returns: boolean
       }
       manage_company_employment: {
-        Args: { _action: string; _employment_id: string; _position_name?: string | null }
+        Args: { _action: string; _employment_id: string; _position_name?: string | null; _republish?: boolean; _employment_type?: string | null }
         Returns: Database["public"]["Tables"]["company_employments"]["Row"]
       }
       is_contract_party: { Args: { _cid: string }; Returns: boolean }
@@ -1113,7 +1117,7 @@ export type Database = {
           _offer_details?: string
           _status: string
         }
-        Returns: string
+        Returns: Database["public"]["Tables"]["applications"]["Row"]
       }
       worker_network_count: { Args: { _worker_id: string }; Returns: number }
     }

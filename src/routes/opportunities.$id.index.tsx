@@ -74,10 +74,18 @@ function Page() {
     });
     return () => { active = false; };
   }, [id, user?.id]);
+  const deleteOpportunity = async () => {
+    if (!window.confirm("Delete “" + o.title + "”? Existing applications will remain in history, but this opportunity will no longer be available.")) return;
+    const { error } = await supabase.from("opportunities").update({ status: "deleted" }).eq("id", o.id);
+    if (error) { toast.error("Could not delete opportunity: " + error.message); return; }
+    toast.success("Opportunity deleted from active listings.");
+    window.location.href = "/opportunities";
+  };
   const [kind, setKind] = useState<Application["kind"] | null>(null);
   const [note, setNote] = useState("");
   if (!o) throw notFound();
   const b = getBusiness(o.businessId);
+  const isPoster = !!user && (o.createdBy === user.id || (!!o.businessId && user.businessIds.includes(o.businessId)));
   const author = o.authorType === "user" ? workers.find((w) => workerUserIds[w.id] === o.createdBy) : undefined;
   const applied = applications.filter((a) => a.oppId === o.id);
   const audience = o.eligibleActorTypes ?? ["individual", "team", "business"];
@@ -99,7 +107,7 @@ function Page() {
               </Pill>
             )}
           </div>
-          <h1 className="mt-3 text-3xl font-extrabold md:text-4xl">{o.title}</h1><p className="mt-2 text-sm font-medium text-muted-foreground">{applicationCount} applicant{applicationCount === 1 ? "" : "s"} so far</p>{user && (o.createdBy === user.id || user.businessIds.includes(o.businessId)) && <Button className="mt-3" variant="outline" asChild><Link to="/opportunities/$id/edit" params={{id:o.id}}>Edit opportunity</Link></Button>}
+          <h1 className="mt-3 text-3xl font-extrabold md:text-4xl">{o.title}</h1><p className="mt-2 text-sm font-medium text-muted-foreground">{applicationCount} applicant{applicationCount === 1 ? "" : "s"} so far</p>{isPoster && <div className="mt-3 flex flex-wrap gap-2"><Button variant="outline" asChild><Link to="/opportunities/$id/edit" params={{id:o.id}}>Edit opportunity</Link></Button></div>}
           {o.status !== "open" && <div className="mt-4 rounded-xl border border-warning/40 bg-warning/10 p-4"><p className="font-semibold">{o.status === "closed" ? "Recently closed" : "Ended"}</p><p className="mt-1 text-sm text-muted-foreground">This opportunity is no longer accepting applications or referrals. You can still review its details and history.</p></div>}
           {termsNeedAcceptance && termsApplication && <div className="mt-4 rounded-xl border border-warning/40 bg-warning/10 p-4"><p className="font-semibold">This opportunity has updated terms</p><p className="mt-1 text-sm text-muted-foreground">Review the latest details. You must accept and stay to continue your application, or withdraw.</p><div className="mt-3 flex flex-wrap gap-2"><Button disabled={busy} onClick={async () => { setBusy(true); const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: termsApplication, _accept: true }); setBusy(false); if (error) toast.error(error.message); else { setTermsNeedAcceptance(false); toast.success("Updated terms accepted. You can continue your application."); } }}>Accept and stay</Button><Button variant="outline" disabled={busy} onClick={async () => { setBusy(true); const { error } = await supabase.rpc("respond_to_opportunity_change", { _application_id: termsApplication, _accept: false }); setBusy(false); if (error) toast.error(error.message); else { setTermsNeedAcceptance(false); toast.success("Application withdrawn because you declined the updated terms."); } }}>Withdraw</Button></div></div>}
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"><Avatar initials={(author?.initials ?? b?.name ?? "U").slice(0, 2).toUpperCase()} src={author?.avatarUrl ?? b?.avatarUrl} alt={author?.name ?? b?.name ?? "Publisher"} size="sm" /><span>{author?.name ?? b?.name ?? "UmurimoHub member"}</span>{b?.verified && <BadgeCheck className="size-4 text-primary" />}{b && <span>· rated {b.rating}</span>}</div>
@@ -185,7 +193,10 @@ function Page() {
                 <Button variant="outline" className="w-full" asChild><Link to="/dashboard">Track applications</Link></Button>
               </div>
             )}
-            <div className="space-y-2">
+            {isPoster ? <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">You published this opportunity. Use the management actions to update it and review applicants.</p>
+              <Button className="w-full" asChild><Link to="/opportunities/$id/edit" params={{id:o.id}}>Edit or close opportunity</Link></Button><Button className="w-full" variant="destructive" onClick={() => void deleteOpportunity()}>Delete opportunity</Button>
+            </div> : <div className="space-y-2">
               {o.status === "open" && audience.includes("individual") && !applied.some((a) => a.kind === "Individual" || a.kind === "Business") && (
                 <Button className="w-full" size="lg" onClick={() => setKind("Individual")}>Apply as individual</Button>
               )}
@@ -198,12 +209,12 @@ function Page() {
               {!audience.includes("individual") && !audience.includes("team") && !audience.includes("business") && <p className="text-sm text-muted-foreground">This opportunity has no eligible applicant type configured.</p>}
               {o.status === "open" && <Button className="w-full" variant="outline" onClick={() => setKind("Referral")}>Refer someone you trust</Button>}
               {!user && <p className="pt-1 text-center text-xs text-muted-foreground"><Link to="/login" className="text-primary">Sign in</Link> to apply for this opportunity.</p>}
-            </div>
+            </div>}
           </Card>
         </aside>
       </div>
 
-      {user && (o.createdBy === user.id || user.businessIds.includes(o.businessId)) && <div className="mt-10"><IncomingApplications opportunityId={id} /></div>}
+      {isPoster && <div className="mt-10"><IncomingApplications opportunityId={id} /></div>}
 
       <Dialog open={!!kind} onOpenChange={(v) => !v && setKind(null)}>
         <DialogContent className="rounded-3xl">

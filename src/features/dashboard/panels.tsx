@@ -345,6 +345,7 @@ export function MyOpportunities() {
       request = businessIds.length
         ? request.or("created_by.eq." + session.user.id + ",business_id.in.(" + businessIds.join(",") + ")")
         : request.eq("created_by", session.user.id);
+      request = request.neq("opportunity_type", "company_position");
       const { data, error } = await request;
       if (error) throw error;
       return data ?? [];
