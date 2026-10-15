@@ -103,7 +103,7 @@ function Page() {
     if (!window.confirm("Delete this unaccepted contract proposal? It will be hidden from contract lists; application and work-history records will be preserved.")) return;
     try {
       await deleteContract(contract.id);
-      toast.success("Contract deleted");
+      toast.success("Contract proposal hidden; its history was preserved.");
       window.location.href = "/dashboard";
     } catch (e) {
       toast.error((e as Error).message);
