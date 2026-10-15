@@ -161,10 +161,10 @@ export function IncomingApplications({ opportunityId }: { opportunityId?: string
   return (
     <Card className="mt-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold">Applicants to your opportunities</h2>
-        <Button size="sm" asChild>
+        <h2 className="font-bold">{opportunityId ? "Applicants for this opportunity" : "Applicants to your opportunities"}</h2>
+        {!opportunityId && <Button size="sm" asChild>
           <Link to="/opportunities/new">Post new</Link>
-        </Button>
+        </Button>}
       </div>
       {q.isLoading ? (
         <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
