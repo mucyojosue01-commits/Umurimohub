@@ -1,0 +1,2 @@
+create unique index if not exists payment_transactions_one_live_or_paid_milestone on public.payment_transactions(milestone_id) where milestone_id is not null and status in ('pending','processing','paid');
+create unique index if not exists payment_transactions_one_live_or_paid_contract on public.payment_transactions(contract_id) where payment_mode = 'full_contract' and status in ('pending','processing','paid');
