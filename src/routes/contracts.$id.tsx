@@ -100,7 +100,7 @@ function Page() {
 
 
   const remove = async () => {
-    if (!window.confirm("Delete this proposed contract?")) return;
+    if (!window.confirm("Delete this unaccepted contract proposal? It will be hidden from contract lists; application and work-history records will be preserved.")) return;
     try {
       await deleteContract(contract.id);
       toast.success("Contract deleted");
