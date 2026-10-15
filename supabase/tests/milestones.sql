@@ -67,7 +67,7 @@ begin
   milestone_id := public.create_milestone(
     cid, 1, 'Foundation', 'Complete the foundation and handover.', 400000, current_date + 7
   );
-  perform pg_temp.check((select status = 'pending' from milestones where id = milestone_id), 'created pending');
+  perform pg_temp.check((select ms.status = 'pending' from public.milestones ms where ms.id = milestone_id), 'created pending');
 
   milestone_id_2 := public.create_milestone(
     cid, 2, 'Walls', 'Complete the walls and handover.', 300000, current_date + 14
