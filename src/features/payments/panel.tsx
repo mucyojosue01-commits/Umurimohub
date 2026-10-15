@@ -33,7 +33,7 @@ export function PaymentPanel({
   const [busy, setBusy] = useState(false);
   const [disputeFor, setDisputeFor] = useState<string | null>(null);
   const [reason, setReason] = useState("");
-  const [mode, setMode] = useState<"milestone" | "full_contract">(paymentPlan === "milestone" ? "milestone" : "full_contract");
+  const mode: "milestone" | "full_contract" = paymentPlan === "milestone" ? "milestone" : "full_contract";
   const [milestoneId, setMilestoneId] = useState("");
   const [milestones, setMilestones] = useState<Array<{id:string; title:string; amount_rwf:number; status:string}>>([]);
 
@@ -132,7 +132,7 @@ export function PaymentPanel({
       </div>
       <div className="mt-4 rounded-xl border p-4">
         <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">Agreed payment plan</h3><Pill tone="primary">{paymentPlan === "milestone" ? "Milestone-based" : "Full contract"}</Pill></div>
-        {isBusiness && ["active","completed"].includes(contractStatus) && (
+        {isBusiness && ((paymentPlan === "milestone" && ["active","completed"].includes(contractStatus)) || (paymentPlan === "full_contract" && contractStatus === "completed")) && (
           <div className="mt-3 space-y-3">
             {paymentPlan === "milestone" && (
               <div className="space-y-1"><label className="text-sm font-medium" htmlFor={"pay-milestone-"+contractId}>Approved milestone</label><select id={"pay-milestone-"+contractId} className="w-full rounded-xl border bg-background px-3 py-2 text-sm" value={milestoneId} onChange={e => setMilestoneId(e.target.value)}><option value="">Select milestone</option>{(milestonesQ.data ?? milestones).map(m => <option key={m.id} value={m.id}>{m.title} — {rwf(m.amount_rwf)}</option>)}</select>{milestonesQ.isError && <p className="text-xs text-destructive">Could not load milestones. Retry above.</p>}</div>
@@ -142,7 +142,7 @@ export function PaymentPanel({
             <p className="text-xs text-muted-foreground">A request is not proof of payment. Status changes to paid only after a verified provider confirmation.</p>
           </div>
         )}
-        {isBusiness && contractStatus === "completed" && paymentPlan === "full_contract" && <p className="mt-2 text-xs text-muted-foreground">Full-contract payment is available after completion is confirmed.</p>}
+        {isBusiness && contractStatus !== "completed" && paymentPlan === "full_contract" && <p className="mt-2 text-xs text-muted-foreground">Full-contract payment becomes available after completion is confirmed.</p>}
         {!isBusiness && <p className="mt-2 text-sm text-muted-foreground">The hiring business manages payment initiation. You can review the transaction status and open a dispute below.</p>}
       </div>
       <div className="mt-4">
