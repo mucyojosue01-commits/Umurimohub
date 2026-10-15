@@ -1,6 +1,7 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { BusinessDirectoryPage } from "./business";
 
-/** Keep legacy Bizz directory URLs working while the canonical directory uses /business. */
 export const Route = createFileRoute("/bizz")({
-  beforeLoad: () => { throw redirect({ to: "/business", replace: true }); },
+  head: () => ({ meta: [{ title: "Business directory — UmurimoHub" }, { name: "description", content: "Find businesses, employers and cooperatives on UmurimoHub." }] }),
+  component: BusinessDirectoryPage,
 });
