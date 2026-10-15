@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { rwf } from "@/features/data/demo";
 import { supabase } from "@/integrations/supabase/client";
 import { Star, CreditCard } from "lucide-react";
+import { PaymentPanel } from "@/features/payments/panel";
 
 export const Route = createFileRoute("/contracts/$id")({
   head: () => ({ meta: [{ title: "Contract — UmurimoHub" }] }),
@@ -178,36 +179,24 @@ function Page() {
 
       <CompletionPanel contracts={[contract]} />
 
+      <PaymentPanel
+        contractId={contract.id}
+        amountRwf={contract.amount_rwf}
+        paymentPlan={(contract as typeof contract & { payment_plan?: string }).payment_plan ?? "full_contract"}
+        contractStatus={contract.status}
+        isBusiness={isBusiness}
+        isRecipient={isParty}
+      />
+
       <Card className="mt-6">
-        <div className="flex items-center gap-2"><CreditCard className="size-5 text-primary" /><div><h2 className="font-bold">Payment & rating</h2><p className="text-sm text-muted-foreground">Record payment after completion and leave a verified rating for the party you worked with.</p></div></div>
-        {contract.status !== "completed" ? (
-          <p className="mt-3 text-sm text-muted-foreground">Payment and rating unlock after the project is completed.</p>
+        <div className="flex items-center gap-2"><Star className="size-5 text-primary" /><div><h2 className="font-bold">Your rating</h2><p className="text-sm text-muted-foreground">Rate the contracting party after project completion.</p></div></div>
+        {contract.status !== "completed" ? <p className="mt-3 text-sm text-muted-foreground">Rating unlocks after the project is completed.</p> : ratingQ.data ? (
+          <div className="mt-3 flex items-center gap-2"><div className="flex">{[1,2,3,4,5].map((n) => <Star key={n} className={"size-5 " + (n <= ratingQ.data!.score ? "fill-accent text-accent" : "text-muted-foreground")} />)}</div><span className="text-sm">{ratingQ.data.score}/5</span></div>
         ) : (
-          <div className="mt-4 space-y-5">
-            <div className="rounded-xl border p-4">
-              <h3 className="font-semibold">Project payment</h3>
-              {paymentQ.isLoading ? <p className="mt-2 text-sm text-muted-foreground">Loading payment…</p> : paymentQ.isError ? <div className="mt-2 flex items-center gap-2 text-sm text-destructive">Could not load payment. <Button size="sm" variant="outline" onClick={() => void paymentQ.refetch()}>Retry</Button></div> : !paymentQ.data ? (
-                isBusiness ? <Button className="mt-3" disabled={financeBusy} onClick={() => void doFinance(async () => { await createContractPayment(contract.id); }, "Payment obligation created")}>Create payment obligation</Button> : <p className="mt-2 text-sm text-muted-foreground">The hiring business has not created the payment obligation yet.</p>
-              ) : (
-                <div className="mt-3 rounded-xl bg-muted/30 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2"><span className="font-medium">{rwf(paymentQ.data.amount_rwf)}</span><Pill tone={paymentQ.data.status === "confirmed" ? "success" : paymentQ.data.status === "paid" ? "primary" : "muted"}>{paymentQ.data.status}</Pill></div>
-                  {paymentQ.data.payment_reference && <p className="mt-1 text-xs text-muted-foreground">Reference: {paymentQ.data.payment_reference}</p>}
-                  {isBusiness && paymentQ.data.status === "pending" && <Button size="sm" className="mt-3" disabled={financeBusy} onClick={() => { const ref = window.prompt("Payment reference (optional):") ?? ""; void doFinance(() => markContractPaymentPaid(paymentQ.data!.id, ref), "Payment marked paid"); }}>Mark paid</Button>}
-                  {isParty && paymentQ.data.status === "paid" && <Button size="sm" className="mt-3" disabled={financeBusy} onClick={() => void doFinance(() => confirmContractPaymentReceived(paymentQ.data!.id), "Payment confirmed received")}>Confirm payment received</Button>}
-                  {paymentQ.data.status === "confirmed" && <p className="mt-2 text-xs text-success">Payment has been confirmed received.</p>}
-                </div>
-              )}
-            </div>
-            <div className="rounded-xl border p-4">
-              <h3 className="font-semibold">Your rating</h3>
-              {ratingQ.data ? <div className="mt-2 flex items-center gap-2"><div className="flex">{[1,2,3,4,5].map((n) => <Star key={n} className={"size-5 " + (n <= ratingQ.data.score ? "fill-accent text-accent" : "text-muted-foreground")} />)}</div><span className="text-sm">{ratingQ.data.score}/5</span></div> : (
-                <div className="mt-3 space-y-3">
-                  <div className="flex gap-1" aria-label="Choose rating">{[1,2,3,4,5].map((n) => <button key={n} type="button" aria-label={n + " stars"} onClick={() => setRating(n)}><Star className={"size-6 " + (n <= rating ? "fill-accent text-accent" : "text-muted-foreground")} /></button>)}</div>
-                  <textarea rows={3} className="w-full rounded-xl border bg-card p-3 text-sm" value={review} onChange={(e) => setReview(e.target.value)} placeholder="Describe the work relationship and outcome (optional)" />
-                  <Button disabled={financeBusy || rating < 1} onClick={() => void doFinance(() => rateCompletedContract(contract.id, rating, review), "Rating saved and trust updated")}>Submit rating</Button>
-                </div>
-              )}
-            </div>
+          <div className="mt-3 space-y-3">
+            <div className="flex gap-1" aria-label="Choose rating">{[1,2,3,4,5].map((n) => <button key={n} type="button" aria-label={n + " stars"} onClick={() => setRating(n)}><Star className={"size-6 " + (n <= rating ? "fill-accent text-accent" : "text-muted-foreground")} /></button>)}</div>
+            <textarea rows={3} className="w-full rounded-xl border bg-card p-3 text-sm" value={review} onChange={(e) => setReview(e.target.value)} placeholder="Describe the work relationship and outcome (optional)" />
+            <Button disabled={financeBusy || rating < 1} onClick={() => void doFinance(() => rateCompletedContract(contract.id, rating, review), "Rating saved and trust updated")}>Submit rating</Button>
           </div>
         )}
       </Card>
