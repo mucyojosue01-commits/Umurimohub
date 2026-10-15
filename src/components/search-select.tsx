@@ -17,6 +17,7 @@ export function SearchSelect({
   options,
   placeholder = "Search and choose…",
   emptyText = "No matching options",
+  requireQuery = false,
   disabled = false,
   className,
 }: {
@@ -25,6 +26,7 @@ export function SearchSelect({
   options: SearchSelectOption[];
   placeholder?: string;
   emptyText?: string;
+  requireQuery?: boolean;
   disabled?: boolean;
   className?: string;
 }) {
@@ -38,11 +40,11 @@ export function SearchSelect({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return options.slice(0, 20);
+    if (!q) return requireQuery ? [] : options.slice(0, 20);
     return options
       .filter((option) => [option.label, option.description ?? ""].join(" ").toLowerCase().includes(q))
       .slice(0, 20);
-  }, [options, query]);
+  }, [options, query, requireQuery]);
 
   const choose = (option: SearchSelectOption) => {
     onChange(option.value);
@@ -96,7 +98,7 @@ export function SearchSelect({
       {open && !disabled && (
         <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-72 overflow-auto rounded-2xl border bg-popover p-1 shadow-xl">
           <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {query.trim() ? "Matching options" : "Available options"}
+            {query.trim() ? "Matching options" : requireQuery ? "Start typing to search" : "Available options"}
           </div>
           {filtered.length ? (
             filtered.map((option) => (

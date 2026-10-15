@@ -60,7 +60,7 @@ function Page() {
     <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]"><div className="space-y-5">
       <Card className="p-6 md:p-8"><div className="flex flex-wrap gap-2"><Pill tone="primary">Employment position</Pill><Pill>{p.sector}</Pill><Pill tone={open?"accent":"warning"}>{open?"Accepting applications":expired?"Deadline passed":p.status==="closed"?"Closed":"Ended"}</Pill></div>
         <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">{p.title}</h1><p className="mt-3 whitespace-pre-line text-muted-foreground">{p.summary}</p>
-        {owner && <div className="mt-5 flex flex-wrap gap-2"><Button asChild><Link to="/positions/$id/edit" params={{id}}><Pencil className="mr-2 size-4"/>Edit position</Link></Button><Button variant="destructive" onClick={() => void removePosition()}><Trash2 className="mr-2 size-4"/>Delete position</Button></div>}
+        {owner && <div className="mt-5 flex flex-wrap gap-2"><Button asChild><Link to="/positions/$id/applicants" params={{id}}><UserRoundCheck className="mr-2 size-4"/>Manage applicants</Link></Button><Button asChild><Link to="/positions/$id/edit" params={{id}}><Pencil className="mr-2 size-4"/>Edit position</Link></Button><Button variant="destructive" onClick={() => void removePosition()}><Trash2 className="mr-2 size-4"/>Delete position</Button></div>}
         {!owner && open && <Button className="mt-5" asChild><Link to="/positions/$id/apply" params={{id}}>Apply for position</Link></Button>}
         {!open && <div className="mt-5 rounded-xl border bg-muted/30 p-4 text-sm">This position is no longer accepting applications. The employer can update its deadline or end the listing from the edit page.</div>}
       </Card>

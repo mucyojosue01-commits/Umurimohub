@@ -26,7 +26,9 @@ export function TeamInvite({ teamId, memberIds }: { teamId: string; memberIds: s
             value={pick}
             onChange={setPick}
             options={candidates.map((w) => ({ value: w.id, label: w.name, description: w.title + " · " + w.sector, avatarUrl: w.avatarUrl, initials: w.initials }))}
-            placeholder={candidates.length ? "Search a worker by name or skill…" : "No registered workers to invite yet"}
+            placeholder={candidates.length ? "Start typing to find a member…" : "No registered workers to invite yet"}
+            emptyText="Start typing to see users"
+            requireQuery
           />
         </div>
         <Button

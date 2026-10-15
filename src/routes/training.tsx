@@ -175,15 +175,27 @@ function Page() {
     }
   };
 
-  const complete = async (id: string) => {
-    if (!window.confirm("Mark this training as completed? It will be added to the learner's profile experience.")) return;
-    setBusy(id);
-    const { error } = await supabase.rpc("complete_training_application", { _application_id: id });
+  const completeAcceptedLearners = async (trainingId: string) => {
+    const accepted = (applicationsQ.data ?? []).filter(
+      (application) => application.training_id === trainingId && application.status === "accepted",
+    );
+    if (!accepted.length) {
+      toast.info("There are no accepted learners waiting for completion.");
+      return;
+    }
+    if (!window.confirm(`Mark training complete for all ${accepted.length} accepted learner(s)? This will add the training and its skills to each learner's profile experience.`)) return;
+    setBusy(trainingId);
+    const failures: string[] = [];
+    for (const application of accepted) {
+      const { error } = await supabase.rpc("complete_training_application", { _application_id: application.id });
+      if (error) failures.push(error.message);
+    }
     setBusy(null);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Training completed and profile experience added");
-      void qc.invalidateQueries({ queryKey: ["training-applications"] });
+    await qc.invalidateQueries({ queryKey: ["training-applications"] });
+    if (failures.length) {
+      toast.error(`Completed ${accepted.length - failures.length} learner(s); ${failures.length} could not be completed. ${failures[0]}`);
+    } else {
+      toast.success(`Training completed for ${accepted.length} accepted learner(s); profile experiences added.`);
     }
   };
 
@@ -248,8 +260,9 @@ function Page() {
                   <Pill tone={mine?.status === "completed" ? "success" : mine ? "primary" : "muted"}>{mine?.status ?? x.status}</Pill>
                   {provider && <div className="relative">
                     <Button size="icon" variant="ghost" aria-label={"Training actions for " + x.title} onClick={() => setMenuTraining(menuTraining === x.id ? null : x.id)}><MoreVertical className="size-4" /></Button>
-                    {menuTraining === x.id && <div className="absolute right-0 top-10 z-30 w-40 rounded-xl border bg-popover p-1 shadow-xl">
+                    {menuTraining === x.id && <div className="absolute right-0 top-10 z-30 w-60 rounded-xl border bg-popover p-1 shadow-xl">
                       <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setMenuTraining(null); openEdit(x); }}>Edit training</button>
+                      <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted" disabled={busy === x.id} onClick={() => { setMenuTraining(null); void completeAcceptedLearners(x.id); }}>{busy === x.id ? "Completing accepted learners…" : "Mark accepted learners complete"}</button>
                       <button className="block w-full rounded-lg px-3 py-2 text-left text-sm text-destructive hover:bg-muted" disabled={busy === x.id} onClick={() => { setMenuTraining(null); void remove(x.id); }}>Delete training</button>
                     </div>}
                   </div>}
@@ -287,7 +300,7 @@ function Page() {
                           <div className="mt-2 flex flex-wrap gap-2">
                             {a.status === "applied" && <Button size="sm" onClick={() => void shortlist(a.id)} disabled={busy === a.id}>Shortlist</Button>}
                             {a.status === "shortlisted" && <span className="text-xs text-muted-foreground">Waiting for candidate acceptance.</span>}
-                            {a.status === "accepted" && <Button size="sm" title="Mark this accepted learner's training complete and add it to their profile experience" onClick={() => void complete(a.id)} disabled={busy === a.id}>{busy === a.id ? "Saving…" : "End training"}</Button>}
+                            {a.status === "accepted" && <span className="text-xs text-muted-foreground">Eligible for completion from the training actions menu.</span>}
                             {a.status === "completed" && <Pill tone="success">Profile experience added</Pill>}
                           </div>
                         </div>

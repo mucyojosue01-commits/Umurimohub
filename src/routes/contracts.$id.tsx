@@ -120,16 +120,18 @@ function Page() {
             <h1 className="mt-3 text-3xl font-extrabold">{contract.title}</h1>
             <p className="mt-2 text-sm text-muted-foreground">Opportunity: {opportunityQ.data?.title ?? (opportunityQ.isLoading ? "Loading opportunity…" : "Opportunity unavailable")}</p><p className="mt-2 max-w-3xl text-muted-foreground">{contract.scope}</p>
           </div>
-          <div className="relative">
-            {contract.status !== "completed" && <Button size="icon" variant="outline" aria-label="Contract actions" onClick={() => setMenu((v) => !v)}><MoreVertical className="size-5" /></Button>}
-            {menu && contract.status !== "completed" && (
-              <div className="absolute right-0 top-12 z-30 w-52 rounded-2xl border bg-popover p-1 shadow-xl">
-                {isBusiness && contract.status === "proposed" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setEditing(true); setMenu(false); }}>Edit proposal</button>}
-                {isBusiness && contract.status === "proposed" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => void remove()}>Delete proposal</button>}
-                {contract.status === "cancelled" && (isBusiness || isParty) && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => void doFinance(() => reacceptCancelledContract(contract.id), "Cancelled contract re-accepted and active")}>Re-accept contract</button>}
-                {isBusiness && ["proposed","active"].includes(contract.status) && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => void terminate()}>Terminate project</button>}
-              </div>
-            )}
+          <div className="flex flex-wrap items-start gap-2">
+            {isBusiness && contract.status === "proposed" && <Button variant="destructive" onClick={() => void remove()}>Delete contract</Button>}
+            {contract.status !== "completed" && <div className="relative">
+              <Button size="icon" variant="outline" aria-label="Contract actions" onClick={() => setMenu((v) => !v)}><MoreVertical className="size-5" /></Button>
+              {menu && (
+                <div className="absolute right-0 top-12 z-30 w-52 rounded-2xl border bg-popover p-1 shadow-xl">
+                  {isBusiness && contract.status === "proposed" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setEditing(true); setMenu(false); }}>Edit proposal</button>}
+                  {contract.status === "cancelled" && (isBusiness || isParty) && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => void doFinance(() => reacceptCancelledContract(contract.id), "Cancelled contract re-accepted and active")}>Re-accept contract</button>}
+                  {isBusiness && ["proposed","active"].includes(contract.status) && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => void terminate()}>Terminate project</button>}
+                </div>
+              )}
+            </div>}
           </div>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
