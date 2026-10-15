@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
     const phone = payment.payer_phone.replace(/[^0-9]/g, "").replace(/^0/, "250");
     const providerResponse = await fetch(base + "/collection/v1_0/requesttopay", {
       method: "POST",
-      headers: { Authorization: "Bearer " + token.access_token, "Ocp-Apim-Subscription-Key": subscriptionKey, "X-Reference-Id": reference, "X-Target-Environment": target, "Content-Type": "application/json" },
+      headers: { Authorization: "Bearer " + token.access_token, "Ocp-Apim-Subscription-Key": subscriptionKey, "X-Reference-Id": reference, "X-Target-Environment": target, "Content-Type": "application/json", "X-Callback-Url": url + "/functions/v1/momo-pay-callback?transactionId=" + encodeURIComponent(payment.id) },
       body: JSON.stringify({ amount: String(payment.amount_rwf), currency: "RWF", externalId: payment.id, payer: { partyIdType: "MSISDN", partyId: phone }, payerMessage: "UmurimoHub contract payment", payeeNote: "Contract " + payment.contract_id }),
     });
     if (providerResponse.status !== 202) {
