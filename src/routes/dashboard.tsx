@@ -100,7 +100,7 @@ function Page() {
       </Card>
       <h2 className="mt-10 text-xl font-bold">Recommended for you</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {allOpps.filter((o) => o.createdBy !== user.id && !user.businessIds.includes(o.businessId)).slice(0, 3).map((o) => (
+        {allOpps.filter((o) => o.opportunityType !== "company_position" && o.type.toLowerCase() !== "job" && o.createdBy !== user.id && !user.businessIds.includes(o.businessId)).slice(0, 3).map((o) => (
           <OpportunityCard key={o.id} o={o} />
         ))}
       </div>
