@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
 import { MyApplications, MyOpportunities, TeamInvites } from "@/features/dashboard/panels";
 import { ContractsPanel, useContracts } from "@/features/contracts/panels";
-import { PaymentsDashboard } from "@/features/payments/panel";
+import { PaymentsDashboard, PaymentDisputesAdmin } from "@/features/payments/panel";
 import { Avatar, Card, OpportunityCard, PageHeader, Stat } from "@/features/ui/kit";
 import { useCatalog } from "@/features/data/catalog";
 import { toast } from "sonner";
@@ -60,6 +60,7 @@ function Page() {
       <MyApplications />
       <MyOpportunities />
       <PaymentsDashboard />
+      <PaymentDisputesAdmin />
       <ContractsPanel />
             <Card className="mt-6">
         <div className="flex items-center justify-between gap-3">
