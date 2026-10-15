@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Plus, X } from "lucide-react";
+import { CheckCircle2, Plus, X, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, PageHeader, Pill, Avatar } from "@/features/ui/kit";
@@ -41,6 +41,7 @@ function Page() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [menuTraining, setMenuTraining] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", description: "", district: "", provider_type: "business", skills: [] as string[] });
   const [skillDraft, setSkillDraft] = useState("");
 
@@ -242,8 +243,17 @@ function Page() {
           return (
             <Card key={x.id}>
               <div className="flex items-start justify-between gap-3">
-                <div><h2 className="font-bold">{x.title}</h2><p className="mt-1 text-sm text-muted-foreground">{x.district} · {x.provider_type}</p></div>
-                <Pill tone={mine?.status === "completed" ? "success" : mine ? "primary" : "muted"}>{mine?.status ?? x.status}</Pill>
+                <div className="min-w-0 flex-1"><h2 className="font-bold">{x.title}</h2><p className="mt-1 text-sm text-muted-foreground">{x.district} · {x.provider_type}</p></div>
+                <div className="flex items-center gap-2">
+                  <Pill tone={mine?.status === "completed" ? "success" : mine ? "primary" : "muted"}>{mine?.status ?? x.status}</Pill>
+                  {provider && <div className="relative">
+                    <Button size="icon" variant="ghost" aria-label={"Training actions for " + x.title} onClick={() => setMenuTraining(menuTraining === x.id ? null : x.id)}><MoreVertical className="size-4" /></Button>
+                    {menuTraining === x.id && <div className="absolute right-0 top-10 z-30 w-40 rounded-xl border bg-popover p-1 shadow-xl">
+                      <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setMenuTraining(null); openEdit(x); }}>Edit</button>
+                      <button className="block w-full rounded-lg px-3 py-2 text-left text-sm text-destructive hover:bg-muted" disabled={busy === x.id} onClick={() => { setMenuTraining(null); void remove(x.id); }}>Delete</button>
+                    </div>}
+                  </div>}
+                </div>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{x.description || "No description provided."}</p>
               {!!x.skills?.length && <div className="mt-3"><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Skills earned on completion</p><div className="mt-2 flex flex-wrap gap-2">{x.skills.map((skill) => <span key={skill} className="inline-flex items-center gap-1.5 rounded-full border bg-muted/30 px-2.5 py-1 text-xs"><CheckCircle2 className="size-3.5 text-primary" />{skill}</span>)}</div></div>}
@@ -277,7 +287,7 @@ function Page() {
                           <div className="mt-2 flex flex-wrap gap-2">
                             {a.status === "applied" && <Button size="sm" onClick={() => void shortlist(a.id)} disabled={busy === a.id}>Shortlist</Button>}
                             {a.status === "shortlisted" && <span className="text-xs text-muted-foreground">Waiting for candidate acceptance.</span>}
-                            {a.status === "accepted" && <Button size="sm" onClick={() => void complete(a.id)} disabled={busy === a.id}>{busy === a.id ? "Saving…" : "Mark complete"}</Button>}
+                            {a.status === "accepted" && <Button size="sm" onClick={() => void complete(a.id)} disabled={busy === a.id}>{busy === a.id ? "Saving…" : "End"}</Button>}
                             {a.status === "completed" && <Pill tone="success">Profile experience added</Pill>}
                           </div>
                         </div>
@@ -287,7 +297,6 @@ function Page() {
                 </div>
               )}
 
-              {provider && <div className="mt-4 flex gap-2"><Button size="sm" variant="outline" onClick={() => openEdit(x)}>Edit</Button><Button size="sm" variant="outline" disabled={busy === x.id} onClick={() => void remove(x.id)}>Delete</Button></div>}
             </Card>
           );
         })}
