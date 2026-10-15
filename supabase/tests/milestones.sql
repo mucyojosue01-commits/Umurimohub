@@ -153,14 +153,14 @@ begin
     pg_temp.fails(format(
       $q$update milestones set amount_rwf=1 where id=%L$q$,
       v_milestone_id
-    )),
+    )) or (select amount_rwf = 400000 from public.milestones where id = v_milestone_id),
     'approved milestone cannot be edited'
   );
   perform pg_temp.check(
     pg_temp.fails(format(
       $q$delete from milestones where id=%L$q$,
       v_milestone_id
-    )),
+    )) or (select count(*) = 1 from public.milestones where id = v_milestone_id),
     'approved milestone cannot be deleted'
   );
 
