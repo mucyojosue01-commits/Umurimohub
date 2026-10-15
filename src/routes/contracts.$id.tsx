@@ -125,7 +125,8 @@ function Page() {
             {menu && contract.status !== "completed" && (
               <div className="absolute right-0 top-12 z-30 w-52 rounded-2xl border bg-popover p-1 shadow-xl">
                 {isBusiness && contract.status === "proposed" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => { setEditing(true); setMenu(false); }}>Edit proposal</button>}
-                {isBusiness && contract.status === "proposed" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => void remove()}>Delete proposal</button>}
+                {isBusiness && contract.status === "proposed" && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => void remove()}>Delete contract</button>}
+                {isBusiness && contract.status === "proposed" && <p className="px-3 py-2 text-xs text-muted-foreground">Only proposals without milestones can be deleted; active project history is preserved.</p>}
                 {contract.status === "cancelled" && (isBusiness || isParty) && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => void doFinance(() => reacceptCancelledContract(contract.id), "Cancelled contract re-accepted and active")}>Re-accept contract</button>}
                 {isBusiness && ["proposed","active"].includes(contract.status) && <button className="block w-full rounded-xl px-3 py-2 text-left text-sm text-destructive hover:bg-muted" onClick={() => void terminate()}>Terminate project</button>}
               </div>
