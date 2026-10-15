@@ -26,6 +26,17 @@ begin
   if not coalesce(_ok, false) then raise exception 'FAILED: %', _name; end if;
 end $$;
 
+insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+select uid, 'authenticated', 'authenticated', uid::text || '@phase-c.test', '', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+from unnest(array[
+  '00000000-0000-4000-a000-0000000000b1'::uuid,
+  '00000000-0000-4000-a000-0000000000a1'::uuid,
+  '00000000-0000-4000-a000-0000000000c1'::uuid,
+  '00000000-0000-4000-a000-0000000000c2'::uuid,
+  '00000000-0000-4000-a000-0000000000d1'::uuid
+]) uid
+on conflict (id) do nothing;
+
 do $$
 declare
   biz uuid := '00000000-0000-4000-a000-0000000000b1';
@@ -54,7 +65,9 @@ begin
     ('c_opp','c_biz',biz,'Completion Job','Construction','Gasabo','Project',1000000,'project',
      'On-site','1 month',current_date+30,false,1,'{}','s','{}','{}',false,'open',false),
     ('c_team_opp','c_biz',biz,'Team Completion Job','Construction','Gasabo','Project',1500000,'project',
-     'On-site','1 month',current_date+30,true,3,'{}','s','{}','{}',false,'open',false);
+     'On-site','1 month',current_date+30,true,3,'{}','s','{}','{}',false,'open',false),
+    ('c_gated_opp','c_biz',biz,'Gated Completion Job','Construction','Gasabo','Project',500000,'project',
+     'On-site','1 month',current_date+30,false,1,'{}','s','{}','{}',false,'open',false);
 
   insert into worker_profiles(id,user_id,name,title,district,sector,rate_rwf,rate_unit,available,years,bio,initials,verified,rating,reviews,rep,visibility,is_demo)
     values
@@ -68,11 +81,11 @@ begin
   insert into applications(opportunity_id,applicant_user_id,kind,note,status)
     values ('c_opp',worker,'Individual','n','accepted')
     returning id into app_id;
-  insert into applications(opportunity_id,applicant_user_id,team_id,kind,note,status)
-    values ('c_team_opp',lead,'c_team','Team','n','accepted')
+  insert into applications(opportunity_id,applicant_user_id,team_id,applicant_team_id,kind,note,status)
+    values ('c_team_opp',lead,'c_team','c_team','Team','n','accepted')
     returning id into team_app;
   insert into applications(opportunity_id,applicant_user_id,kind,note,status)
-    values ('c_opp',worker,'Individual','gated','accepted')
+    values ('c_gated_opp',worker,'Individual','gated','accepted')
     returning id into gated_app;
 
   perform pg_temp.as_user(biz);
