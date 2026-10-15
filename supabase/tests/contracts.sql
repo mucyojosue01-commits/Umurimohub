@@ -21,6 +21,16 @@ declare
   outsider uuid := '00000000-0000-4000-a000-0000000000d1';
   a1 uuid; a2 uuid; c1 uuid; c2 uuid; n int; st text;
 begin
+  -- The production schema correctly enforces auth.users foreign keys. Create isolated
+  -- fixture identities so these transaction-rolled-back tests remain representative.
+  insert into auth.users (id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+  values
+    (biz, 'authenticated', 'authenticated', 'contracts-test-biz@example.test', '{}'::jsonb, '{}'::jsonb, now(), now()),
+    (wk, 'authenticated', 'authenticated', 'contracts-test-worker@example.test', '{}'::jsonb, '{}'::jsonb, now(), now()),
+    (lead, 'authenticated', 'authenticated', 'contracts-test-lead@example.test', '{}'::jsonb, '{}'::jsonb, now(), now()),
+    (outsider, 'authenticated', 'authenticated', 'contracts-test-outsider@example.test', '{}'::jsonb, '{}'::jsonb, now(), now())
+  on conflict do nothing;
+
   -- Fixtures
   insert into businesses(id,name,sector,district,verified,rating,about,services,is_demo,created_by)
     values ('t_biz','Test Biz','Construction','Gasabo',false,0,'x','{}',false,biz);
@@ -32,7 +42,8 @@ begin
   insert into teams(id,name,lead_user_id,sector,areas,rating,projects,available,summary,skills,is_demo)
     values ('t_team','Test Team',lead,'Construction','{}',0,0,true,'s','{}',false);
   insert into applications(opportunity_id,applicant_user_id,kind,note,status) values ('t_opp',wk,'Individual','n','submitted') returning id into a1;
-  insert into applications(opportunity_id,applicant_user_id,team_id,kind,note,status) values ('t_opp',lead,'t_team','Team','n','submitted') returning id into a2;
+  insert into applications(opportunity_id,applicant_user_id,team_id,applicant_team_id,applicant_type,kind,note,status)
+    values ('t_opp',lead,'t_team','t_team','team','Team','n','submitted') returning id into a2;
 
   -- Only accepted applications, only by business members
   perform pg_temp.as_user(biz);
@@ -57,8 +68,16 @@ begin
   c1 := public.create_contract(a1, 'Wall build', 'Build the boundary wall', 1500000, current_date, current_date + 20, null);
   perform pg_temp.check(pg_temp.fails(format($q$select public.create_contract(%L,'Again','Scope of the work',1000)$q$, a1)), 'duplicate contract rejected');
   perform pg_temp.check(pg_temp.fails($q$insert into contracts(application_id,opportunity_id,business_id,worker_id,title,scope,amount_rwf,proposed_by) values (gen_random_uuid(),'t_opp','t_biz','t_w','Title','Scope here ok',1,auth.uid())$q$), 'direct insert denied');
-  perform pg_temp.check(pg_temp.fails(format($q$update contracts set amount_rwf = 1 where id=%L$q$, c1)), 'direct amount edit denied');
-  perform pg_temp.check(pg_temp.fails(format($q$update contracts set status='active' where id=%L$q$, c1)), 'direct status edit denied');
+  perform pg_temp.check(
+    pg_temp.fails(format($q$update contracts set amount_rwf = 1 where id=%L$q$, c1))
+      or (select amount_rwf = 1500000 from contracts where id = c1),
+    'direct amount edit denied'
+  );
+  perform pg_temp.check(
+    pg_temp.fails(format($q$update contracts set status='active' where id=%L$q$, c1))
+      or (select status = 'proposed' from contracts where id = c1),
+    'direct status edit denied'
+  );
   perform pg_temp.check(pg_temp.fails(format($q$select public.respond_contract(%L,true)$q$, c1)), 'business cannot accept own proposal');
 
   -- Visibility
@@ -101,7 +120,11 @@ begin
   perform pg_temp.check(pg_temp.fails(format($q$select public.cancel_contract(%L)$q$, c1)), 'cannot cancel twice');
   perform pg_temp.as_user(wk);
   perform pg_temp.check((select count(*) from notifications where kind='contract_cancelled') = 1, 'cancel notification');
-  perform pg_temp.check(pg_temp.fails($q$update notifications set text='x'$q$), 'notification text not editable');
+  perform pg_temp.check(
+    pg_temp.fails($q$update notifications set text='x'$q$)
+      or (select text <> 'x' from notifications where user_id = wk and kind = 'contract_cancelled' limit 1),
+    'notification text not editable'
+  );
 
   -- Even privileged writers cannot rewrite history or terms
   perform pg_temp.as_owner();
@@ -110,6 +133,13 @@ begin
   perform pg_temp.check(pg_temp.fails(format($q$update contracts set amount_rwf=1 where id=%L$q$, c2)), 'terms immutable for owner');
   perform pg_temp.check(pg_temp.fails(format($q$update contracts set status='active' where id=%L$q$, c1)), 'cancelled -> active invalid');
   perform pg_temp.check(pg_temp.fails(format($q$delete from contracts where id=%L$q$, c1)), 'contracts undeletable');
+
+  -- The authorized RPC can reaccept a cancelled contract and records the transition.
+  perform pg_temp.as_user(wk);
+  st := public.reaccept_cancelled_contract(c1);
+  perform pg_temp.check(st = 'active', 'contract party reaccepts through RPC');
+  perform pg_temp.check((select status = 'active' from contracts where id = c1), 'reaccepted status persisted');
+  perform pg_temp.check((select count(*) = 1 from contract_events where contract_id = c1 and event_type = 'reaccepted'), 'reaccept event recorded');
 
   raise exception 'ALL CONTRACT TESTS PASSED (rolled back)';
 end $$;
