@@ -44,6 +44,7 @@ function Page() {
   const nav = Route.useNavigate();
   const { user } = useApp();
   const { opportunities: allOpps, loading, error } = useCatalog();
+  const ownBusinessIds = new Set(user?.businessIds ?? []);
   const set = (k: string, v: unknown) =>
     nav({ search: (p) => ({ ...p, [k]: v || undefined }), replace: true });
   const visibleOpps = allOpps.filter((o) => !ownBusinessIds.has(o.businessId));
