@@ -9,7 +9,7 @@ export type ContractProposal = {
   title: string;
   scope: string;
   amountRwf: number;
-  paymentPlan: "milestone" | "full_contract";
+  paymentPlan?: "milestone" | "full_contract";
   startDate?: string;
   endDate?: string;
   terms?: string;
@@ -44,7 +44,7 @@ export async function createContract(p: ContractProposal) {
     _title: p.title,
     _scope: p.scope,
     _amount_rwf: p.amountRwf,
-    _payment_plan: p.paymentPlan,
+    _payment_plan: p.paymentPlan ?? "full_contract",
     ...(p.startDate ? { _start_date: p.startDate } : {}),
     ...(p.endDate ? { _end_date: p.endDate } : {}),
     ...(p.terms ? { _terms: p.terms } : {}),
