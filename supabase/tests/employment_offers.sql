@@ -60,7 +60,7 @@ begin
 
   perform pg_temp.as_user(outsider);
   perform pg_temp.check(
-    pg_temp.fails(format('select public.set_position_application_status(%L,''offer'')', application_id)),
+    pg_temp.fails(format('select public.set_position_application_status(%L,''offer'')', v_application_id)),
     'unrelated user cannot issue employment offer'
   );
   perform pg_temp.as_owner();
@@ -70,7 +70,7 @@ begin
   );
 
   perform pg_temp.as_user(biz);
-  select (public.set_position_application_status(v_v_application_id,'offer',null,'full_time','Employment test offer')).status
+  select (public.set_position_application_status(v_application_id,'offer',null,'full_time','Employment test offer')).status
     into app_status;
   perform pg_temp.check(app_status='offer','business member moves application to offer');
   perform pg_temp.as_owner();
