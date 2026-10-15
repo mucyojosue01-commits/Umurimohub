@@ -43,9 +43,7 @@ export function PaymentPanel({
     queryFn: async () => {
       // The generated Supabase types are refreshed separately after schema changes.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // The generated Supabase types are refreshed separately after schema changes.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
+      const db = supabase as any;
       const { data, error } = await db.from("payment_transactions").select("id,contract_id,milestone_id,payment_mode,amount_rwf,status,provider_reference,payer_phone,created_at,paid_at").eq("contract_id", contractId).order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as PaymentRow[];
@@ -57,9 +55,7 @@ export function PaymentPanel({
     queryFn: async () => {
       // The generated Supabase types are refreshed separately after schema changes.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // The generated Supabase types are refreshed separately after schema changes.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
+      const db = supabase as any;
       const { data, error } = await db.from("payment_disputes").select("id,payment_transaction_id,reason,status,created_at").eq("contract_id", contractId).order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as DisputeRow[];
@@ -71,9 +67,7 @@ export function PaymentPanel({
     queryFn: async () => {
       // The generated Supabase types are refreshed separately after schema changes.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // The generated Supabase types are refreshed separately after schema changes.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
+      const db = supabase as any;
       const { data, error } = await db.from("milestones").select("id,title,amount_rwf,status").eq("contract_id", contractId).eq("status", "approved").order("sequence");
       if (error) throw error;
       const rows = (data ?? []) as Array<{id:string;title:string;amount_rwf:number;status:string}>;
@@ -109,9 +103,7 @@ export function PaymentPanel({
       const idempotencyKey = globalThis.crypto?.randomUUID?.() ?? "pay-" + Date.now() + "-" + Math.random().toString(36).slice(2);
       // The generated Supabase types are refreshed separately after schema changes.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // The generated Supabase types are refreshed separately after schema changes.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
+      const db = supabase as any;
       const { data, error } = await db.rpc("create_payment_intent", {
         _contract_id: contractId, _payment_mode: mode, _idempotency_key: idempotencyKey,
         _milestone_id: mode === "milestone" ? milestoneId : null, _payer_phone: phone.trim(),
@@ -136,9 +128,7 @@ export function PaymentPanel({
     try {
       // The generated Supabase types are refreshed separately after schema changes.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // The generated Supabase types are refreshed separately after schema changes.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
+      const db = supabase as any;
       const { error } = await db.rpc("open_payment_dispute", { _payment_transaction_id: paymentId, _reason: reason });
       if (error) throw error;
       toast.success("Payment dispute opened. The other party has been notified.");
@@ -195,9 +185,7 @@ export function PaymentsDashboard() {
     queryFn: async () => {
       // The generated Supabase types are refreshed separately after schema changes.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // The generated Supabase types are refreshed separately after schema changes.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
+      const db = supabase as any;
       const { data, error } = await db.from("payment_transactions").select("amount_rwf,status");
       if (error) throw error;
       const rows = (data ?? []) as Array<{amount_rwf:number;status:string}>;
@@ -219,9 +207,7 @@ export function PaymentDisputesAdmin() {
     queryFn: async () => {
       // The generated Supabase types are refreshed separately after schema changes.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // The generated Supabase types are refreshed separately after schema changes.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
+      const db = supabase as any;
       const { data, error } = await db.from("payment_disputes").select("id,contract_id,payment_transaction_id,reason,status,created_at,resolution_note").order("created_at", { ascending: false }).limit(100);
       if (error) throw error;
       return (data ?? []) as Array<{id:string;contract_id:string;payment_transaction_id:string;reason:string;status:string;created_at:string;resolution_note:string|null}>;
@@ -234,9 +220,7 @@ export function PaymentDisputesAdmin() {
     try {
       // The generated Supabase types are refreshed separately after schema changes.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // The generated Supabase types are refreshed separately after schema changes.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
+      const db = supabase as any;
       const { error } = await db.rpc("resolve_payment_dispute", { _dispute_id: id, _decision: decision, _note: note });
       if (error) throw error;
       toast.success("Payment dispute resolved and both parties notified.");
