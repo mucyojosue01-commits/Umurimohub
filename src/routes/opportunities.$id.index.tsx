@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { mapOpportunity } from "@/features/data/mappers";
 import { useApp, type Application } from "@/features/store/app-store";
 import { Avatar, Card, Pill } from "@/features/ui/kit";
+import { IncomingApplications } from "@/features/dashboard/panels";
 
 export const Route = createFileRoute("/opportunities/$id/")({
   loader: async ({ params }) => {
@@ -201,6 +202,8 @@ function Page() {
           </Card>
         </aside>
       </div>
+
+      {user && (o.createdBy === user.id || user.businessIds.includes(o.businessId)) && <div className="mt-10"><IncomingApplications opportunityId={id} /></div>}
 
       <Dialog open={!!kind} onOpenChange={(v) => !v && setKind(null)}>
         <DialogContent className="rounded-3xl">

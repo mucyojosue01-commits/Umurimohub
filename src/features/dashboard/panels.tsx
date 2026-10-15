@@ -113,18 +113,19 @@ export function MyApplications() {
   );
 }
 
-export function IncomingApplications() {
+export function IncomingApplications({ opportunityId }: { opportunityId?: string }) {
   const { user, session } = useApp();
   const qc = useQueryClient();
   const ids = user?.businessIds ?? [];
   const q = useQuery({
-    queryKey: ["incoming", ids],
+    queryKey: ["incoming", ids, opportunityId],
     enabled: !!user && !!session,
     queryFn: async () => {
       let opportunitiesQuery = supabase.from("opportunities").select("id,title,status,created_by,business_id,terms_version");
       opportunitiesQuery = ids.length
         ? opportunitiesQuery.or("created_by.eq." + session!.user.id + ",business_id.in.(" + ids.join(",") + ")")
         : opportunitiesQuery.eq("created_by", session!.user.id);
+      if (opportunityId) opportunitiesQuery = opportunitiesQuery.eq("id", opportunityId);
       const { data: opps } = await opportunitiesQuery;
       const oppIds = (opps ?? []).map((o) => o.id);
       if (!oppIds.length) return { opps: opps ?? [], apps: [] };
@@ -160,10 +161,10 @@ export function IncomingApplications() {
   return (
     <Card className="mt-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold">Applicants to your opportunities</h2>
-        <Button size="sm" asChild>
+        <h2 className="font-bold">{opportunityId ? "Applicants for this opportunity" : "Applicants to your opportunities"}</h2>
+        {!opportunityId && <Button size="sm" asChild>
           <Link to="/opportunities/new">Post new</Link>
-        </Button>
+        </Button>}
       </div>
       {q.isLoading ? (
         <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
@@ -413,9 +414,6 @@ export function MyOpportunities() {
            ))}
          </ul>}
       </Card>
-      <div className="mt-4">
-        <IncomingApplications />
-      </div>
     </section>
   );
 }
