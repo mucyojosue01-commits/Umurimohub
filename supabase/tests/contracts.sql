@@ -21,6 +21,16 @@ declare
   outsider uuid := '00000000-0000-4000-a000-0000000000d1';
   a1 uuid; a2 uuid; c1 uuid; c2 uuid; n int; st text;
 begin
+  -- The production schema correctly enforces auth.users foreign keys. Create isolated
+  -- fixture identities so these transaction-rolled-back tests remain representative.
+  insert into auth.users (id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+  values
+    (biz, 'authenticated', 'authenticated', 'contracts-test-biz@example.test', '{}'::jsonb, '{}'::jsonb, now(), now()),
+    (wk, 'authenticated', 'authenticated', 'contracts-test-worker@example.test', '{}'::jsonb, '{}'::jsonb, now(), now()),
+    (lead, 'authenticated', 'authenticated', 'contracts-test-lead@example.test', '{}'::jsonb, '{}'::jsonb, now(), now()),
+    (outsider, 'authenticated', 'authenticated', 'contracts-test-outsider@example.test', '{}'::jsonb, '{}'::jsonb, now(), now())
+  on conflict do nothing;
+
   -- Fixtures
   insert into businesses(id,name,sector,district,verified,rating,about,services,is_demo,created_by)
     values ('t_biz','Test Biz','Construction','Gasabo',false,0,'x','{}',false,biz);
