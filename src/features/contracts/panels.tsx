@@ -34,7 +34,7 @@ export function CreateContractForm({
   onDone: () => void;
 }) {
   const qc = useQueryClient();
-  const [f, setF] = useState({ title: "", scope: "", amount: "", start: "", end: "", terms: "" });
+  const [f, setF] = useState({ title: "", scope: "", amount: "", paymentPlan: "full_contract" as "milestone" | "full_contract", start: "", end: "", terms: "" });
   const [busy, setBusy] = useState(false);
   const submit = async () => {
     const p = {
@@ -42,6 +42,7 @@ export function CreateContractForm({
       title: f.title,
       scope: f.scope,
       amountRwf: Number(f.amount),
+      paymentPlan: f.paymentPlan,
       ...(f.start ? { startDate: f.start } : {}),
       ...(f.end ? { endDate: f.end } : {}),
       ...(f.terms ? { terms: f.terms } : {}),
@@ -80,6 +81,14 @@ export function CreateContractForm({
         value={f.amount}
         onChange={(e) => setF({ ...f, amount: e.target.value })}
       />
+      <div className="space-y-1">
+        <label className="text-sm font-medium" htmlFor="contract-payment-plan">Payment arrangement</label>
+        <select id="contract-payment-plan" className="w-full rounded-xl border bg-background px-3 py-2 text-sm" value={f.paymentPlan} onChange={(e) => setF({ ...f, paymentPlan: e.target.value as "milestone" | "full_contract" })}>
+          <option value="milestone">Milestone-based — pay each approved milestone</option>
+          <option value="full_contract">Full contract — pay after project completion</option>
+        </select>
+        <p className="text-xs text-muted-foreground">Agree this with the other party before accepting the contract.</p>
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <Input
           type="date"

@@ -9,6 +9,7 @@ export type ContractProposal = {
   title: string;
   scope: string;
   amountRwf: number;
+  paymentPlan?: "milestone" | "full_contract";
   startDate?: string;
   endDate?: string;
   terms?: string;
@@ -38,11 +39,14 @@ export async function listMyContracts(): Promise<Contract[]> {
 }
 
 export async function createContract(p: ContractProposal) {
-  const { data, error } = await supabase.rpc("create_contract", {
+  // The generated Supabase types predate this newly deployed RPC.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc("create_contract_with_payment_plan", {
     _application_id: p.applicationId,
     _title: p.title,
     _scope: p.scope,
     _amount_rwf: p.amountRwf,
+    _payment_plan: p.paymentPlan ?? "full_contract",
     ...(p.startDate ? { _start_date: p.startDate } : {}),
     ...(p.endDate ? { _end_date: p.endDate } : {}),
     ...(p.terms ? { _terms: p.terms } : {}),

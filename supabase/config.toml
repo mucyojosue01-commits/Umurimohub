@@ -1,1 +1,12 @@
 project_id = "bwevsibtwzntystleuum"
+
+[functions.momo-pay-initiate]
+verify_jwt = true
+
+[functions.momo-pay-status]
+verify_jwt = true
+
+# Provider callbacks are public endpoints, but the handler independently queries
+# MTN's authenticated transaction-status API before changing payment state.
+[functions.momo-pay-callback]
+verify_jwt = false
