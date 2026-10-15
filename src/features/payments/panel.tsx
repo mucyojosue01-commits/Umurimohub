@@ -131,7 +131,7 @@ export function PaymentPanel({
     <Card className="mt-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-2"><CreditCard className="size-5 text-primary"/><div><h2 className="font-bold">Payments · MoMo Pay</h2><p className="text-sm text-muted-foreground">RWF transaction history, milestone payments and disputes.</p></div></div>
-        <Button size="sm" variant="outline" onClick={() => { void paymentsQ.refetch(); void disputesQ.refetch(); void milestonesQ.refetch(); }}><RefreshCw className="mr-1 size-3.5"/>Refresh</Button>
+        <Button size="sm" variant="outline" onClick={() => { void refresh(); void milestonesQ.refetch(); }}><RefreshCw className="mr-1 size-3.5"/>Refresh</Button>
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border p-3"><p className="text-xs text-muted-foreground">Contract value</p><p className="mt-1 text-lg font-bold">{rwf(amountRwf)}</p></div>
