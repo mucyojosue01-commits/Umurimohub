@@ -53,7 +53,7 @@ function BusinessDirectoryPage() {
         found.sort((a, b) =>
           Number(b.verified) - Number(a.verified) ||
           Number(b.rating ?? 0) - Number(a.rating ?? 0) ||
-          Number((b.district ?? "").trim().toLowerCase() === userDistrict) - Number((a.district ?? "").trim().toLowerCase() === userDistrict) ||
+          Number(Boolean(userDistrict && (b.district ?? "").trim().toLowerCase() === userDistrict)) - Number(Boolean(userDistrict && (a.district ?? "").trim().toLowerCase() === userDistrict)) ||
           a.name.localeCompare(b.name)
         );
         setRows(found);
