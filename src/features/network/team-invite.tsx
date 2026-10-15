@@ -1,19 +1,75 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { SearchSelect } from "@/components/search-select";
+import { SearchSelect, type SearchSelectOption } from "@/components/search-select";
 import { supabase } from "@/integrations/supabase/client";
-import { useCatalog } from "@/features/data/catalog";
 import { useApp } from "@/features/store/app-store";
 import { Card } from "@/features/ui/kit";
 
 /** Visible only to the team lead: invite a worker with a real account. */
 export function TeamInvite({ teamId, memberIds }: { teamId: string; memberIds: string[] }) {
   const { user } = useApp();
-  const { workers, workerUserIds } = useCatalog();
   const [pick, setPick] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const [candidateOptions, setCandidateOptions] = useState<SearchSelectOption[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    // Do not query the user directory until the person has typed a meaningful search.
+    const query = searchText.trim().replace(/[,%()]/g, " ").replace(/\s+/g, " ").trim();
+    if (query.length < 2) {
+      setCandidateOptions([]);
+      setSearching(false);
+      return;
+    }
+
+    let active = true;
+    const timer = window.setTimeout(async () => {
+      setSearching(true);
+      const { data, error } = await supabase
+        .from("worker_profiles")
+        .select("id,user_id,name,initials,title,sector,district,avatar_url")
+        .eq("is_demo", false)
+        .not("user_id", "is", null)
+        .or(`name.ilike.%${query}%,title.ilike.%${query}%,sector.ilike.%${query}%,district.ilike.%${query}%`)
+        .order("name", { ascending: true })
+        .limit(20);
+
+      if (!active) return;
+      if (error) {
+        setCandidateOptions([]);
+        toast.error("Could not search members: " + error.message);
+      } else {
+        setCandidateOptions(
+          (data ?? [])
+            .filter((worker) => !!worker.user_id && !memberIds.includes(worker.id) && worker.id !== user?.workerId)
+            .map((worker) => ({
+              value: worker.id,
+              label: worker.name,
+              description: [worker.title, worker.sector, worker.district].filter(Boolean).join(" · "),
+              avatarUrl: worker.avatar_url,
+              initials: worker.initials || worker.name.slice(0, 2).toUpperCase(),
+            })),
+        );
+      }
+      setSearching(false);
+    }, 250);
+
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [searchText, memberIds, user?.workerId]);
+
   if (!user?.leadTeamIds.includes(teamId)) return null;
-  const candidates = workers.filter((w) => workerUserIds[w.id] && !memberIds.includes(w.id) && w.id !== user.workerId);
+
+  const emptyText = searching
+    ? "Searching users…"
+    : searchText.trim().length < 2
+      ? "Start typing to see users"
+      : "No matching users found";
+
   return (
     <Card className="mt-6">
       <h2 className="font-bold">Invite a member</h2>
@@ -25,27 +81,36 @@ export function TeamInvite({ teamId, memberIds }: { teamId: string; memberIds: s
           <SearchSelect
             value={pick}
             onChange={setPick}
-            options={candidates.map((w) => ({ value: w.id, label: w.name, description: w.title + " · " + w.sector, avatarUrl: w.avatarUrl, initials: w.initials }))}
-            placeholder={candidates.length ? "Start typing to find a member…" : "No registered workers to invite yet"}
-            emptyText="Start typing to see users"
+            onQueryChange={setSearchText}
+            options={candidateOptions}
+            placeholder="Start typing to find a member…"
+            emptyText={emptyText}
             requireQuery
+            disabled={sending}
           />
         </div>
         <Button
-          disabled={!pick}
+          disabled={!pick || sending}
           onClick={async () => {
-            const { error } = await supabase
-              .from("team_members")
-              .insert({ team_id: teamId, worker_id: pick, role: "member", status: "invited" });
-            if (error) toast.error(error.code === "23505" ? "Already invited." : error.message);
-            else {
-              toast.success("Invite sent");
-              setPick("");
-
+            setSending(true);
+            try {
+              const { error } = await supabase
+                .from("team_members")
+                .insert({ team_id: teamId, worker_id: pick, role: "member", status: "invited" });
+              if (error) {
+                toast.error(error.code === "23505" ? "Already invited." : error.message);
+              } else {
+                toast.success("Invite sent");
+                setPick("");
+                setSearchText("");
+                setCandidateOptions([]);
+              }
+            } finally {
+              setSending(false);
             }
           }}
         >
-          Send invite
+          {sending ? "Sending…" : "Send invite"}
         </Button>
       </div>
     </Card>

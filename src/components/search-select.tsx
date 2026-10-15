@@ -20,6 +20,7 @@ export function SearchSelect({
   requireQuery = false,
   disabled = false,
   className,
+  onQueryChange,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -29,6 +30,7 @@ export function SearchSelect({
   requireQuery?: boolean;
   disabled?: boolean;
   className?: string;
+  onQueryChange?: (query: string) => void;
 }) {
   const selected = options.find((option) => option.value === value);
   const [query, setQuery] = useState(selected?.label ?? "");
@@ -68,8 +70,10 @@ export function SearchSelect({
           onFocus={() => setOpen(true)}
           onBlur={() => window.setTimeout(() => setOpen(false), 150)}
           onChange={(event) => {
-            setQuery(event.target.value);
+            const nextQuery = event.target.value;
+            setQuery(nextQuery);
             setOpen(true);
+            onQueryChange?.(nextQuery);
             if (value) onChange("");
           }}
           className={cn(
