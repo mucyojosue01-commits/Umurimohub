@@ -48,7 +48,11 @@ function Page() {
    toast.success("Application moved to "+status.replaceAll("_"," ")+".");await load();
  };
  const makeOffer=async()=>{
-   if(!offerFor)return;setBusy(offerFor);
+   if(!offerFor)return;
+   const candidate = applicants.find((applicant) => applicant.id === offerFor);
+   const candidateName = candidate?.worker?.name ?? "this applicant";
+   if (!window.confirm("Confirm sending the " + employmentType.replaceAll("_", " ") + " offer for " + position.title + " to " + candidateName + "? Check the position and offer details before confirming.")) return;
+   setBusy(offerFor);
    const {error}=await supabase.rpc("set_position_application_status",{_application_id:offerFor,_status:"offer",_note:"Employment offer issued",_employment_type:employmentType,_offer_details:offerDetails});
    setBusy(null);
    if(error){toast.error(error.message);return;}
