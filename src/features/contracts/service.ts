@@ -39,6 +39,8 @@ export async function listMyContracts(): Promise<Contract[]> {
 }
 
 export async function createContract(p: ContractProposal) {
+  // The generated Supabase types predate this newly deployed RPC.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase as any).rpc("create_contract_with_payment_plan", {
     _application_id: p.applicationId,
     _title: p.title,
