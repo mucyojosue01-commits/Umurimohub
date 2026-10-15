@@ -19,6 +19,8 @@ export function SearchSelect({
   emptyText = "No matching options",
   disabled = false,
   className,
+  minQueryLength = 0,
+  initialPrompt = "Available options",
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -27,6 +29,8 @@ export function SearchSelect({
   emptyText?: string;
   disabled?: boolean;
   className?: string;
+  minQueryLength?: number;
+  initialPrompt?: string;
 }) {
   const selected = options.find((option) => option.value === value);
   const [query, setQuery] = useState(selected?.label ?? "");
@@ -38,11 +42,12 @@ export function SearchSelect({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return options.slice(0, 20);
+    if (!q) return minQueryLength > 0 ? [] : options.slice(0, 20);
+    if (q.length < minQueryLength) return [];
     return options
       .filter((option) => [option.label, option.description ?? ""].join(" ").toLowerCase().includes(q))
       .slice(0, 20);
-  }, [options, query]);
+  }, [options, query, minQueryLength]);
 
   const choose = (option: SearchSelectOption) => {
     onChange(option.value);
@@ -96,7 +101,7 @@ export function SearchSelect({
       {open && !disabled && (
         <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-72 overflow-auto rounded-2xl border bg-popover p-1 shadow-xl">
           <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {query.trim() ? "Matching options" : "Available options"}
+            {query.trim().length >= minQueryLength && query.trim() ? "Matching options" : initialPrompt}
           </div>
           {filtered.length ? (
             filtered.map((option) => (
@@ -122,7 +127,7 @@ export function SearchSelect({
               </button>
             ))
           ) : (
-            <p className="px-3 py-4 text-center text-sm text-muted-foreground">{emptyText}</p>
+            <p className="px-3 py-4 text-center text-sm text-muted-foreground">{query.trim().length < minQueryLength ? initialPrompt : emptyText}</p>
           )}
         </div>
       )}

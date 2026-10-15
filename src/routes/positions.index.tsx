@@ -49,7 +49,6 @@ function Page() {
             <h2 className="mt-4 text-lg font-bold">{o.title}</h2><p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{o.summary}</p>
             <div className="mt-4 grid gap-2 text-sm text-muted-foreground"><span className="flex items-center gap-2"><MapPin className="size-4"/>{o.district}, Rwanda</span><span className="flex items-center gap-2"><BriefcaseBusiness className="size-4"/>{rwf(o.payRwf)} / {o.payUnit}</span>
               <span className="flex items-center gap-2"><CalendarDays className="size-4"/>Apply by {o.deadline}</span></div>
-            <div className="mt-5 border-t pt-4 text-sm font-semibold text-primary">View position profile →</div>
           </Card>
         </Link>;
       })}</div> :
