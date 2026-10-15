@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound, Outlet, useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Building2, MapPin, Pencil, Plus, ShieldCheck, Star } from "lucide-react";
+import { Building2, MapPin, Pencil, Plus, Search, ShieldCheck, Star, UserRoundMinus, UserRoundPen } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
 import { mapBusiness, mapOpportunity } from "@/features/data/mappers";
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/business/$id")({
     const openNonJobOpportunities = (rawOpportunities ?? []).filter((row) => row.type !== "Job").map(mapOpportunity);
 
     // Employment data is optional until the recruitment migration is applied; it must not break public company pages.
-    const { data: employmentRows } = await supabase.from("company_employments").select("id,worker_id,position_name,employment_type,started_at,status").eq("business_id", params.id).eq("status", "active").order("started_at", { ascending: false });
+    const { data: employmentRows } = await supabase.from("company_employments").select("id,worker_id,worker_user_id,position_name,employment_type,started_at,status").eq("business_id", params.id).eq("status", "active").order("started_at", { ascending: false });
     const { data: completedWorkRows } = await supabase.from("verified_experiences").select("id").eq("business_id", params.id);
     const employeeIds = [...new Set((employmentRows ?? []).map((row) => row.worker_id))];
     const { data: employeeProfiles } = employeeIds.length
@@ -77,6 +78,22 @@ function BusinessProfilePage() {
   const { user } = useApp();
   const { business, openOpportunities, openPositions, employees, completedProjects } = Route.useLoaderData();
   const isOwner = !!user && user.businessIds.includes(id);
+  const [employeeSearch, setEmployeeSearch] = useState("");
+  const visibleEmployees = employees.filter((employee) => employee.worker.name.toLowerCase().includes(employeeSearch.toLowerCase()) || employee.position_name.toLowerCase().includes(employeeSearch.toLowerCase()));
+  const manageEmployee = async (employee: typeof employees[number], action: "update_position" | "end") => {
+    if (action === "update_position") {
+      const nextPosition = window.prompt("Edit position for " + employee.worker.name, employee.position_name)?.trim();
+      if (!nextPosition || nextPosition === employee.position_name) return;
+      if (nextPosition.length < 2 || nextPosition.length > 120) { toast.error("Position must be 2–120 characters."); return; }
+      if (!window.confirm("Confirm changing " + employee.worker.name + "’s position to “" + nextPosition + "”?")) return;
+      const { error } = await supabase.rpc("manage_company_employment", { _employment_id: employee.id, _action: action, _position_name: nextPosition });
+      if (error) toast.error("Could not update position: " + error.message); else { toast.success("Employee position updated."); window.location.reload(); }
+      return;
+    }
+    if (!window.confirm("Remove " + employee.worker.name + " (" + employee.position_name + ") from this company? They will be notified and this employment will be recorded as ended.")) return;
+    const { error } = await supabase.rpc("manage_company_employment", { _employment_id: employee.id, _action: action, _position_name: null });
+    if (error) toast.error("Could not remove employee: " + error.message); else { toast.success(employee.worker.name + " has been removed from active employees. A notification was sent."); window.location.reload(); }
+  };
 
 
   return <>
@@ -89,8 +106,9 @@ function BusinessProfilePage() {
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4"><div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">Completed projects</p><p className="mt-1 text-2xl font-bold">{completedProjects}</p></div><div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">Active employees</p><p className="mt-1 text-2xl font-bold">{employees.length}</p></div></div>
       {business.services.length > 0 && <div className="mt-5"><p className="mb-2 text-sm font-semibold">Services & capabilities</p><div className="flex flex-wrap gap-2">{business.services.map((service) => <Pill key={service}>{service}</Pill>)}</div></div>}
       <section className="mt-7 rounded-2xl border p-5 md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold">Our People</h2><p className="mt-1 text-sm text-muted-foreground">Employees appear here after accepting a company position offer.</p></div><Pill>{employees.length} active {employees.length === 1 ? "employee" : "employees"}</Pill></div>
-      {employees.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{employees.map((employee) => <Link key={employee.id} to="/workers/$id" params={{ id: employee.worker_id }} className="flex items-center gap-3 rounded-xl border p-3 transition hover:border-primary/40 hover:bg-muted/30"><Avatar initials={employee.worker.name.slice(0,2).toUpperCase()} src={employee.worker.avatar_url} alt={employee.worker.name} /><div className="min-w-0"><p className="truncate font-semibold">{employee.worker.name}</p><p className="text-sm text-primary">{employee.position_name}</p><p className="text-xs text-muted-foreground">Since {new Date(employee.started_at).toLocaleDateString()}</p></div></Link>)}</div> : <p className="mt-4 rounded-xl bg-muted/30 p-4 text-sm text-muted-foreground">No active employees listed yet.</p>}
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold">Our People</h2><p className="mt-1 text-sm text-muted-foreground">Each employee appears once with one current position.</p></div><Pill>{employees.length} active {employees.length === 1 ? "employee" : "employees"}</Pill></div>
+      {isOwner && <div className="mt-4 flex items-center gap-2"><Search className="size-4 text-muted-foreground"/><input aria-label="Search employees by name or position" value={employeeSearch} onChange={(e) => setEmployeeSearch(e.target.value)} placeholder="Search employee name or position…" className="h-10 min-w-0 flex-1 rounded-xl border bg-card px-3 text-sm"/></div>}
+      {visibleEmployees.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{visibleEmployees.map((employee) => <div key={employee.worker_id} className="flex items-start gap-3 rounded-xl border p-3"><Link to="/workers/$id" params={{ id: employee.worker_id }} className="flex min-w-0 flex-1 items-center gap-3"><Avatar initials={employee.worker.name.slice(0,2).toUpperCase()} src={employee.worker.avatar_url} alt={employee.worker.name} /><div className="min-w-0"><p className="truncate font-semibold">{employee.worker.name}</p><p className="text-sm text-primary">{employee.position_name}</p><p className="text-xs text-muted-foreground">Since {new Date(employee.started_at).toLocaleDateString()}</p></div></Link>{isOwner && <div className="flex shrink-0 gap-1"><Button size="icon" variant="ghost" aria-label={"Edit position for " + employee.worker.name} onClick={() => void manageEmployee(employee, "update_position")}><UserRoundPen className="size-4"/></Button><Button size="icon" variant="ghost" aria-label={"Remove " + employee.worker.name + " from company"} onClick={() => void manageEmployee(employee, "end")}><UserRoundMinus className="size-4"/></Button></div>}</div>)}</div> : <p className="mt-4 rounded-xl bg-muted/30 p-4 text-sm text-muted-foreground">{employeeSearch ? "No employees match that search." : "No active employees listed yet."}</p>}
       
     </section>
     <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-3"><div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">Trust score</p><p className="mt-1 text-2xl font-bold">{Math.round(business.trustScore ?? 0)}<span className="ml-1 text-xs font-normal text-muted-foreground">/ 100</span></p></div><div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">Rating</p><p className="mt-1 flex items-center gap-1 text-2xl font-bold"><Star className="size-5 text-amber-500" />{business.rating > 0 ? business.rating.toFixed(1) : "—"}<span className="text-xs font-normal text-muted-foreground">/ 5</span></p></div><div className="rounded-xl border p-4"><p className="text-xs text-muted-foreground">Open opportunities</p><p className="mt-1 text-2xl font-bold">{business.hiring}</p></div></div>
