@@ -37,3 +37,8 @@ Configure MTN's callback URL to the deployed `momo-pay-callback` endpoint if cal
 - Dashboard totals use transactions visible to the authenticated user under contract-party RLS.
 
 Until MTN credentials are supplied and the functions are deployed, the UI explicitly reports that provider setup is missing and does not claim that money was charged.
+
+
+## Refund boundary
+
+Dispute resolution records an administrator's decision and notifies the parties. It does not automatically issue a refund. A production refund flow requires MTN's refund/disbursement product and merchant permissions to be confirmed and implemented separately; do not treat a dispute decision as a completed refund.
