@@ -1,0 +1,3 @@
+-- Production recorded a second idempotent application of guard_contract_reaccept_transition.
+-- The canonical DDL is in 20261015122153_guard_contract_reaccept_transition.sql.
+-- Keep this version marker so repository and production migration histories remain aligned.
