@@ -51,6 +51,7 @@ function Page() {
   return (
     <div className="container-page py-10">
       <PageHeader eyebrow={user.roles.map((r) => r.replace("_", " ")).join(" · ") + " dashboard"} title={"Muraho, " + user.name.split(" ")[0]} />
+      {user.roles.includes("admin") && <div className="mb-5 flex justify-end"><Button size="sm" variant="outline" asChild><Link to="/admin"><ShieldCheck className="mr-2 size-4" /> Open admin console</Link></Button></div>}
       <div className="grid gap-4 md:grid-cols-3">
         <Stat icon={Briefcase} label="Applications" value={String(applications.length)} />
         <Stat icon={CheckCircle2} label="Contracts & projects" value={String(contractsQuery.data?.length ?? 0)} />
