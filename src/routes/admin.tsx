@@ -101,7 +101,6 @@ function AdminPage() {
     enabled: isAdmin,
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const db = supabase as any;
       const results = await Promise.all(COUNT_TABLES.map(async ([table, label]) => {
         const { count, error } = await db.from(table).select("*", { count: "exact", head: true });
@@ -121,6 +120,7 @@ function AdminPage() {
     queryKey: ["admin-console-rows", activeTable, user?.id],
     enabled: isAdmin && availableTables.length > 0,
     queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const db = supabase as any;
       const { data, error } = await db.from(activeTable).select("*").limit(100);
       if (error) throw error;
