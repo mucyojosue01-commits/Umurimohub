@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Briefcase, CheckCircle2, Wallet, MoreVertical } from "lucide-react";
+import { Briefcase, CheckCircle2, Wallet, MoreVertical, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/store/app-store";
 import { MyApplications, MyOpportunities, TeamInvites } from "@/features/dashboard/panels";
