@@ -2,10 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, BriefcaseBusiness,
-  Building2, CheckCircle2, ChevronRight, CircleDollarSign, ClipboardCheck,
-  FileText, Filter, GraduationCap, LayoutDashboard, LifeBuoy, RefreshCw,
-  Search, Settings2, ShieldCheck, ShieldAlert, Users, WalletCards, XCircle,
+  Activity, AlertTriangle, BriefcaseBusiness, Building2, CheckCircle2, ChevronRight,
+  CircleDollarSign, ClipboardCheck, FileText, Filter, LayoutDashboard, LifeBuoy,
+  RefreshCw, Search, Settings2, ShieldCheck, ShieldAlert, Users, WalletCards,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -101,6 +100,8 @@ function AdminPage() {
     queryKey: ["admin-console-counts", user?.id],
     enabled: isAdmin,
     queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const db = supabase as any;
       const results = await Promise.all(COUNT_TABLES.map(async ([table, label]) => {
         const { count, error } = await db.from(table).select("*", { count: "exact", head: true });
